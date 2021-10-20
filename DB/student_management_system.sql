@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 20, 2021 at 09:40 AM
+-- Generation Time: Oct 20, 2021 at 02:52 PM
 -- Server version: 10.4.18-MariaDB
 -- PHP Version: 8.0.3
 
@@ -44,6 +44,7 @@ CREATE TABLE `classroom` (
 
 CREATE TABLE `login` (
   `id` int(5) NOT NULL,
+  `school_id` int(10) NOT NULL,
   `role` enum('Admin','Teaching Faculty','Non-teaching Faculty','Student') NOT NULL,
   `username` varchar(30) NOT NULL,
   `password` varchar(30) NOT NULL,
@@ -57,10 +58,25 @@ CREATE TABLE `login` (
 -- Dumping data for table `login`
 --
 
-INSERT INTO `login` (`id`, `role`, `username`, `password`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(10001, 'Admin', 'Bala', 'Balaguru', 'balaguru.m@koinnovation.com', '2021-10-19 14:26:11', '2021-10-19 08:56:11', '2021-10-19 14:26:11'),
-(10002, 'Student', 'test', 'test123#', 'test@gmail.com', '2021-10-19 14:26:11', '2021-10-19 08:56:11', '2021-10-19 14:26:11'),
-(10004, 'Admin', 'balaguru', 'test123#', 'bala@gmail.com', '2021-10-19 17:08:31', '2021-10-19 11:38:31', NULL);
+INSERT INTO `login` (`id`, `school_id`, `role`, `username`, `password`, `email`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(10001, 0, 'Admin', 'Bala', 'Balaguru', 'balaguru.m@koinnovation.com', '2021-10-19 14:26:11', '2021-10-19 08:56:11', '2021-10-19 14:26:11'),
+(10002, 0, 'Student', 'test', 'test123#', 'test@gmail.com', '2021-10-19 14:26:11', '2021-10-19 08:56:11', '2021-10-19 14:26:11'),
+(10004, 0, 'Admin', 'balaguru', 'test123#', 'bala@gmail.com', '2021-10-19 17:08:31', '2021-10-19 11:38:31', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `school`
+--
+
+CREATE TABLE `school` (
+  `school_id` int(10) NOT NULL,
+  `school_name` varchar(100) NOT NULL,
+  `board` enum('State Board','CBSE') NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `deleted_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
 
@@ -82,6 +98,22 @@ CREATE TABLE `staff` (
   `created_at` datetime NOT NULL,
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `deleted_at` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `staff_attendance`
+--
+
+CREATE TABLE `staff_attendance` (
+  `sf_atid` int(10) NOT NULL,
+  `username` varchar(30) NOT NULL,
+  `attend_date` date NOT NULL,
+  `attend_status` enum('Leave','On Duty','Present','Half day') NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `deleted_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -179,13 +211,29 @@ ALTER TABLE `classroom`
 --
 ALTER TABLE `login`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `username` (`username`);
+  ADD UNIQUE KEY `username` (`username`),
+  ADD KEY `school_id` (`school_id`),
+  ADD KEY `email` (`email`);
+
+--
+-- Indexes for table `school`
+--
+ALTER TABLE `school`
+  ADD PRIMARY KEY (`school_id`);
 
 --
 -- Indexes for table `staff`
 --
 ALTER TABLE `staff`
   ADD PRIMARY KEY (`id`),
+  ADD KEY `username` (`username`),
+  ADD KEY `email` (`email`);
+
+--
+-- Indexes for table `staff_attendance`
+--
+ALTER TABLE `staff_attendance`
+  ADD PRIMARY KEY (`sf_atid`),
   ADD KEY `username` (`username`);
 
 --
@@ -193,16 +241,17 @@ ALTER TABLE `staff`
 --
 ALTER TABLE `staff_salary`
   ADD PRIMARY KEY (`sal_id`),
-  ADD KEY `staff-staff salary` (`username`);
+  ADD KEY `staff ATTENDANCE -staff salary` (`username`);
 
 --
 -- Indexes for table `student`
 --
 ALTER TABLE `student`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `student-login` (`username`),
   ADD KEY `studying` (`studying`),
-  ADD KEY `studying_2` (`studying`);
+  ADD KEY `studying_2` (`studying`),
+  ADD KEY `email` (`email`),
+  ADD KEY `student-login` (`username`);
 
 --
 -- Indexes for table `student_attendance`
@@ -235,10 +284,22 @@ ALTER TABLE `login`
   MODIFY `id` int(5) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10005;
 
 --
+-- AUTO_INCREMENT for table `school`
+--
+ALTER TABLE `school`
+  MODIFY `school_id` int(10) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `staff`
 --
 ALTER TABLE `staff`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `staff_attendance`
+--
+ALTER TABLE `staff_attendance`
+  MODIFY `sf_atid` int(10) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `staff_salary`
@@ -276,22 +337,34 @@ ALTER TABLE `classroom`
   ADD CONSTRAINT `student-attendance with Classroom` FOREIGN KEY (`class_section`) REFERENCES `student_attendance` (`classroom`);
 
 --
+-- Constraints for table `school`
+--
+ALTER TABLE `school`
+  ADD CONSTRAINT `SCHOOL - LOGIN` FOREIGN KEY (`school_id`) REFERENCES `login` (`school_id`);
+
+--
 -- Constraints for table `staff`
 --
 ALTER TABLE `staff`
-  ADD CONSTRAINT `staff-login` FOREIGN KEY (`username`) REFERENCES `login` (`Username`);
+  ADD CONSTRAINT `staff-login` FOREIGN KEY (`username`) REFERENCES `login` (`username`);
+
+--
+-- Constraints for table `staff_attendance`
+--
+ALTER TABLE `staff_attendance`
+  ADD CONSTRAINT `staff atten - staff` FOREIGN KEY (`username`) REFERENCES `staff` (`username`);
 
 --
 -- Constraints for table `staff_salary`
 --
 ALTER TABLE `staff_salary`
-  ADD CONSTRAINT `staff-staff salary` FOREIGN KEY (`username`) REFERENCES `staff` (`username`);
+  ADD CONSTRAINT `staff ATTENDANCE -staff salary` FOREIGN KEY (`username`) REFERENCES `staff_attendance` (`username`);
 
 --
 -- Constraints for table `student`
 --
 ALTER TABLE `student`
-  ADD CONSTRAINT `student-login` FOREIGN KEY (`username`) REFERENCES `login` (`Username`);
+  ADD CONSTRAINT `student-login` FOREIGN KEY (`username`) REFERENCES `login` (`username`);
 
 --
 -- Constraints for table `student_fee`
