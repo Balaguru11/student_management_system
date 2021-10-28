@@ -2,8 +2,6 @@ const express = require('express');
 const app = express();
 const expressLayouts = require('express-ejs-layouts');
 
-
-
 //dotenv config
 require('dotenv').config();
 const PORT = process.env.PORT || 8000;
@@ -22,6 +20,7 @@ app.set('layout', './layouts/full-layout');
 app.use(express.static('public'));
 app.use('/css', express.static(__dirname + 'public/css'));
 app.use('/img', express.static(__dirname + 'public/img'));
+app.use('/js', express.static(__dirname + 'public/js'));
 
 //register ejs view engine
 app.set('view engine', 'ejs');

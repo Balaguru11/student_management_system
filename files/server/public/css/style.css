@@ -6,8 +6,28 @@
 
 footer {
     text-align: center;
+    background-color: rgb(180, 179, 179);
 }
 
 img {
     padding: 10px;
 }
+
+input.invalid, textarea.invalid{
+	border: 2px solid red;
+}
+
+input.valid, textarea.valid{
+	border: 2px solid green;
+}
+
+
+.error{
+	display: none;
+	margin: 10px;
+}		
+
+.error-display{
+	color: red;
+	margin: 10px;
+} 
