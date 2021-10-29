@@ -1,0 +1,42 @@
+<div class="container p-5">
+    <div class="row d-flex justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-10">
+            <form id="create-school" action="/school/create" method="POST">
+                <div class="mt-3 mb-3">
+                    <label for="school_name">Name of the school:</label>
+                    <input type="text" class="form-control" name="schoolName" id="schooolName" placeholder="A.B.C Higher Secondary School">
+                    <span class="error" id="schoolName_error">School Name must be at least 15 characters long.</span>
+                </div>
+                <div class="mb-3">
+                    <label for="board">Board:</label>
+                    <input type="text" class="form-control" name="board" id="board" placeholder="Select a Board.">
+                    <span class="error" id="board_error">Please select the board, school supports</span>
+                </div>
+                <div class="mb-3">
+                    <label for="email">Official E-mail:</label>
+                    <input type="text" class="form-control" name="email" id="email" placeholder="Official Email ID">
+                    <span class="error" id="email_error">Please enter Official email id.</span>
+                </div>
+                <div class="mb-3">
+                    <label for="city">School Location:</label>
+                    <input type="text" class="form-control" name="schoolLocation" id="schoolLocation" placeholder="Locality">
+                    <span class="error" id="schoolLocation_error">Please type the loation where the school is located in.</span>
+                </div>
+                <div class="mb-3">
+                    <label for="school_UserName">School Username:</label>
+                    <input type="text" class="form-control" name="schoolUserName" id="schoolUserName" placeholder="Type an UserName.">
+                    <span class="error" id="schoolUserName_error">School Username must be at least 8 characters long.</span>
+                </div>
+                <div class="mb-3">
+                    <label for="school_Password">School Password:</label>
+                    <input type="password" class="form-control" name="schoolPassword" id="school_Password" placeholder="Create your password.">
+                    <span class="error" id="school_Password_error">Password should contain 8 characters with a Uppercase, a lowercase, a Number and a Special character.</span>
+                </div>
+                <div class="mb-3">
+                    <button class="btn btn-secondary" type="submit" value="submit">Create School</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

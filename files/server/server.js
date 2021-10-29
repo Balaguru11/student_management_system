@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const expressLayouts = require('express-ejs-layouts');
 
+
 //dotenv config
 require('dotenv').config();
 const PORT = process.env.PORT || 8000;
@@ -10,6 +11,7 @@ const PORT = process.env.PORT || 8000;
 require('./DB/database')
 
 //body-parser deprecated
+app.use(express.urlencoded({extended: true}));
 app.use(express.json());
 
 //layouts
@@ -25,16 +27,35 @@ app.use('/js', express.static(__dirname + 'public/js'));
 //register ejs view engine
 app.set('view engine', 'ejs');
 
+
+// routes import
+const schoolRoutes = require('./routes/schoolRoutes.js')
+
+
+//using imported routes
+app.use('/school', schoolRoutes);
+
+// //dashboard rourte
+// app.get('/dash', (req, res) => {
+//     res.render('dashboard', { title: 'Dashboard', layout: './layouts/with-sidebar'});
+// });
+
+
 //routes
 app.get('/', (req, res) => {
     res.render('login', { title: 'Home' });
 });
 
-//dadhbiard rourte
-app.get('/dash', (req, res) => {
-    res.render('dashboard', { title: 'Dashboard', layout: './layouts/with-sidebar'});
-});
 
+app.post('/', (req, res) => {
+    const {username, password} = req.body;
+
+})
+
+//404
+app.use((req, res) => {
+    res.status(404).render('404', {title: '404 Page'});
+})
 //listner
 app.listen(PORT, () => {
     console.log(`Server started at http://localhost:${PORT}`);
