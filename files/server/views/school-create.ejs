@@ -3,13 +3,23 @@
         <div class="col-lg-6 col-md-8 col-sm-10">
             <form id="create-school" action="/school/create" method="POST">
                 <div class="mt-3 mb-3">
+                    <h2>Add New School</h2>
+                    <small>You may required to submit School Documents with Order Id in order to get approved.</small>
+                    <hr>
+                </div>
+    
+                <div class="mt-3 mb-3">
                     <label for="school_name">Name of the school:</label>
                     <input type="text" class="form-control" name="schoolName" id="schooolName" placeholder="A.B.C Higher Secondary School">
                     <span class="error" id="schoolName_error">School Name must be at least 15 characters long.</span>
                 </div>
                 <div class="mb-3">
                     <label for="board">Board:</label>
-                    <input type="text" class="form-control" name="board" id="board" placeholder="Select a Board.">
+                    <select id="board" class="form-control" name="board">
+                        <option value="">Select one</option>
+                        <option value="State Board">State Board</option>
+                        <option value="CBSE">CBSE</option>
+                    </select>
                     <span class="error" id="board_error">Please select the board, school supports</span>
                 </div>
                 <div class="mb-3">
@@ -29,7 +39,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="school_Password">School Password:</label>
-                    <input type="password" class="form-control" name="schoolPassword" id="school_Password" placeholder="Create your password.">
+                    <input type="password" class="form-control" name="schoolPassword" id="schoolPassword" placeholder="Create your password.">
                     <span class="error" id="school_Password_error">Password should contain 8 characters with a Uppercase, a lowercase, a Number and a Special character.</span>
                 </div>
                 <div class="mb-3">
