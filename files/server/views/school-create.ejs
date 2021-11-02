@@ -1,7 +1,14 @@
 <div class="container p-5">
     <div class="row d-flex justify-content-center">
         <div class="col-lg-6 col-md-8 col-sm-10">
-            <form id="create-school" action="/school/create" method="POST">
+            <% if(locals.err_msg) { %>
+                <div class="alert alert-danger" role="alert"><%= err_msg %></div>
+            <% } %>
+            <% if(locals.success_msg) { %>
+                        <div class="alert alert-success" role="success"><%= success_msg %></div>
+            <% } %>
+
+            <form id="login-form" action="/school/create" method="POST">
                 <div class="mt-3 mb-3">
                     <h2>Add New School</h2>
                     <small>You may required to submit School Documents with Order Id in order to get approved.</small>
@@ -11,7 +18,7 @@
                 <div class="mt-3 mb-3">
                     <label for="school_name">Name of the school:</label>
                     <input type="text" class="form-control" name="schoolName" id="schooolName" placeholder="A.B.C Higher Secondary School">
-                    <span class="error" id="schoolName_error">School Name must be at least 15 characters long.</span>
+                    <span class="error" id="schoolName_error">School Name must be at least 10 characters long.</span>
                 </div>
                 <div class="mb-3">
                     <label for="board">Board:</label>
@@ -40,7 +47,7 @@
                 <div class="mb-3">
                     <label for="school_Password">School Password:</label>
                     <input type="password" class="form-control" name="schoolPassword" id="schoolPassword" placeholder="Create your password.">
-                    <span class="error" id="school_Password_error">Password should contain 8 characters with a Uppercase, a lowercase, a Number and a Special character.</span>
+                    <span class="error" id="school_Password_error">Password should contain 8 char which includes an Uppercase, a lowercase, a Number and a Special char.</span>
                 </div>
                 <div class="mb-3">
                     <button class="btn btn-secondary" type="submit" value="submit">Create School</button>

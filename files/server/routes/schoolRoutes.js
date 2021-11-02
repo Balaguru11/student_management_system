@@ -8,6 +8,9 @@ schoolRouter.get('/create', (req, res) => {
 });
 
 schoolRouter.post('/create', async (req, res) => {
+    let err_msg = ""; 
+    let success_msg = "";
+
     try{
         var check = `SELECT EXISTS (SELECT * FROM school_add_school WHERE email='${req.body.email}') AS count`;
         //res >> 0 / 1 
@@ -15,22 +18,25 @@ schoolRouter.post('/create', async (req, res) => {
         // `SELECT * FROM school_add_school WHERE email='${req.body.email}'`;
  
         dbcon.query(check, (err, data) => {
-            console.log(data[0].count);
             if(err){
-                console.log("There is an error with Database connection.");
+                err_msg = "There is an error with Database connection.";
+                return res.render('school-create', { err_msg: err_msg });
             }else{
-        
                 if(data[0].count == 0){
                     const sql = `INSERT INTO school_add_school(school_name, board, email, city, school_login, school_secrete, status) VALUES ('${req.body.schoolName}', '${req.body.board}', '${req.body.email}', '${req.body.schoolLocation}', '${req.body.schoolUserName}', '${req.body.schoolPassword}', 'Inactive');`;
 
-                        dbcon.query(sql, function (err, result) {
-                            if (err) return console.log(err);
-                            console.log(result);
-                            return res.render('school-login', {title: 'School Added'});
+                        dbcon.query(sql, function (err) {
+                            if (err) {
+                                err_msg = "There is an error when adding new school";
+                                return res.render('school-create', { title: 'Add a School', err_msg: err_msg });
+                            }else{
+                                success_msg = "The school has been added successfully";
+                                return res.render('school-create', { title: 'Add a School', success_msg: success_msg });
+                            }
                         });
                     }else{
-                        console.log("School already Exists.");
-                        return;
+                        err_msg = "This School is already registered."
+                        return res.render('school-create', { title: 'Add a School', err_msg: err_msg });
                     }
             }
         });
@@ -56,7 +62,7 @@ schoolRouter.post('/login', (req, res) => {
                     console.log(err);
                 } else if (result == 1){
                     // res.status(200).send("Logged In.");
-                    res.render('dashboard', { title: 'Dashboard'});
+                    res.render('school-dashboard', { title: 'Dashboard'});
                 }else{
                     res.send("No user found");
                 }
