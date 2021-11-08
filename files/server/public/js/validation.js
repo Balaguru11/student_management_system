@@ -26,6 +26,20 @@ $(function() {
   //   }
   // })
 
+//   $("#board").on('change', function() {
+//     var board = $(this).find(":selected").val();
+//     if (board == "") {
+//       input.removeClass('valid').addClass('invalid');
+//       $('#board_error').addClass('error-display').removeClass('error');
+//         // alert("Please select an option!");
+//         // return false;
+//     }else{
+//       alert(board);
+//       input.removeClass('invalid').addClass('valid');
+//       $('#board_error').addClass('error').removeClass('error-display');
+//     }
+// });
+
   // School-Create Form Validations - email
   $('#email').on('input', function() {
     var input = $(this);
