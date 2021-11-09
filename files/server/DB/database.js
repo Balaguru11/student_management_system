@@ -15,7 +15,7 @@
 //     return console.log("Database connected successfully");
 // });
 
-
+// working code before sequelize
 const mysql = require('mysql')
 
 const con = mysql.createConnection({
@@ -33,3 +33,18 @@ con.connect(function(err) {
 });
 
 module.exports = con;
+
+
+// const Sequelize = require('sequelize');
+// require('dotenv').config();
+
+// const init = () => {
+//     const { DB_HOST, DB_USER, DB_DB, DB_PASS } = process.env;
+//     const sequelize = new Sequelize(DB_USER, DB_DB, DB_PASS, {
+//         host: DB_HOST,
+//         dialect: 'mysql'
+//     });
+//     return sequelize;
+// }
+
+// module.exports = { sequelize: init() };

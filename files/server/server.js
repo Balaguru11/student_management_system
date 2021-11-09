@@ -4,10 +4,19 @@ const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const flash = require('connect-flash');
 
+// const { sequelize } = require('./DB/database');
+
+// models import
+// const Schools = sequelize.import(__dirname + '/model/school.model.js');
+
 const app = express();
 
 //dotenv config
 require('dotenv').config();
+
+// //database 
+require('./DB/database')
+
 const PORT = process.env.PORT || 8000;
 
 //set Cookie Parser, session and flash
@@ -21,8 +30,7 @@ app.use(session({
 
 app.use(flash());
 
-//database 
-require('./DB/database')
+
 
 //body-parser deprecated
 app.use(express.urlencoded({extended: true}));

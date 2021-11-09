@@ -65,11 +65,27 @@ exports.postSchoolLogin = async (req, res) => {
                     session.logged_in = true;
                     // res.status(200).send("Logged In.");
                     console.log(session);
-                    res.redirect('/dashboard', { title: 'Dashboard'});
+                    res.redirect('school/school-dashboard', { title: 'Dashboard'});
                 }else{
                     res.send("No user found");
                 }
             })
+    }catch(e){
+        console.log(e);
+        return res.status(500).send(e);
+    }
+}
+
+
+exports.getSchoolDashBoard = (req, res) => {
+    res.render('schoolLevel/school-dashboard', { title: 'School Master Dashboard'})
+}
+
+
+exports.postAddClassroom = async(req, res) => {
+    try {
+        //add query via model.
+
     }catch(e){
         console.log(e);
         return res.status(500).send(e);
