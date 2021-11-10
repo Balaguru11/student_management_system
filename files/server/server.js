@@ -23,7 +23,7 @@ const PORT = process.env.PORT || 8000;
 app.use(cookieParser('ThisIsTheStringToParseTheCookies'));
 app.use(session({
     secret: 'SecretStringForExpressSession',
-    cookie: { maxAge: 120000 },
+    cookie: { maxAge: 1200000 },
     resave: true,
     saveUninitialized: true
 }));

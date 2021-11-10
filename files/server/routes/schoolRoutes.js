@@ -4,7 +4,7 @@ const schoolRouter = express.Router();
 
 
 // importing schoolConttoller here
-const {getCreateSchool, postCreateSchool, getSchoolLogin, postSchoolLogin, getSchoolDashBoard, postAddClassroom} = require('../controllers/schoolController')
+const {getCreateSchool, postCreateSchool, getSchoolLogin, postSchoolLogin, getSchoolDashBoard, postAddClassroom, postAddUser} = require('../controllers/schoolController')
 
 schoolRouter.get('/create', getCreateSchool);
 
@@ -17,5 +17,7 @@ schoolRouter.post('/login', postSchoolLogin);
 schoolRouter.get('/dashboard', getSchoolDashBoard);
 
 schoolRouter.post('/add-classroom', postAddClassroom);
+
+schoolRouter.post('/add-user', postAddUser)
 
 module.exports = schoolRouter;
