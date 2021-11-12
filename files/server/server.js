@@ -5,7 +5,6 @@ const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 
 // const { sequelize } = require('./DB/database');
-
 // models import
 // const Schools = sequelize.import(__dirname + '/model/school.model.js');
 
@@ -29,7 +28,6 @@ app.use(
     saveUninitialized: true,
   })
 );
-
 app.use(flash());
 
 //body-parser deprecated
@@ -52,10 +50,12 @@ app.set("view engine", "ejs");
 // routes import
 const schoolRoutes = require("./routes/schoolRoutes");
 const staffRoutes = require("./routes/staffRoutes");
+const schoolActivate = require("./routes/activate");
 
 //using imported routes
 app.use("/school", schoolRoutes);
 app.use("/staff", staffRoutes);
+app.use("/activate-school", schoolActivate);
 
 // //dashboard rourte
 // app.get('/dash', (req, res) => {

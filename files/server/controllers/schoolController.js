@@ -2,6 +2,8 @@
 
 const session = require("express-session");
 const dbcon = require("../DB/database");
+const bcrypt = require("bcrypt");
+const Str = require("@supercharge/strings");
 
 exports.getCreateSchool = (req, res) => {
   res.render("schoolLevel/school-create", { title: "Add a School" });
@@ -21,20 +23,35 @@ exports.postCreateSchool = async (req, res) => {
         return res.render("school-create", { err_msg: err_msg });
       } else {
         if (data[0].count == 0) {
-          const sql = `INSERT INTO school_add_school(school_name, board, email, city, school_login, school_secrete, status) VALUES ('${req.body.schoolName}', '${req.body.board}', '${req.body.email}', '${req.body.schoolLocation}', '${req.body.schoolUserName}', '${req.body.schoolPassword}', 'Inactive');`;
+          const passwordEntered = req.body.schoolPassword;
 
-          dbcon.query(sql, function (err) {
+          const passwordHash = bcrypt.hashSync(`${passwordEntered}`, 10);
+
+          const sql = `INSERT INTO school_add_school(school_name, board, email, city, school_login, school_secrete, status) VALUES ('${req.body.schoolName}', '${req.body.board}', '${req.body.email}', '${req.body.schoolLocation}', '${req.body.schoolUserName}', '${passwordHash}', 'Inactive');`;
+
+          dbcon.query(sql, function (err, result) {
             if (err) {
               err_msg = "There is an error when adding new school";
-              return res.render("school-create", {
+              return res.render("schoolLevel/school-create", {
                 title: "Add a School",
                 err_msg: err_msg,
               });
             } else {
-              success_msg = "The school has been added successfully";
-              return res.render("schoolLevel/school-create", {
-                title: "Add a School",
-                success_msg: success_msg,
+              let session = req.session;
+              session.schoolId = result.insertId;
+              const act_string = Str.random(50);
+              const activationQuery = `INSERT INTO school_activate(school_id, activate_match_g) VALUES('${session.schoolId}', '${act_string}')`;
+              dbcon.query(activationQuery, function (err) {
+                if (err) {
+                  console.log(err);
+                } else {
+                  success_msg =
+                    "The school has been added successfully. Please Login & Submit your Product Activation code to start using it.";
+                  return res.status(200).render("schoolLevel/school-login", {
+                    title: "School Master Login",
+                    success_msg: success_msg,
+                  });
+                }
               });
             }
           });
@@ -59,19 +76,34 @@ exports.getSchoolLogin = (req, res) => {
 
 exports.postSchoolLogin = async (req, res) => {
   try {
-    var loginQuery = `SELECT * FROM school_add_school WHERE school_login='${req.body.schoolUserName}' AND school_secrete='${req.body.schoolPassword}'`;
+    let err_msg = "";
+    var loginQuery = `SELECT * FROM school_add_school WHERE school_login='${req.body.schoolUserName}'`;
     dbcon.query(loginQuery, function (err, result) {
       if (err) {
         console.log(err);
       } else if (result.length == 1) {
-        let session = req.session;
-        session.schoolUserName = req.body.schoolUserName;
-        session.schoolId = result[0].id;
-        session.schoolStatus = result[0].status;
-        session.logged_in = true;
-        res.status(200).redirect("/school/dashboard");
+        const passwordEntered = req.body.schoolPassword;
+        const school_pass = result[0].school_secrete;
+        const verified = bcrypt.compareSync(
+          `${passwordEntered}`,
+          `${school_pass}`
+        );
+        if (verified) {
+          let session = req.session;
+          session.schoolUserName = req.body.schoolUserName;
+          session.schoolId = result[0].id;
+          session.schoolStatus = result[0].status;
+          session.logged_in = true;
+          res.status(200).redirect("/school/dashboard");
+        } else {
+          err_msg = "Credentials entered doesnot match.";
+          return res.status(401).render("schoolLevel/school-login", {
+            title: "School Master Login",
+            err_msg: err_msg,
+          });
+        }
       } else {
-        res.send("No user found");
+        res.send("No School found.");
       }
     });
   } catch (e) {
@@ -83,10 +115,16 @@ exports.postSchoolLogin = async (req, res) => {
 exports.getSchoolDashBoard = (req, res) => {
   try {
     let session = req.session;
-
-    if (session.logged_in) {
+    let inactive_msg = "";
+    if (session.logged_in && session.schoolStatus == "Active") {
       res.render("schoolLevel/school-dashboard", {
         title: "School Master Dashboard",
+      });
+    } else if (session.logged_in && session.schoolStatus == "Inactive") {
+      inactive_msg = "Please Provide activation code.";
+      res.render("schoolLevel/school-dashboard", {
+        title: "School Master Dashboard",
+        inactive_msg: inactive_msg,
       });
     } else {
       err_msg = "You are unauthorized. Please login.";

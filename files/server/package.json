@@ -24,8 +24,8 @@
   },
   "homepage": "https://github.com/Balaguru11/student_management_system#readme",
   "dependencies": {
+    "@supercharge/strings": "^1.23.0",
     "bcrypt": "^5.0.1",
-    "bcryptjs": "^2.4.3",
     "connect-flash": "^0.1.1",
     "cookie-parser": "^1.4.5",
     "dotenv": "^10.0.0",
@@ -34,9 +34,7 @@
     "express-ejs-layouts": "^2.5.1",
     "express-session": "^1.17.2",
     "mysql": "^2.18.1",
-    "mysql2": "^2.3.3-rc.0",
     "nodemon": "^2.0.14",
-    "parsleyjs": "^2.9.2",
     "sequelize": "^6.9.0"
   }
 }
