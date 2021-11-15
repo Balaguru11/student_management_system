@@ -76,13 +76,18 @@ app.get("/logout", (req, res) => {
   try {
     let session = req.session;
     if (session.id) {
+      console.log("Before clearing Session");
       console.log(session);
       console.log(res);
-      req.session.destroy(function (err) {
-        res.clearCookie("account");
-        console.log("Logged out");
-        return res.redirect("/");
-      });
+      req.session.destroy();
+      console.log("After clearing Session");
+      console.log(session);
+      console.log(res);
+      // req.session.destroy(function (err) {
+      //   res.clearCookie("account");
+      //   console.log("Logged out");
+      //   return res.redirect("/");
+      // });
     }
   } catch (e) {
     console.log(e);
