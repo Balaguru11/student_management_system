@@ -46,3 +46,22 @@ exports.getStaffDashboard = (req, res) => {
     console.log(e);
   }
 };
+
+// displays Staff Profile Form
+exports.getStaffProfile = async (req, res) => {
+  res.render("staffLevel/staff-profile", { title: "Staff Profile" });
+  // try {
+  //   // get
+  // } catch (e) {
+  //   console.log(e);
+  // }
+};
+
+// Staff fills their Profile n sent to DB
+exports.postStaffProfile = async (req, res) => {
+  try {
+    // get
+  } catch (e) {
+    console.log(e);
+  }
+};

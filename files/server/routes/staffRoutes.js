@@ -5,11 +5,17 @@ const staffRouter = express.Router();
 const {
   postStaffLogin,
   getStaffDashboard,
+  getStaffProfile,
+  postStaffProfile,
 } = require("../controllers/staffController");
 
 staffRouter.post("/login", postStaffLogin);
 
 staffRouter.get("/dashboard", getStaffDashboard);
+
+staffRouter.get("/profile", getStaffProfile);
+
+staffRouter.post("/profile", postStaffProfile);
 
 //redirect urls
 staffRouter.get("/login", (req, res) => {

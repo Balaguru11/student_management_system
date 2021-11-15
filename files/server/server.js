@@ -80,9 +80,12 @@ app.get("/logout", (req, res) => {
       console.log(session);
       console.log(res);
       req.session.destroy();
+      res.clearCookie("account");
       console.log("After clearing Session");
       console.log(session);
       console.log(res);
+      return res.redirect("/");
+
       // req.session.destroy(function (err) {
       //   res.clearCookie("account");
       //   console.log("Logged out");
