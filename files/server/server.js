@@ -22,6 +22,7 @@ const PORT = process.env.PORT || 8000;
 app.use(cookieParser("ThisIsTheStringToParseTheCookies"));
 app.use(
   session({
+    name: "account",
     secret: "SecretStringForExpressSession",
     cookie: { maxAge: 1200000 },
     resave: true,
@@ -67,8 +68,25 @@ app.get("/", (req, res) => {
   res.render("login", { title: "Home" });
 });
 
-app.post("/", (req, res) => {
-  const { username, password } = req.body;
+// app.post("/", (req, res) => {
+//   const { username, password } = req.body;
+// });
+
+app.get("/logout", (req, res) => {
+  try {
+    let session = req.session;
+    if (session.id) {
+      console.log(session);
+      console.log(res);
+      req.session.destroy(function (err) {
+        res.clearCookie("account");
+        console.log("Logged out");
+        return res.redirect("/");
+      });
+    }
+  } catch (e) {
+    console.log(e);
+  }
 });
 
 //404

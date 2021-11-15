@@ -40,10 +40,7 @@ exports.getStaffDashboard = (req, res) => {
       });
     } else {
       err_msg = "You are unauthorized. Please login.";
-      return res.status(401).redirect("/staff/login", {
-        title: "Staff Dashboard",
-        err_msg: err_msg,
-      });
+      return res.status(401).redirect("/staff/login");
     }
   } catch (e) {
     console.log(e);
