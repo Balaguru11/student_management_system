@@ -65,7 +65,8 @@ app.use("/activate-school", schoolActivate);
 
 //routes
 app.get("/", (req, res) => {
-  res.render("login", { title: "Home" });
+  err_msg = req.params.err_msg;
+  res.render("login", { title: "Home", err_msg });
 });
 
 // app.post("/", (req, res) => {

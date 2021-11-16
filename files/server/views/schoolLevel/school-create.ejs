@@ -5,7 +5,12 @@
                 <div class="alert alert-danger" role="alert"><%= err_msg %></div>
             <% } %>
             <% if(locals.success_msg) { %>
-                        <div class="alert alert-success" role="success"><%= success_msg %></div>
+                        <!-- <div class="alert alert-success" role="success"><%= success_msg %></div> -->
+
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <%= success_msg %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                          </div>
             <% } %>
 
             <form id="login-form" action="/school/create" method="POST">

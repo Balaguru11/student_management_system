@@ -5,7 +5,7 @@ const staffRouter = express.Router();
 const {
   postStaffLogin,
   getStaffDashboard,
-  getStaffProfile,
+  getStaffProfileForm,
   postStaffProfile,
 } = require("../controllers/staffController");
 
@@ -13,7 +13,7 @@ staffRouter.post("/login", postStaffLogin);
 
 staffRouter.get("/dashboard", getStaffDashboard);
 
-staffRouter.get("/profile", getStaffProfile);
+staffRouter.get("/profile", getStaffProfileForm);
 
 staffRouter.post("/profile", postStaffProfile);
 
