@@ -1,14 +1,14 @@
 <div class="container p-5">
     <divrow class="d-flex justify-content-center">
         <div class="col-lg-6 col-md-8 col-m-10">
-            <% if(locals.err_msg) { %>
+            <% if(locals.err_msg.length > 0) { %>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <%= err_msg %>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
-                <% } %> <% if(locals.success_msg) { %>
+                <% } %> <% if(locals.success_msg.length > 0) { %>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <%= locals.success_msg %>
+                        <%= success_msg %>
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 <% } %>

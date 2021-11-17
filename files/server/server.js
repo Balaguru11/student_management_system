@@ -56,7 +56,7 @@ const schoolActivate = require("./routes/activate");
 //using imported routes
 app.use("/school", schoolRoutes);
 app.use("/staff", staffRoutes);
-app.use("/activate-school", schoolActivate);
+app.use("/activate", schoolActivate);
 
 // //dashboard rourte
 // app.get('/dash', (req, res) => {
@@ -76,14 +76,9 @@ app.get("/logout", (req, res) => {
   try {
     let session = req.session;
     if (session.id) {
-      console.log("Before clearing Session");
-      console.log(session);
-      console.log(res);
       req.session.destroy();
       res.clearCookie("account");
-      console.log("After clearing Session");
-      console.log(session);
-      console.log(res);
+      console.log("logged out");
       return res.redirect("/");
 
       // req.session.destroy(function (err) {

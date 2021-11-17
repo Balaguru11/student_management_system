@@ -7,42 +7,43 @@ const Str = require("@supercharge/strings");
 const flash = require("connect-flash");
 
 exports.getCreateSchool = (req, res) => {
-  err_msg = req.params.err_msg;
-  success_msg = req.params.success_msg;
+  // flash err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  //flash success_msg - not coming from anywhere
+  // let success_msg = "";
+  // success_msg = req.flash("success");
+  // res.lcoals.success_msg = success_msg;
+  // rendering with message
   res.render("schoolLevel/school-create", {
     title: "Add a School",
-    err_msg,
-    success_msg,
   });
 };
 
 exports.postCreateSchool = async (req, res) => {
-  let err_msg = "";
-  // let success_msg = "";
-
   try {
     var check = `SELECT EXISTS (SELECT * FROM school_add_school WHERE email='${req.body.email}') AS count`;
     //res >> 0 / 1
 
     dbcon.query(check, (err, data) => {
       if (err) {
-        err_msg = "There is an error with Database connection.";
-        return res.redirect("school/create/?err_msg=" + err_msg);
+        console.log(err);
+        req.flash("err_msg", "There is an error with Database connection.");
+        return res.redirect("school/create");
       } else {
         if (data[0].count == 0) {
+          // passord hashing
           const passwordEntered = req.body.schoolPassword;
-
           const passwordHash = bcrypt.hashSync(`${passwordEntered}`, 10);
 
           const sql = `INSERT INTO school_add_school(school_name, board, email, city, school_login, school_secrete, status) VALUES ('${req.body.schoolName}', '${req.body.board}', '${req.body.email}', '${req.body.schoolLocation}', '${req.body.schoolUserName}', '${passwordHash}', 'Inactive');`;
 
           dbcon.query(sql, function (err, result) {
             if (err) {
-              err_msg = "There is an error when adding new school";
-              return res.render("schoolLevel/school-create", {
-                title: "Add a School",
-                err_msg: err_msg,
-              });
+              console.log(err);
+              req.flash("err_msg", "There is an error when adding new school");
+              return res.redirect("/school/create");
             } else {
               let session = req.session;
               session.schoolId = result.insertId;
@@ -51,11 +52,11 @@ exports.postCreateSchool = async (req, res) => {
               dbcon.query(activationQuery, function (err) {
                 if (err) {
                   console.log(err);
-                  err_msg = "There is an error when adding new school";
-                  return res.render("schoolLevel/school-create", {
-                    title: "Add a School",
-                    err_msg: err_msg,
-                  });
+                  req.flash(
+                    "err_msg",
+                    "There is an error when creating Activation Code for your school"
+                  );
+                  return res.redirect("/school/create");
                 } else {
                   req.flash(
                     "success",
@@ -67,11 +68,8 @@ exports.postCreateSchool = async (req, res) => {
             }
           });
         } else {
-          err_msg = "This School is already registered.";
-          return res.render("schoolLevel/school-create", {
-            title: "Add a School",
-            err_msg: err_msg,
-          });
+          req.flash("err_msg", "This School is already registered.");
+          return res.redirect("/school/create");
         }
       }
     });
@@ -82,25 +80,32 @@ exports.postCreateSchool = async (req, res) => {
 };
 
 exports.getSchoolLogin = (req, res) => {
+  //flash err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  //flash success_msg
   let success_msg = "";
-  err_msg = req.params.err_msg;
   success_msg = req.flash("success");
-  console.log(success_msg);
-  req.locals.success_msg = success_msg;
+  res.locals.success_msg = success_msg;
+  //flash success_msg
+  let inactive_msg = "";
+  inactive_msg = req.flash("inactive_msg");
+  res.locals.inactive_msg = inactive_msg;
+  //rendering login page with message
   res.render("schoolLevel/school-login", {
     title: "School Master Login",
-    err_msg,
   });
 };
 
 exports.postSchoolLogin = async (req, res) => {
   try {
-    let err_msg = "";
     var loginQuery = `SELECT * FROM school_add_school WHERE school_login='${req.body.schoolUserName}'`;
     dbcon.query(loginQuery, function (err, result) {
       if (err) {
         console.log(err);
       } else if (result.length == 1) {
+        //password verification
         const passwordEntered = req.body.schoolPassword;
         const school_pass = result[0].school_secrete;
         const verified = bcrypt.compareSync(
@@ -113,16 +118,18 @@ exports.postSchoolLogin = async (req, res) => {
           session.schoolId = result[0].id;
           session.schoolStatus = result[0].status;
           session.logged_in = true;
+          req.flash(
+            "welcome",
+            `Hi ${session.schoolUserName}, How are you doing today?`
+          );
           res.status(200).redirect("/school/dashboard");
         } else {
-          err_msg = "Credentials entered doesnot match.";
-          return res.status(401).render("schoolLevel/school-login", {
-            title: "School Master Login",
-            err_msg: err_msg,
-          });
+          req.flash("err_msg", "Credentials entered doesnot match.");
+          return res.status(401).redirect("/school/login");
         }
       } else {
-        res.send("No School found.");
+        req.flash("err_msg", "No School found");
+        return res.status(401).redirect("/school/login");
       }
     });
   } catch (e) {
@@ -134,19 +141,33 @@ exports.postSchoolLogin = async (req, res) => {
 exports.getSchoolDashBoard = (req, res) => {
   try {
     let session = req.session;
+    //flashing welcome message
+    let welcome_msg = "";
+    welcome_msg = req.flash("welcome");
+    res.locals.welcome_msg = welcome_msg;
+    // flashing inactive_msg
     let inactive_msg = "";
+    inactive_msg = req.flash("inactive_msg");
+    res.locals.inactive_msg = inactive_msg;
+    //flashing err_msg
+    let err_msg = "";
+    err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = "";
+    success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+
     if (session.logged_in && session.schoolStatus == "Active") {
       res.render("schoolLevel/school-dashboard", {
         title: "School Master Dashboard",
       });
     } else if (session.logged_in && session.schoolStatus == "Inactive") {
-      inactive_msg = "Please Provide activation code.";
       res.render("schoolLevel/school-dashboard", {
         title: "School Master Dashboard",
-        inactive_msg: inactive_msg,
       });
     } else {
-      err_msg = "You are unauthorized. Please login.";
+      req.flash("err_msg", "You are unauthorized. Please login.");
       return res.status(401).redirect("/school/login");
     }
   } catch (e) {
@@ -155,9 +176,6 @@ exports.getSchoolDashBoard = (req, res) => {
 };
 
 exports.postAddClassroom = async (req, res) => {
-  let err_msg = "";
-  let success_msg = "";
-
   try {
     let session = req.session;
 
@@ -168,45 +186,48 @@ exports.postAddClassroom = async (req, res) => {
 
       dbcon.query(classCheck, (err, data) => {
         if (err) {
-          err_msg = "We could not create a new classroom at the moment.";
-          return res.status(500).render("schoolLevel/school-dashboard", {
-            title: "School Master Dashboard",
-            err_msg: err_msg,
-          });
+          req.flash(
+            "err_msg",
+            "We could not create a new classroom at the moment."
+          );
+          return res.status(500).redirect("/school/dashboard");
         } else {
           if (data[0].count == 0) {
             const addClass = `INSERT INTO school_classroom(school_id, class_section, medium, students_strength) VALUES ('${schoolId}', '${req.body.class_section}', '${req.body.medium}', '${req.body.strength}');`;
 
             dbcon.query(addClass, function (err) {
               if (err) {
-                err_msg =
-                  "There is an error when adding a classroom. Please try again later.";
-                return res.status(500).render("schoolLevel/school-dashboard", {
-                  title: "School Master Dashboard",
-                  err_msg: err_msg,
-                });
+                req.flash(
+                  "err_msg",
+                  "There is an error when adding a classroom. Please try again later."
+                );
+                return res.redirect("/school/school-dashboard");
               } else {
-                success_msg =
-                  "A New classroom has been added. You can enroll and add students to this class.";
-                return res.status(200).render("schoolLevel/school-dashboard", {
-                  title: "School Master Dashboard",
-                  success_msg,
-                });
+                req.flash(
+                  "success",
+                  "A New classroom has been added. You can enroll and add students to this class."
+                );
+                return res.redirect("/school/dashboard");
               }
             });
           } else {
-            err_msg = "This classroom is already added to this School.";
-            return res.render("schoolLevel/school-dashboard", {
-              title: "School Master Dashboard",
-              err_msg: err_msg,
-            });
+            req.flash(
+              "err_msg",
+              "This classroom is already added to this School."
+            );
+            return res.redirect("/school/dashboard");
           }
         }
       });
-    } else {
-      err_msg =
-        "The School is not yet submitted the documents yet. Please contact our customer service or Email the required documents to activate@sms.com.";
+    } else if (session.logged_in && session.schoolStatus == "Inactive") {
+      req.flash(
+        "err_msg",
+        "The School is not yet submitted the documents yet. Please contact our customer service or Email the required documents to activate@sms.com."
+      );
       return res.status(401).redirect("/school/login");
+    } else {
+      req.flash("err_msg", "Please login to continue.");
+      return res.redirect("/school/login");
     }
   } catch (e) {
     console.log(e);
@@ -214,12 +235,8 @@ exports.postAddClassroom = async (req, res) => {
   }
 };
 
-//WORKIMNG ON THIS ONE
 // Schools can add users when, it is active.
 exports.postAddUser = async (req, res) => {
-  let err_msg = "";
-  let success_msg = "";
-
   try {
     let session = req.session;
 
@@ -231,11 +248,8 @@ exports.postAddUser = async (req, res) => {
       dbcon.query(userCheck, (err, data) => {
         if (err) {
           console.log(err);
-          //   err_msg = "We could not add new user at the moment.";
-          //   return res.status(500).render("schoolLevel/school-dashboard", {
-          //     title: "School Master Dashboard",
-          //     err_msg: err_msg,
-          //   });
+          req.flash("err_msg", "We could not add new user at the moment.");
+          return res.redirect("/school/dashboard");
         } else {
           if (data[0].count == 0) {
             const addClass = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${schoolId}', '${req.body.role}', '${req.body.username}', '${req.body.password}', '${req.body.email}', 'Inactive');`;
@@ -243,29 +257,33 @@ exports.postAddUser = async (req, res) => {
             dbcon.query(addClass, function (err) {
               if (err) {
                 console.log(err);
-                // err_msg = "There is an error when adding an user. Please try again later.";
-                // return res.status(500).render('schoolLevel/school-dashboard', { title: 'School Master Dashboard', err_msg: err_msg });
+                req.flash(
+                  "err_msg",
+                  "There is an error when adding an user. Please try again later."
+                );
+                return res.redirect("/school/dashboard");
               } else {
-                success_msg = "A New User account has been added.";
-                return res.status(200).render("schoolLevel/school-dashboard", {
-                  title: "School Master Dashboard",
-                  success_msg,
-                });
+                req.flash("success", "A New User account has been added.");
+                return res.redirect("/school/dashboard");
               }
             });
           } else {
-            err_msg =
-              "This Username / email is already registered with this School.";
-            return res.render("schoolLevel/school-dashboard", {
-              title: "School Master Dashboard",
-              err_msg: err_msg,
-            });
+            req.flash(
+              "err_msg",
+              "This Username / email is already registered with this School."
+            );
+            return res.redirect("/school/dashboard");
           }
         }
       });
+    } else if (session.logged_in && session.schoolStatus == "Inactive") {
+      req.flash(
+        "err_msg",
+        "The school is unauthorized to do this action. Please Activate the school by submitting purchase details to support@sms.com"
+      );
+      return res.status(401).redirect("/school/dashboard");
     } else {
-      err_msg =
-        "The school is unauthorized to do this action. Please Activate the school by submitting purchase details to support@sms.com";
+      req.flash("err_msg", "Please Login to continue.");
       return res.status(401).redirect("/school/login");
     }
   } catch (e) {
