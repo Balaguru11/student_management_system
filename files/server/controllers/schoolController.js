@@ -4,14 +4,21 @@ const session = require("express-session");
 const dbcon = require("../DB/database");
 const bcrypt = require("bcrypt");
 const Str = require("@supercharge/strings");
+const flash = require("connect-flash");
 
 exports.getCreateSchool = (req, res) => {
-  res.render("schoolLevel/school-create", { title: "Add a School" });
+  err_msg = req.params.err_msg;
+  success_msg = req.params.success_msg;
+  res.render("schoolLevel/school-create", {
+    title: "Add a School",
+    err_msg,
+    success_msg,
+  });
 };
 
 exports.postCreateSchool = async (req, res) => {
   let err_msg = "";
-  let success_msg = "";
+  // let success_msg = "";
 
   try {
     var check = `SELECT EXISTS (SELECT * FROM school_add_school WHERE email='${req.body.email}') AS count`;
@@ -20,7 +27,7 @@ exports.postCreateSchool = async (req, res) => {
     dbcon.query(check, (err, data) => {
       if (err) {
         err_msg = "There is an error with Database connection.";
-        return res.render("school-create", { err_msg: err_msg });
+        return res.redirect("school/create/?err_msg=" + err_msg);
       } else {
         if (data[0].count == 0) {
           const passwordEntered = req.body.schoolPassword;
@@ -44,13 +51,17 @@ exports.postCreateSchool = async (req, res) => {
               dbcon.query(activationQuery, function (err) {
                 if (err) {
                   console.log(err);
-                } else {
-                  success_msg =
-                    "The school has been added successfully. Please Login & Submit your Product Activation code to start using it.";
-                  return res.status(200).render("schoolLevel/school-login", {
-                    title: "School Master Login",
-                    success_msg: success_msg,
+                  err_msg = "There is an error when adding new school";
+                  return res.render("schoolLevel/school-create", {
+                    title: "Add a School",
+                    err_msg: err_msg,
                   });
+                } else {
+                  req.flash(
+                    "success",
+                    "The school has been added successfully. Please Login & Submit your Product Activation code to start using it."
+                  );
+                  return res.status(200).redirect("/school/login");
                 }
               });
             }
@@ -71,7 +82,15 @@ exports.postCreateSchool = async (req, res) => {
 };
 
 exports.getSchoolLogin = (req, res) => {
-  res.render("schoolLevel/school-login", { title: "School Master Login" });
+  let success_msg = "";
+  err_msg = req.params.err_msg;
+  success_msg = req.flash("success");
+  console.log(success_msg);
+  req.locals.success_msg = success_msg;
+  res.render("schoolLevel/school-login", {
+    title: "School Master Login",
+    err_msg,
+  });
 };
 
 exports.postSchoolLogin = async (req, res) => {

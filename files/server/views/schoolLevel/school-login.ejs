@@ -2,15 +2,15 @@
     <divrow class="d-flex justify-content-center">
         <div class="col-lg-6 col-md-8 col-m-10">
             <% if(locals.err_msg) { %>
-                <div class="alert alert-danger" role="alert"><%= err_msg %></div>
-                <% } %> <% if(locals.success_msg) { %>
-                <!-- <div class="alert alert-success" role="success">
-                    <%= success_msg %>
-                </div> -->
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <%= success_msg %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= err_msg %>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
+                </div>
+                <% } %> <% if(locals.success_msg) { %>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <%= locals.success_msg %>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 <% } %>
             <form id="school_login" action="/school/login" method="POST">
                 <div class="mt-3 mb-3">
