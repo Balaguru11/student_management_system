@@ -28,8 +28,8 @@ schoolActivate.post("/school", async (req, res) => {
             } else {
               // inactive_msg = 0;
 
-              req.flash("success", "Activation Success");
-              return res.status(200).redirect("/school/dashboard");
+              req.flash("success", "Activation Success. Please Login again.");
+              return res.status(200).redirect("/school/login");
             }
           });
         } else {
@@ -39,7 +39,10 @@ schoolActivate.post("/school", async (req, res) => {
         }
       });
     } else {
-      // req.flash("err_msg", "Please enter the Activation Code.");
+      req.flash(
+        "welcome",
+        `Hi ${session.schoolUserName}, How are you doing today?`
+      );
       return res.status(200).redirect("/school/dashboard");
     }
   } catch (e) {

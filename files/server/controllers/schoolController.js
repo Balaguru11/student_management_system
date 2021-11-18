@@ -3,7 +3,6 @@
 const session = require("express-session");
 const dbcon = require("../DB/database");
 const bcrypt = require("bcrypt");
-const Str = require("@supercharge/strings");
 const flash = require("connect-flash");
 
 exports.getCreateSchool = (req, res) => {
@@ -93,9 +92,14 @@ exports.getSchoolLogin = (req, res) => {
   inactive_msg = req.flash("inactive_msg");
   res.locals.inactive_msg = inactive_msg;
   //rendering login page with message
-  res.render("schoolLevel/school-login", {
-    title: "School Master Login",
-  });
+  let session = req.session;
+  if (session.logged_in) {
+    res.redirect("/school/dashboard");
+  } else {
+    res.render("schoolLevel/school-login", {
+      title: "School Master Login",
+    });
+  }
 };
 
 exports.postSchoolLogin = async (req, res) => {
@@ -145,10 +149,10 @@ exports.getSchoolDashBoard = (req, res) => {
     let welcome_msg = "";
     welcome_msg = req.flash("welcome");
     res.locals.welcome_msg = welcome_msg;
-    // flashing inactive_msg
-    let inactive_msg = "";
-    inactive_msg = req.flash("inactive_msg");
-    res.locals.inactive_msg = inactive_msg;
+    // // flashing inactive_msg
+    // let inactive_msg = "";
+    // inactive_msg = req.flash("inactive_msg");
+    // res.locals.inactive_msg = inactive_msg;
     //flashing err_msg
     let err_msg = "";
     err_msg = req.flash("err_msg");
@@ -157,6 +161,10 @@ exports.getSchoolDashBoard = (req, res) => {
     let success_msg = "";
     success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
+    //status flashing
+    let status = "";
+    status = req.session.schoolStatus;
+    res.locals.status = status;
 
     if (session.logged_in && session.schoolStatus == "Active") {
       res.render("schoolLevel/school-dashboard", {

@@ -1,10 +1,13 @@
 <p>Staff Dashboard</p>
 
 
-<div class="container p-5">
+<div class="container p-1">
     <div class="row d-flex justify-content-center">
-      <button class="btn btn-primary"><a href="/staff/profile">Profile</a></button>
-      <!-- <h2 class="text-center">School Master Dashboard</h2> -->
+      <div class="col-lg-12 col-md-12 col-sm-12">
+        <div class="col align-self-end">
+          <a class="btn btn-info" role="button" href="/staff/profile-create">Profile</a>
+        </div>
+      </div>
       <% if(locals.staff_role == 8) { %>
         <div class="alert alert-danger" role="alert">
           <h4 class="text-center">You are a Teaching Faculty.</h4>
@@ -33,7 +36,7 @@
           </form>
         </div>
         <% } else { %>   
-        <div class="col-lg-6 col-md-8 col-sm-10">
+        <div class="col-lg-8 col-md-10 col-sm-12">
           <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
             <li class="nav-item" role="presentation">
               <button
