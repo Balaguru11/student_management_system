@@ -13,6 +13,7 @@ const {
   getSchoolDashBoard,
   postAddClassroom,
   postAddUser,
+  postAddSubject,
 } = require("../controllers/schoolController");
 
 schoolRouter.get("/create", getCreateSchool);
@@ -29,6 +30,8 @@ schoolRouter.post("/add-classroom", postAddClassroom);
 
 schoolRouter.post("/add-user", postAddUser);
 
+schoolRouter.post("/add-subject", postAddSubject);
+
 //redirect urls
 schoolRouter.get("/add-classroom", (req, res) => {
   res.redirect("/school/dashboard");
@@ -36,6 +39,10 @@ schoolRouter.get("/add-classroom", (req, res) => {
 
 schoolRouter.get("/add-user", (req, res) => {
   res.redirect("/school/dashboard");
+});
+
+schoolRouter.get("/add-subject", (req, res) => {
+  res.redirect("/schoo/dashboard");
 });
 
 module.exports = schoolRouter;

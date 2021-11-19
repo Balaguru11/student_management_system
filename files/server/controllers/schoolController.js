@@ -4,6 +4,7 @@ const session = require("express-session");
 const dbcon = require("../DB/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
+const schoolRouter = require("../routes/schoolRoutes");
 
 exports.getCreateSchool = (req, res) => {
   // flash err_msg
@@ -93,6 +94,7 @@ exports.getSchoolLogin = (req, res) => {
   res.locals.inactive_msg = inactive_msg;
   //rendering login page with message
   let session = req.session;
+  console.log(session);
   if (session.logged_in) {
     res.redirect("/school/dashboard");
   } else {
@@ -299,3 +301,41 @@ exports.postAddUser = async (req, res) => {
     return res.status(500).send(e);
   }
 };
+
+// Post Subjects for the school
+exports.postAddSubject = (req, res) => {
+  try {
+    let session = req.session;
+    console.log(session);
+
+    // checing the school_subject table for duplicate entry
+    var checkSubject = `SELECT EXISTS (SELECT * FROM school_subjects WHERE subject_name='${req.body.subject}' AND school_id='${session.schoolId}') AS count`;
+
+    dbcon.query(checkSubject, (err, result) => {
+      if (err) {
+        console.log(err);
+      } else if (result[0].count == 0) {
+        console.log();
+        // result = 0, adding new subject
+        var addSubject = `INSERT INTO school_subjects(subject_name, school_id) VALUES ('${req.body.subject}', '${session.schoolId}') `;
+
+        dbcon.query(addSubject, (err, subject) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log(subject);
+            req.flash("success", "The Subject has been added successfully.");
+            return res.redirect("/school/dashboard");
+          }
+        });
+      } else {
+        req.flash("err_msg", "The Subject is already created.");
+        return res.redirect("/school/dashboard");
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};
+
+//get classroom from database

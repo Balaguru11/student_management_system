@@ -3,7 +3,7 @@ const dbcon = require("../DB/database");
 // const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 
-exports.postStaffLogin = async (req, res) => {
+exports.postStaffLogin = (req, res) => {
   let err_msg = "";
   let success_msg = "";
   let staff_role = "";
@@ -25,10 +25,10 @@ exports.postStaffLogin = async (req, res) => {
         session.staffStatus = result[0].status;
 
         staff_role = `${session.roleId}`; //returns 8
+        console.log(staff_role);
+        req.flash("staff_role", staff_role);
         session.logged_in = true;
-        return res
-          .status(200)
-          .redirect("/staff/dashboard/?staff_role=" + staff_role);
+        return res.status(200).redirect("/staff/dashboard");
       } else {
         req.flash("err_msg", "Credentials doesnot match.");
         return res.redirect("/");
@@ -92,27 +92,33 @@ exports.getStaffProfileForm = (req, res) => {
         if (err) {
           console.log(err);
         } else if (staff) {
-          //get all the data here and pass it to the redirect
-
-          res.locals.staff_email = staff_email;
-          return res.render("staffLevel/staff-profile", {
-            title: "Staff Profile",
-          });
+          res.locals.staff = staff;
+          // //get all the data here and pass it to the redirect
+          // let name = staff[0].name;
+          // res.locals.name = name;
+          // let date_of_birth = staff[0].date_of_birth;
+          // res.locals.dob = date_of_birth;
+          // let mobile_number = staff[0].mobile_number;
+          // res.locals.mobile_number = mobile_number;
+          // let email = staff[0].email;
+          // res.locals.email = email;
+          // let qualification = staff[0].qualification;
+          // res.lcoals.qualification = qualification;
+          // let city = staff[0].city;
+          // res.locals.city = city;
+          // let state = staff[0].state;
+          // res.locals.state = state;
+          return res.redirect("/staff/profile");
         } else {
+          res.locals.staff_email = staff_email;
           req.flash("err_msg", "Please create your Profile first.");
           return res.redirect("/staff/profile-create");
         }
       });
     } else {
-      req.flash("err_msg", "Ypu are not allowed to view this Page.");
+      req.flash("err_msg", "You are not allowed to view this Page.");
       return res.redirect("/");
     }
-    // success_msg = req.params.success_msg;
-    // res.render("staffLevel/staff-profile", {
-    //   title: "Staff Profile",
-    //   success_msg,
-    //   staff_email,
-    // });
   } catch (e) {
     console.log(e);
   }
@@ -181,7 +187,10 @@ exports.showStaffProfile = async (req, res) => {
     console.log("Showing Staff profile");
     console.log(session);
     // include all the profile data here
-    return res.render("staffLevel/staff-profile-show");
+
+    return res.render("staffLevel/staff-profile-show", {
+      title: "View Profile",
+    });
   } else {
     req.flash("err_msg", "Please login to view your Profile");
     return res.redirect("/");

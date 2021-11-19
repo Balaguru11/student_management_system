@@ -1,14 +1,20 @@
 <div class="container p-5">
     <divrow class="d-flex justify-content-center">
         <div class="col-lg-6 col-md-8 col-m-10">
-
+            <% if(locals.err_msg) { %>
+                <div class="alert alert-danger" role="alert"><%= err_msg %></div>
+                <% } %> <% if(locals.success_msg) { %>
+                <div class="alert alert-success" role="success">
+                    <%= success_msg %>
+                </div>
+                <% } %>
             <div class="row">
                 <div class="col-8">
                     <h2>Staff Profile</h2>
                 </div>
     
                 <div class="col-4">
-                    <a class="btn btn-secondary" role="button" href="/staff/profile-edit"></i>Edit Profile</a>
+                    <a class="btn btn-secondary" role="button" href="/staff/profile-edit">Edit Profile</a>
                 </div>
                 <hr>
             </div>
@@ -18,16 +24,11 @@
                     <p>Test</p>
                 </div>
                 <div class="col-lg-6">
-                    <p>Testing 2</p>
+                    <p>Email ID: </p>
+                    <p></p>
                 </div>
             </div>
-            <!-- <% if(locals.err_msg) { %>
-                <div class="alert alert-danger" role="alert"><%= err_msg %></div>
-                <% } %> <% if(locals.success_msg) { %>
-                <div class="alert alert-success" role="success">
-                    <%= success_msg %>
-                </div>
-                <% } %> -->
+            
             <!-- <form id="staff-profile" action="/staff/profile-create" method="POST">
                 <div class="mt-3 mb-3">
                     </div>
@@ -45,7 +46,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="staff_email">Email:</label>
-                    <input type="email" class="form-control" name="staff_email" id="staff_email" value="<%= staff_email %>" disabled>
+                    <input type="email" class="form-control" name="staff_email" id="staff_email" value="Testing" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="staff_qualification">Highest Qualification:</label>
