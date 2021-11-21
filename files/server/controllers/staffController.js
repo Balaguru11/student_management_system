@@ -15,7 +15,6 @@ exports.postStaffLogin = (req, res) => {
       if (err) {
         console.log(err);
       } else if (result.length == 1) {
-        console.log(result);
         let session = req.session;
         session.staff_id = result[0].id;
         session.school_id = result[0].school_id;
@@ -25,7 +24,6 @@ exports.postStaffLogin = (req, res) => {
         session.staffStatus = result[0].status;
 
         staff_role = `${session.roleId}`; //returns 8
-        console.log(staff_role);
         req.flash("staff_role", staff_role);
         session.logged_in = true;
         return res.status(200).redirect("/staff/dashboard");
@@ -86,33 +84,35 @@ exports.getStaffProfileForm = (req, res) => {
       const school_id = session.school_id;
       const staff_email = session.email;
 
-      var checkStaffTable = `SELECT * FROM school_staff WHERE role_id='${role_id}' AND email='${staff_email}' AND school_id='${school_id}'`;
+      var checkStaffTable = `SELECT EXISTS (SELECT * FROM school_staff WHERE role_id='${role_id}' AND email='${staff_email}' AND school_id='${school_id}') AS count`;
 
       dbcon.query(checkStaffTable, (err, staff) => {
         if (err) {
           console.log(err);
-        } else if (staff) {
-          res.locals.staff = staff;
+        } else if (staff[0].count == 1) {
           // //get all the data here and pass it to the redirect
-          // let name = staff[0].name;
-          // res.locals.name = name;
-          // let date_of_birth = staff[0].date_of_birth;
-          // res.locals.dob = date_of_birth;
-          // let mobile_number = staff[0].mobile_number;
-          // res.locals.mobile_number = mobile_number;
-          // let email = staff[0].email;
-          // res.locals.email = email;
+          let name = staff[0].name;
+          console.log(name);
+          res.locals.name = name;
+          let date_of_birth = staff[0].date_of_birth;
+          res.locals.dob = date_of_birth;
+          let mobile_number = staff[0].mobile_number;
+          res.locals.mobile_number = mobile_number;
+          let email = staff[0].email;
+          res.locals.email = email;
           // let qualification = staff[0].qualification;
           // res.lcoals.qualification = qualification;
-          // let city = staff[0].city;
-          // res.locals.city = city;
-          // let state = staff[0].state;
-          // res.locals.state = state;
+          let city = staff[0].city;
+          res.locals.city = city;
+          let state = staff[0].state;
+          res.locals.state = state;
           return res.redirect("/staff/profile");
         } else {
           res.locals.staff_email = staff_email;
-          req.flash("err_msg", "Please create your Profile first.");
-          return res.redirect("/staff/profile-create");
+          // req.flash("err_msg", "Please create your Profile first.");
+          return res.render("staffLevel/staff-profile", {
+            title: "Create Profile",
+          });
         }
       });
     } else {
@@ -149,7 +149,6 @@ exports.postStaffProfile = async (req, res) => {
           );
           return res.status(500).redirect("/staff/dashboard");
         } else if (result) {
-          console.log(result);
           const role_id = result[0].role_id_fk;
           const staff_id = result[0].id;
           const school_id = result[0].school_id;
@@ -158,11 +157,10 @@ exports.postStaffProfile = async (req, res) => {
 
           var profileQuery = `INSERT INTO school_staff(role_id, staff_id, school_id, name, date_of_birth, mobile_number, email, qualification, city, state) VALUES ('${role_id}', '${staff_id}','${school_id}', '${req.body.staffName}', '${req.body.staff_dob}', '${req.body.staff_mobile}', '${staff_email}', '${req.body.staff_qualification}', '${req.body.staff_city}', '${req.body.staff_state}' ) `;
 
-          dbcon.query(profileQuery, function (err, staffAdded) {
+          dbcon.query(profileQuery, function (err) {
             if (err) {
               console.log(err);
             } else {
-              console.log(staffAdded);
               req.flash("success", "Profile saved successfully");
               return res.redirect("/staff/profile");
             }
@@ -181,15 +179,32 @@ exports.postStaffProfile = async (req, res) => {
   }
 };
 
+// show profile after creating it.
 exports.showStaffProfile = async (req, res) => {
+  // flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
   let session = req.session;
   if (session.logged_in) {
-    console.log("Showing Staff profile");
-    console.log(session);
     // include all the profile data here
-
-    return res.render("staffLevel/staff-profile-show", {
-      title: "View Profile",
+    var getStaffProfile = `SELECT * FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
+    dbcon.query(getStaffProfile, (err, data) => {
+      if (err) throw err;
+      res.locals.name = data[0].name;
+      res.locals.date_of_birth = data[0].date_of_birth;
+      res.locals.mobile_number = data[0].mobile_number;
+      res.locals.email = data[0].email;
+      res.locals.qualification = data[0].qualification;
+      res.locals.city = data[0].city;
+      res.locals.state = data[0].state;
+      return res.render("staffLevel/staff-profile-show", {
+        title: "View Profile",
+      });
     });
   } else {
     req.flash("err_msg", "Please login to view your Profile");
@@ -198,36 +213,56 @@ exports.showStaffProfile = async (req, res) => {
 };
 
 exports.getStaffProfileEdit = (req, res) => {
+  // flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
   let session = req.session;
-  console.log(session);
   try {
     if (session.logged_in) {
-      staff_email = session.email;
-      res.locals.staff_email = staff_email;
-      return res.render("staffLevel/staff-profile-edit", {
-        title: "Edit profile",
-        staff_email,
+      var fetchStaffProfile = `SELECT * FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
+      dbcon.query(fetchStaffProfile, (err, data) => {
+        if (err) throw err;
+        res.locals.name = data[0].name;
+        res.locals.date_of_birth = data[0].date_of_birth;
+        res.locals.mobile_number = data[0].mobile_number;
+        res.locals.email = data[0].email;
+        res.locals.qualification = data[0].qualification;
+        res.locals.city = data[0].city;
+        res.locals.state = data[0].state;
+        return res.render("staffLevel/staff-profile-edit", {
+          title: "Edit profile",
+        });
       });
+    } else {
+      req.flash("err_msg", "Please login to view your Profile");
+      return res.redirect("/");
     }
   } catch (e) {
     console.log(e);
   }
 };
 
-// Staff edits profile and updates
-exports.editStaffProfile = (req, res) => {
+// Staff edits profile and updates - need to update this.
+exports.postEditStaffProfile = (req, res) => {
   let session = req.session;
-  console.log(session);
-  let err_msg = "";
-  let success_msg = "";
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
   let staff_email = "";
   try {
     let session = req.session;
-    console.log(session);
     const email = session.username;
 
     if (session.logged_in) {
-      var checkStatus = `SELECT * FROM school_staff WHERE username='${username}' AND status='Active'`;
+      var checkStatus = `SELECT EXISTS (SELECT * FROM school_staff WHERE username='${username}' AND status='Active') AS count`;
 
       dbcon.query(checkStatus, (err, result) => {
         if (err) {
@@ -236,7 +271,7 @@ exports.editStaffProfile = (req, res) => {
             "There is a Problem in updating your Profile Page. Please try again later. "
           );
           return res.status(500).redirect("/staff/dashboard");
-        } else if (result) {
+        } else if (result[0].count == 1) {
           const role_id = result[0].role_id_fk;
           const staff_id = result[0].id;
           const school_id = result[0].school_id;

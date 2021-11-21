@@ -95,6 +95,7 @@ exports.getSchoolLogin = (req, res) => {
   //rendering login page with message
   let session = req.session;
   console.log(session);
+
   if (session.logged_in) {
     res.redirect("/school/dashboard");
   } else {

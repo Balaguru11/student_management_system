@@ -9,7 +9,7 @@ const {
   postStaffProfile,
   showStaffProfile,
   getStaffProfileEdit,
-  editStaffProfile,
+  postEditStaffProfile,
 } = require("../controllers/staffController");
 
 staffRouter.post("/login", postStaffLogin);
@@ -24,7 +24,7 @@ staffRouter.get("/profile", showStaffProfile);
 
 staffRouter.get("/profile-edit", getStaffProfileEdit);
 
-staffRouter.post("/profile-edit", editStaffProfile);
+staffRouter.post("/profile-edit", postEditStaffProfile);
 
 //redirect urls
 staffRouter.get("/login", (req, res) => {

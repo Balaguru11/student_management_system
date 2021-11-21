@@ -1,9 +1,9 @@
 <div class="container p-5">
     <divrow class="d-flex justify-content-center">
         <div class="col-lg-6 col-md-8 col-m-10">
-            <% if(locals.err_msg) { %>
+            <% if(locals.err_msg.length > 0) { %>
                 <div class="alert alert-danger" role="alert"><%= err_msg %></div>
-                <% } %> <% if(locals.success_msg) { %>
+                <% } %> <% if(locals.success_msg.length > 0) { %>
                 <div class="alert alert-success" role="success">
                     <%= success_msg %>
                 </div>
@@ -21,11 +21,46 @@
 
             <div class="row">
                 <div class="col-lg-6">
-                    <p>Test</p>
+                    <p>Name</p>
+                </div>
+                <div class="col-lg-6">
+                    <p> <%= name %></p>
+                </div>
+                <div class="col-lg-6">
+                    <p>Date of Birth: </p>
+                </div>
+                <div class="col-lg-6">
+                    <p> <%= date_of_birth %></p>
+                </div>
+                <div class="col-lg-6">
+                    <p>Mobile Number: </p>
+                </div>
+                <div class="col-lg-6">
+                    <p> <%= mobile_number %></p>
                 </div>
                 <div class="col-lg-6">
                     <p>Email ID: </p>
-                    <p></p>
+                </div>
+                <div class="col-lg-6">
+                    <p> <%= email %></p>
+                </div>
+                <div class="col-lg-6">
+                    <p>Qualification: </p>
+                </div>
+                <div class="col-lg-6">
+                    <p> <%= qualification %></p>
+                </div>
+                <div class="col-lg-6">
+                    <p>City: </p>
+                </div>
+                <div class="col-lg-6">
+                    <p> <%= city %></p>
+                </div>
+                <div class="col-lg-6">
+                    <p>State: </p>
+                </div>
+                <div class="col-lg-6">
+                    <p> <%= state %></p>
                 </div>
             </div>
             

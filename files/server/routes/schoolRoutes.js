@@ -1,7 +1,7 @@
 const express = require("express");
 const schoolRouter = express.Router();
 
-const { isAuth } = require("../middlewares/auth");
+const { isAuth } = require("../middlewares/auth-school");
 // const bcrypt = require('bcryptjs');
 
 // importing schoolController here
