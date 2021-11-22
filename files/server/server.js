@@ -58,11 +58,6 @@ app.use("/school", schoolRoutes);
 app.use("/staff", staffRoutes);
 app.use("/activate", schoolActivate);
 
-// //dashboard rourte
-// app.get('/dash', (req, res) => {
-//     res.render('dashboard', { title: 'Dashboard', layout: './layouts/with-sidebar'});
-// });
-
 //routes
 app.get("/", (req, res) => {
   //flashing err_msg
@@ -73,12 +68,8 @@ app.get("/", (req, res) => {
   let success_msg = "";
   success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  res.render("login", { title: "Home" });
+  return res.render("login", { title: "Home" });
 });
-
-// app.post("/", (req, res) => {
-//   const { username, password } = req.body;
-// });
 
 app.get("/logout", (req, res) => {
   try {
@@ -88,12 +79,6 @@ app.get("/logout", (req, res) => {
       res.clearCookie("account");
       console.log("logged out");
       return res.redirect("/");
-
-      // req.session.destroy(function (err) {
-      //   res.clearCookie("account");
-      //   console.log("Logged out");
-      //   return res.redirect("/");
-      // });
     }
   } catch (e) {
     console.log(e);

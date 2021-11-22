@@ -1,32 +1,38 @@
 const session = require("express-session");
 const dbcon = require("../DB/database");
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 
 exports.postStaffLogin = (req, res) => {
-  let err_msg = "";
-  let success_msg = "";
-  let staff_role = "";
-
   try {
-    var staffLoginQuery = `SELECT * FROM school_main_login WHERE role_id_fk='${req.body.role}' AND username='${req.body.username}' AND password='${req.body.password}'`;
+    var staffLoginQuery = `SELECT * FROM school_main_login WHERE role_id_fk='${req.body.role}' AND username='${req.body.username}'`;
 
     dbcon.query(staffLoginQuery, function (err, result) {
       if (err) {
         console.log(err);
       } else if (result.length == 1) {
-        let session = req.session;
-        session.staff_id = result[0].id;
-        session.school_id = result[0].school_id;
-        session.roleId = result[0].role_id_fk;
-        session.username = req.body.username;
-        session.email = result[0].email;
-        session.staffStatus = result[0].status;
-
-        staff_role = `${session.roleId}`; //returns 8
-        req.flash("staff_role", staff_role);
-        session.logged_in = true;
-        return res.status(200).redirect("/staff/dashboard");
+        console.log(result);
+        // password verification
+        const passwordEntered = req.body.password;
+        const staffPass = result[0].password;
+        const verified = bcrypt.compareSync(
+          `${passwordEntered}`,
+          `${staffPass}`
+        );
+        if (verified) {
+          let session = req.session;
+          session.staff_id = result[0].id;
+          session.school_id = result[0].school_id;
+          session.roleId = result[0].role_id_fk;
+          session.username = req.body.username;
+          session.email = result[0].email;
+          session.staffStatus = result[0].status;
+          session.logged_in = true;
+          return res.status(200).redirect("/staff/dashboard");
+        } else {
+          req.flash("err_msg", "Credentials doesnot match.");
+          return res.redirect("/");
+        }
       } else {
         req.flash("err_msg", "Credentials doesnot match.");
         return res.redirect("/");
@@ -41,15 +47,39 @@ exports.postStaffLogin = (req, res) => {
 exports.getStaffDashboard = (req, res) => {
   try {
     let session = req.session;
-
     if (session.logged_in) {
-      staff_role = req.params.staff_role;
-      res.render("staffLevel/staff-dashboard", {
-        title: "Staff Dashboard",
-        staff_role,
-      });
+      staff_role = session.roleId;
+      res.locals.staff_status = session.staffStatus;
+      res.locals.username = session.username;
+      switch (staff_role) {
+        case 2:
+          res.render("staffLevel/emp-dashboard", {
+            title: "Employee Dashboard",
+          });
+          break;
+        case 4:
+          res.render("staffLevel/hm-dashboard", {
+            title: "HeadMaster Dashboard",
+          });
+          break;
+        case 8:
+          res.render("staffLevel/staff-dashboard", {
+            title: "Staff Dashboard",
+          });
+          break;
+        case 9:
+          res.render("staffLevel/admin-dashboard", {
+            title: "HeadMaster Dashboard",
+          });
+          break;
+        default:
+          res.redirect("/");
+      }
     } else {
-      req.flash("err_msg", "You are unauthorized. Please login.");
+      req.flash(
+        "err_msg",
+        "You are unauthorized. You are either not logged in or your account is Inactive."
+      );
       return res.status(401).redirect("/");
     }
   } catch (e) {
@@ -153,7 +183,6 @@ exports.postStaffProfile = async (req, res) => {
           const staff_id = result[0].id;
           const school_id = result[0].school_id;
           staff_email = result[0].email;
-          // const password = result[0].password;
 
           var profileQuery = `INSERT INTO school_staff(role_id, staff_id, school_id, name, date_of_birth, mobile_number, email, qualification, city, state) VALUES ('${role_id}', '${staff_id}','${school_id}', '${req.body.staffName}', '${req.body.staff_dob}', '${req.body.staff_mobile}', '${staff_email}', '${req.body.staff_qualification}', '${req.body.staff_city}', '${req.body.staff_state}' ) `;
 

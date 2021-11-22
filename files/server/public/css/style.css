@@ -1,7 +1,7 @@
 .wrapper {
-    width: 80%;
+    width: 100%;
     margin: 0 auto;
-    padding: 20px;
+    padding: 0px;
 }
 
 footer {
@@ -31,3 +31,15 @@ input.valid, textarea.valid{
 	color: red;
 	margin: 10px;
 } 
+
+
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: grey;
+    color: black;
+    text-align: center;
+  }

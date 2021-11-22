@@ -4,7 +4,6 @@ const session = require("express-session");
 const dbcon = require("../DB/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
-const schoolRouter = require("../routes/schoolRoutes");
 
 exports.getCreateSchool = (req, res) => {
   // flash err_msg
@@ -119,6 +118,7 @@ exports.postSchoolLogin = async (req, res) => {
           `${passwordEntered}`,
           `${school_pass}`
         );
+
         if (verified) {
           let session = req.session;
           session.schoolUserName = req.body.schoolUserName;
@@ -263,7 +263,11 @@ exports.postAddUser = async (req, res) => {
           return res.redirect("/school/dashboard");
         } else {
           if (data[0].count == 0) {
-            const addClass = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${schoolId}', '${req.body.role}', '${req.body.username}', '${req.body.password}', '${req.body.email}', 'Inactive');`;
+            // password hashing
+            const userPassword = req.body.password;
+            const hashedPass = bcrypt.hashSync(`${userPassword}`, 10);
+
+            const addClass = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${schoolId}', '${req.body.role}', '${req.body.username}', '${hashedPass}', '${req.body.email}', 'Inactive');`;
 
             dbcon.query(addClass, function (err) {
               if (err) {
