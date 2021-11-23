@@ -73,7 +73,7 @@ exports.postCreateSchool = async (req, res) => {
       }
     });
   } catch (e) {
-    console.log(e);
+    console.log(e); //server error?
     return res.status(500).send(e);
   }
 };
@@ -93,7 +93,6 @@ exports.getSchoolLogin = (req, res) => {
   res.locals.inactive_msg = inactive_msg;
   //rendering login page with message
   let session = req.session;
-  console.log(session);
 
   if (session.logged_in) {
     res.redirect("/school/dashboard");
@@ -311,7 +310,6 @@ exports.postAddUser = async (req, res) => {
 exports.postAddSubject = (req, res) => {
   try {
     let session = req.session;
-    console.log(session);
 
     // checing the school_subject table for duplicate entry
     var checkSubject = `SELECT EXISTS (SELECT * FROM school_subjects WHERE subject_name='${req.body.subject}' AND school_id='${session.schoolId}') AS count`;
@@ -343,4 +341,49 @@ exports.postAddSubject = (req, res) => {
   }
 };
 
-//get classroom from database
+// Add fee Struture by School
+exports.postAddFeeStructure = (req, res) => {
+  try {
+    let session = req.session;
+
+    if (session.logged_in) {
+      const school_id = session.schoolId;
+      const class_std = req.body.class_std;
+      const medium = req.body.medium;
+      const actual_fee = req.body.fee;
+
+      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class='${class_std}' AND medium='${medium}') AS count`;
+
+      dbcon.query(feeQuery, (err, data) => {
+        if (err) {
+          console.log(err);
+        } else if (data[0].count == 0) {
+          console.log(data);
+          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class, medium, actual_fee) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}')`;
+          dbcon.query(addFeeQuery, (err, response) => {
+            if (err) {
+              console.log(err);
+            } else {
+              req.flash(
+                "success",
+                `Fee structure for ${class_std} STD - ${medium} Medium is added successfully.`
+              );
+              return res.redirect("/school/dashboard");
+            }
+          });
+        } else {
+          req.flash(
+            "err_msg",
+            `Fee structure for ${class_std} STD - ${medium} Medium is already added.`
+          );
+          return res.redirect("/school/dashboard");
+        }
+      });
+    } else {
+      req.flash("err_msg", "Please login to continue.");
+      return res.redirect("/school/login");
+    }
+  } catch (e) {
+    console.log(e);
+  }
+};

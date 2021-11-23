@@ -1,0 +1,27 @@
+<div class="col-lg-6 col-md-8 col-sm-10">
+    <div class="alert alert-info" role="alert">
+     <h4 class="text-center">Product Activation required.</h4>
+     <p class="text-center">Please Submit your Activation code below.</p>
+     <hr>
+     <form id="activation-form" action="/activate/school" method="POST">
+       <div class="mt-3 mb-3">
+         <label for="activation">Activation Code: </label>
+         <input
+           type="text"
+           class="form-control"
+           name="activation"
+           id="activation"
+           placeholder="Enter the Activation code."
+         />
+         <span class="error" id="activation_error"
+           >It is not valid.</span
+         >
+       </div>
+       <div class="mb-3">
+         <button class="btn btn-secondary" type="submit" value="submit">
+           Activate
+         </button>
+       </div>
+     </form>
+     </form>
+   </div></div>

@@ -1,0 +1,67 @@
+
+            <form id="addclass-form" action="/school/add-classroom" method="POST">
+              <div class="mt-3 mb-3">
+                <h2 class="text-center">Add Classroom</h2>
+                <p class="text-center">
+                  <small>Adding a Classroom to the school.</small>
+                </p>
+                <hr />
+              </div>
+              <div class="mb-3">
+                <label for="class">Class:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="class"
+                  id="class"
+                  placeholder="6 / LKG / UKG etc"
+                />
+                <span class="error" id="class_error"
+                  >Class should not be empty.</span
+                >
+              </div>
+              <div class="mb-3">
+                <label for="section">Section:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="section"
+                  id="section"
+                  placeholder="A"
+                />
+                <span class="error" id="section_error"
+                  >Section should not be empty.</span
+                >
+              </div>
+              <div class="mb-3">
+                <label for="medium">Medium of Language:</label>
+                <select id="medium" class="form-control" name="medium">
+                  <option value="">Select One</option>
+                  <option value="Tamil">Tamil</option>
+                  <option value="English">English</option>
+                  <option value="Hindi">Hindi</option>
+                </select>
+                <span class="error" id="medium_error"
+                  >Please select the Medium.</span
+                >
+              </div>
+              <div class="mb-3">
+                <label for="strength">Classroom Strength: </label>
+                <input
+                  type="text"
+                  class="form-control"
+                  name="strength"
+                  id="strength"
+                  placeholder="Enter the classroom strength."
+                />
+                <span class="error" id="board_error"
+                  >strength should be a number.</span
+                >
+              </div>
+              <div class="mb-3">
+                <button class="btn btn-secondary" type="submit" value="submit">
+                  Create School
+                </button>
+              </div>
+            </form>
+           

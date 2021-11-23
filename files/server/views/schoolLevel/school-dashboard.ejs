@@ -27,49 +27,24 @@
     <!-- When Inactive -->
     <% if(locals.status == "Inactive") { %>
       <!-- Inactive Part -->
-      <div class="col-lg-6 col-md-8 col-sm-10">
-       <div class="alert alert-info" role="alert">
-        <h4 class="text-center">Product Activation required.</h4>
-        <p class="text-center">Please Submit your Activation code below.</p>
-        <hr>
-        <form id="activation-form" action="/activate/school" method="POST">
-          <div class="mt-3 mb-3">
-            <label for="activation">Activation Code: </label>
-            <input
-              type="text"
-              class="form-control"
-              name="activation"
-              id="activation"
-              placeholder="Enter the Activation code."
-            />
-            <span class="error" id="activation_error"
-              >It is not valid.</span
-            >
-          </div>
-          <div class="mb-3">
-            <button class="btn btn-secondary" type="submit" value="submit">
-              Activate
-            </button>
-          </div>
-        </form>
-        </form>
-      </div></div>
+      <%- include ('../partials/components/school-inactive') %>
+      
       <% } else { %>  
         <!-- active part -->
       <div class="col-lg-6 col-md-8 col-sm-10">
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
           <li class="nav-item" role="presentation">
             <button
-              class="nav-link active"
-              id="pills-classroom-tab"
+              class="nav-link"
+              id="pills-fee-tab"
               data-bs-toggle="pill"
-              data-bs-target="#pills-classroom"
+              data-bs-target="#pills-fee"
               type="button"
               role="tab"
-              aria-controls="pills-classroom"
-              aria-selected="true"
+              aria-controls="pills-fee"
+              aria-selected="false"
             >
-              Add Classroom
+              Add Fee Structure
             </button>
           </li>
           <li class="nav-item" role="presentation">
@@ -100,6 +75,20 @@
               Add Subject
             </button>
           </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="pills-classroom-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-classroom"
+              type="button"
+              role="tab"
+              aria-controls="pills-classroom"
+              aria-selected="true"
+            >
+              Add Class Sections
+            </button>
+          </li>
         </ul>
         <div class="tab-content" id="pills-tabContent">
           <div
@@ -108,129 +97,16 @@
             role="tabpanel"
             aria-labelledby="pills-classroom-tab"
           >
-            <form id="addclass-form" action="/school/add-classroom" method="POST">
-              <div class="mt-3 mb-3">
-                <h2 class="text-center">Add Classroom</h2>
-                <p class="text-center">
-                  <small>Adding a Classroom to the school.</small>
-                </p>
-                <hr />
-              </div>
-              <div class="mb-3">
-                <label for="class_section">Class & Section:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="class_section"
-                  id="class_section"
-                  placeholder="6-A"
-                />
-                <span class="error" id="class_section_error"
-                  >Class & Section should be at least 3 characters long.</span
-                >
-              </div>
-              <div class="mb-3">
-                <label for="medium">Medium of Language:</label>
-                <select id="medium" class="form-control" name="medium">
-                  <option value="">Select One</option>
-                  <option value="Tamil">Tamil</option>
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                </select>
-                <span class="error" id="medium_error"
-                  >Please select the Medium.</span
-                >
-              </div>
-              <div class="mb-3">
-                <label for="strength">Classroom Strength: </label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="strength"
-                  id="strength"
-                  placeholder="Enter the classroom strength."
-                />
-                <span class="error" id="board_error"
-                  >strength should be a number.</span
-                >
-              </div>
-              <div class="mb-3">
-                <button class="btn btn-secondary" type="submit" value="submit">
-                  Create School
-                </button>
-              </div>
-            </form>
-          </div>
+
+          <%- include ('../partials/components/add-class-section') %>
+        </div>
           <div
             class="tab-pane fade"
             id="pills-staff"
             role="tabpanel"
             aria-labelledby="pills-staff-tab"
           >
-            <form id="addadmin-form" method="POST" action="/school/add-user">
-              <h2 class="text-center">Create Users</h2>
-              <hr />
-
-              <div class="mt-3 mb-3">
-                <label for="select">Role:</label>
-                <!-- <input
-                  list="roles"
-                  name="role"
-                  id="select-role"
-                  class="form-control"
-                  placeholder="Select a role"
-                /> -->
-                <select id="role" name="role" class="form-control">
-                  <option value="9">Admin</option>
-                  <option value="4">Head Master</option>
-                  <option value="8">Teaching Faculty</option>
-                  <option value="2">Non-teaching Faculty</option>
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="username">Username:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="username"
-                  placeholder="Username"
-                  id="username"
-                />
-                <span class="error" id="username-error"
-                  >Username should be at least 3 characters long.</span
-                >
-              </div>
-              <div class="mb-3">
-                <label for="password">Password:</label>
-                <input
-                  type="password"
-                  class="form-control"
-                  name="password"
-                  placeholder="Type your Password here"
-                  id="password"
-                />
-                <span class="error" id="password-error"
-                  >Password should contain 8 characters with a Uppercase, a
-                  lowercase, a Number and a Special character.</span
-                >
-              </div>
-              <div class="mb-3">
-                <label for="email">Email:</label>
-                <input
-                  type="email"
-                  class="form-control"
-                  name="email"
-                  placeholder="Type your email here"
-                  id="email"
-                />
-                <span class="error" id="email-error">Email is invalid.</span>
-              </div>
-              <div class="login">
-                <button class="btn btn-secondary" type="submit">
-                  Create User
-                </button>
-              </div>
-            </form>
+          <%- include ('../partials/components/add-user') %>
           </div>
           <div
             class="tab-pane fade"
@@ -238,43 +114,21 @@
             role="tabpanel"
             aria-labelledby="pills-subject-tab"
           >
-            <form id="addsubject-form" method="POST" action="/school/add-subject">
-              <h2 class="text-center">Add Subjects</h2>
-              <hr />
-              <div class="mt-3 mb-3">
-                <label for="subject">Subject:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="subject"
-                  placeholder="Name of the Subject"
-                  id="subject"
-                />
-                <span class="error" id="subject-error"
-                  >Subject should be at least 3 characters long.</span
-                >
-              </div>
-              <div class="mb-3">
-                <label for="medium">Classroom</label>
-                <select id="medium" class="form-control" name="medium">
-                  <option value="">Select One</option>
-                  <option value="Tamil">Tamil</option>
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                </select>
-                <span class="error" id="medium_error"
-                  >Please select the Medium.</span
-                >
-              </div>
-              <div class="add-subject">
-                <button class="btn btn-secondary" type="submit">
-                  Add Subject
-                </button>
-              </div>
-            </form>
+          <%- include ('../partials/components/add-subject') %>
           </div>
+          <div
+            class="tab-pane fade"
+            id="pills-fee"
+            role="tabpanel"
+            aria-labelledby="pills-fee-tab"
+          >
+            
+          <%- include ('../partials/components/add-fee-structure') %>
+
+        </div>
         </div>
       </div>
+    </div>
       <% } %>
   </div>
 </div>

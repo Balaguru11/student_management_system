@@ -278,7 +278,6 @@ exports.getStaffProfileEdit = (req, res) => {
 
 // Staff edits profile and updates - need to update this.
 exports.postEditStaffProfile = (req, res) => {
-  let session = req.session;
   // flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;

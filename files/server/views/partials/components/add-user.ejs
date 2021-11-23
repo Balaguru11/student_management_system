@@ -1,0 +1,64 @@
+<form id="addadmin-form" method="POST" action="/school/add-user">
+    <h2 class="text-center">Create Users</h2>
+    <hr />
+
+    <div class="mt-3 mb-3">
+      <label for="select">Role:</label>
+      <!-- <input
+        list="roles"
+        name="role"
+        id="select-role"
+        class="form-control"
+        placeholder="Select a role"
+      /> -->
+      <select id="role" name="role" class="form-control">
+        <option value="9">Admin</option>
+        <option value="4">Head Master</option>
+        <option value="8">Teaching Faculty</option>
+        <option value="2">Non-teaching Faculty</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        class="form-control"
+        name="username"
+        placeholder="Username"
+        id="username"
+      />
+      <span class="error" id="username-error"
+        >Username should be at least 3 characters long.</span
+      >
+    </div>
+    <div class="mb-3">
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        class="form-control"
+        name="password"
+        placeholder="Type your Password here"
+        id="password"
+      />
+      <span class="error" id="password-error"
+        >Password should contain 8 characters with a Uppercase, a
+        lowercase, a Number and a Special character.</span
+      >
+    </div>
+    <div class="mb-3">
+      <label for="email">Email:</label>
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        placeholder="Type your email here"
+        id="email"
+      />
+      <span class="error" id="email-error">Email is invalid.</span>
+    </div>
+    <div class="login">
+      <button class="btn btn-secondary" type="submit">
+        Create User
+      </button>
+    </div>
+  </form>

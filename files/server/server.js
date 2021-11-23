@@ -85,6 +85,15 @@ app.get("/logout", (req, res) => {
   }
 });
 
+// //errorhandling
+// app.use((err, req, res, next) => {
+//   if (err) {
+//     return res.redirect("/error");
+//   } else {
+//     next();
+//   }
+// });
+
 //404
 app.use((req, res) => {
   res.status(404).render("404", { title: "404 Page" });
