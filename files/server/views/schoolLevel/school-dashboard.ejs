@@ -8,8 +8,8 @@
           <h4><%= welcome_msg %></h4>
         </div>
       </div>
-      
     <% } %>
+    <br>
     <% if(locals.err_msg.length > 0) { %>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <%= err_msg %>
@@ -35,7 +35,7 @@
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
           <li class="nav-item" role="presentation">
             <button
-              class="nav-link"
+              class="nav-link active"
               id="pills-fee-tab"
               data-bs-toggle="pill"
               data-bs-target="#pills-fee"
@@ -77,7 +77,7 @@
           </li>
           <li class="nav-item" role="presentation">
             <button
-              class="nav-link active"
+              class="nav-link"
               id="pills-classroom-tab"
               data-bs-toggle="pill"
               data-bs-target="#pills-classroom"
@@ -92,7 +92,17 @@
         </ul>
         <div class="tab-content" id="pills-tabContent">
           <div
-            class="tab-pane fade show active"
+          class="tab-pane fade show active"
+          id="pills-fee"
+          role="tabpanel"
+          aria-labelledby="pills-fee-tab"
+        >
+          
+        <%- include ('../partials/components/add-fee-structure') %>
+
+        </div>
+        <div
+            class="tab-pane fade"
             id="pills-classroom"
             role="tabpanel"
             aria-labelledby="pills-classroom-tab"
@@ -116,16 +126,6 @@
           >
           <%- include ('../partials/components/add-subject') %>
           </div>
-          <div
-            class="tab-pane fade"
-            id="pills-fee"
-            role="tabpanel"
-            aria-labelledby="pills-fee-tab"
-          >
-            
-          <%- include ('../partials/components/add-fee-structure') %>
-
-        </div>
         </div>
       </div>
     </div>

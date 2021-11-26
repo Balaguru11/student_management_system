@@ -9,18 +9,39 @@
                 <li class="nav-item">
                     <a href="/" class="nav-link active" aria-current="page">Home</a>
                 </li>
+                <% if(locals.schoolUserName){ %>
+                    <li class="nav-item">
+                        <a href="/school/dashboard" class="nav-link active" aria-current="page"><%= schoolUserName %></a>
+                    </li>
+                    <% } else { %>
                 <li class="nav-item">
                     <a href="/school/create" class="nav-link active" aria-current="page">Add A School</a>
                 </li>
                 <li class="nav-item">
                     <a href="/school/login" class="nav-link active" aria-current="page">School Login</a>
                 </li>
-                <li class="nav-item">
-                    <a href="/staff/login" class="nav-link active" aria-current="page">User Login</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/logout" class="nav-link active" aria-current="page">Logout</a>
-                </li>
+                
+                <% if(locals.staffUsername) { %>
+                    <li class="nav-item">
+                        <a href="/staff/dashboard" class="nav-link active" aria-current="page">Howdy, <%= staffUsername %></a>
+                    </li>
+                    <% } else { %>
+                    <li class="nav-item">
+                        <a href="/staff/login" class="nav-link active" aria-current="page">User Login</a>
+                    </li>
+                    <% } %>
+                <% } %>
+                <% if((locals.schoolStatus == "Inactive") || (locals.staffStatus == "Inactive")) { %>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active alert-danger text-danger" aria-current="page">Inactivate</a>
+                    </li>
+                    <% } %>
+                <% if(locals.loggedin) { %>
+                    <li class="nav-item">
+                        <a href="/logout" class="nav-link active" aria-current="page">Logout</a>
+                    </li>
+                    <% }  %>
+                
             </ul>
         </div>
     </div>

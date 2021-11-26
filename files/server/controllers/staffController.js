@@ -11,7 +11,6 @@ exports.postStaffLogin = (req, res) => {
       if (err) {
         console.log(err);
       } else if (result.length == 1) {
-        console.log(result);
         // password verification
         const passwordEntered = req.body.password;
         const staffPass = result[0].password;
@@ -38,15 +37,16 @@ exports.postStaffLogin = (req, res) => {
         return res.redirect("/");
       }
     });
-  } catch (e) {
-    console.log(e);
-    return res.status(500).send(e);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send(err);
   }
 };
 
 exports.getStaffDashboard = (req, res) => {
   try {
     let session = req.session;
+    console.log(session);
     if (session.logged_in) {
       staff_role = session.roleId;
       res.locals.staff_status = session.staffStatus;
@@ -82,8 +82,8 @@ exports.getStaffDashboard = (req, res) => {
       );
       return res.status(401).redirect("/");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -122,7 +122,6 @@ exports.getStaffProfileForm = (req, res) => {
         } else if (staff[0].count == 1) {
           // //get all the data here and pass it to the redirect
           let name = staff[0].name;
-          console.log(name);
           res.locals.name = name;
           let date_of_birth = staff[0].date_of_birth;
           res.locals.dob = date_of_birth;
@@ -149,8 +148,8 @@ exports.getStaffProfileForm = (req, res) => {
       req.flash("err_msg", "You are not allowed to view this Page.");
       return res.redirect("/");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -203,8 +202,8 @@ exports.postStaffProfile = async (req, res) => {
       req.flash("err_msg", "Please Login to continue.");
       return res.redirect("/");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -253,11 +252,11 @@ exports.getStaffProfileEdit = (req, res) => {
   let session = req.session;
   try {
     if (session.logged_in) {
-      var fetchStaffProfile = `SELECT * FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
+      var fetchStaffProfile = `SELECT *, DATE_FORMAT(date_of_birth, '%Y-%c-%d') AS dob FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
       dbcon.query(fetchStaffProfile, (err, data) => {
         if (err) throw err;
         res.locals.name = data[0].name;
-        res.locals.date_of_birth = data[0].date_of_birth;
+        res.locals.date_of_birth = data[0].dob;
         res.locals.mobile_number = data[0].mobile_number;
         res.locals.email = data[0].email;
         res.locals.qualification = data[0].qualification;
@@ -271,13 +270,14 @@ exports.getStaffProfileEdit = (req, res) => {
       req.flash("err_msg", "Please login to view your Profile");
       return res.redirect("/");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };
 
 // Staff edits profile and updates - need to update this.
 exports.postEditStaffProfile = (req, res) => {
+  let session = req.session;
   // flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
@@ -286,44 +286,28 @@ exports.postEditStaffProfile = (req, res) => {
   res.locals.success_msg = success_msg;
   let staff_email = "";
   try {
-    let session = req.session;
-    const email = session.username;
+    const username = session.username;
+    const role_id = session.roleId;
+    const staff_id = session.staff_id;
+    const school_id = session.school_id;
+    staff_email = session.email;
 
-    if (session.logged_in) {
-      var checkStatus = `SELECT EXISTS (SELECT * FROM school_staff WHERE username='${username}' AND status='Active') AS count`;
+    if (session.logged_in && session.staffStatus == 'Active') {
+      var profileQuery = `UPDATE school_staff SET name = '${req.body.staffName}', date_of_birth = '${req.body.staff_dob}',      mobile_number = '${req.body.staff_mobile}', qualification = '${req.body.staff_qualification}', city = '${req.body.staff_city}', state = '${req.body.staff_state}' WHERE role_id='${role_id}' AND staff_id='${staff_id}' AND  school_id='${school_id}' AND email='${staff_email}'`;
 
-      dbcon.query(checkStatus, (err, result) => {
+      dbcon.query(profileQuery, function (err, result) {
         if (err) {
-          req.flash(
-            "err_msg",
-            "There is a Problem in updating your Profile Page. Please try again later. "
-          );
-          return res.status(500).redirect("/staff/dashboard");
-        } else if (result[0].count == 1) {
-          const role_id = result[0].role_id_fk;
-          const staff_id = result[0].id;
-          const school_id = result[0].school_id;
-          staff_email = result[0].email;
-          // const password = result[0].password;
-
-          var profileQuery = `INSERT INTO school_staff(role_id, staff_id, school_id, name, date_of_birth, mobile_number, email, qualification, city, state) VALUES ('${role_id}', '${staff_id}','${school_id}', '${req.body.staffName}', '${req.body.staff_dob}', '${req.body.staff_mobile}', '${staff_email}', '${req.body.staff_qualification}', '${req.body.staff_city}', '${req.body.staff_state}' ) `;
-
-          dbcon.query(profileQuery, function (err, result) {
-            if (err) {
-              console.log(err);
-            } else {
-              req.flash("success", "Profile saves successfully");
-              return res.redirect("/staff/profile");
-            }
-          });
+          console.log(err);
         } else {
-          console.log(result);
+          req.flash("success", "Profile saves successfully");
+          return res.redirect("/staff/profile");
         }
       });
     } else {
-      console.log("Testing");
+      req.flash("err_msg", "Your account is Inactive.");
+      return res.redirect("/staff/dashboard");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };

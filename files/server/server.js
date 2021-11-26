@@ -3,6 +3,7 @@ const expressLayouts = require("express-ejs-layouts");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
+const methodOverride = require('method-override')
 
 // const { sequelize } = require('./DB/database');
 // models import
@@ -19,6 +20,7 @@ require("./DB/database");
 const PORT = process.env.PORT || 8000;
 
 //set Cookie Parser, session and flash
+app.use(methodOverride('_method'));
 app.use(cookieParser("ThisIsTheStringToParseTheCookies"));
 app.use(
   session({
@@ -68,7 +70,7 @@ app.get("/", (req, res) => {
   let success_msg = "";
   success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  return res.render("login", { title: "Home" });
+  return res.render("home", { title: "Home" });
 });
 
 app.get("/logout", (req, res) => {

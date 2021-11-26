@@ -72,9 +72,9 @@ exports.postCreateSchool = async (req, res) => {
         }
       }
     });
-  } catch (e) {
-    console.log(e); //server error?
-    return res.status(500).send(e);
+  } catch (err) {
+    console.log(err); //server error?
+    return res.status(500).send(err);
   }
 };
 
@@ -138,9 +138,9 @@ exports.postSchoolLogin = async (req, res) => {
         return res.status(401).redirect("/school/login");
       }
     });
-  } catch (e) {
-    console.log(e);
-    return res.status(500).send(e);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send(err);
   }
 };
 
@@ -170,7 +170,7 @@ exports.getSchoolDashBoard = (req, res) => {
 
     if (session.logged_in && session.schoolStatus == "Active") {
       res.render("schoolLevel/school-dashboard", {
-        title: "School Master Dashboard",
+        title: "School Master Dashboard", 
       });
     } else if (session.logged_in && session.schoolStatus == "Inactive") {
       res.render("schoolLevel/school-dashboard", {
@@ -180,8 +180,8 @@ exports.getSchoolDashBoard = (req, res) => {
       req.flash("err_msg", "You are unauthorized. Please login.");
       return res.status(401).redirect("/school/login");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -239,9 +239,9 @@ exports.postAddClassroom = async (req, res) => {
       req.flash("err_msg", "Please login to continue.");
       return res.redirect("/school/login");
     }
-  } catch (e) {
-    console.log(e);
-    return res.status(500).send(e);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send(err);
   }
 };
 
@@ -300,9 +300,9 @@ exports.postAddUser = async (req, res) => {
       req.flash("err_msg", "Please Login to continue.");
       return res.status(401).redirect("/school/login");
     }
-  } catch (e) {
-    console.log(e);
-    return res.status(500).send(e);
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send(err);
   }
 };
 
@@ -318,7 +318,6 @@ exports.postAddSubject = (req, res) => {
       if (err) {
         console.log(err);
       } else if (result[0].count == 0) {
-        console.log();
         // result = 0, adding new subject
         var addSubject = `INSERT INTO school_subjects(subject_name, school_id) VALUES ('${req.body.subject}', '${session.schoolId}') `;
 
@@ -326,7 +325,6 @@ exports.postAddSubject = (req, res) => {
           if (err) {
             console.log(err);
           } else {
-            console.log(subject);
             req.flash("success", "The Subject has been added successfully.");
             return res.redirect("/school/dashboard");
           }
@@ -336,8 +334,8 @@ exports.postAddSubject = (req, res) => {
         return res.redirect("/school/dashboard");
       }
     });
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -358,7 +356,6 @@ exports.postAddFeeStructure = (req, res) => {
         if (err) {
           console.log(err);
         } else if (data[0].count == 0) {
-          console.log(data);
           var addFeeQuery = `INSERT INTO school_feestructure(school_id, class, medium, actual_fee) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}')`;
           dbcon.query(addFeeQuery, (err, response) => {
             if (err) {
@@ -383,27 +380,33 @@ exports.postAddFeeStructure = (req, res) => {
       req.flash("err_msg", "Please login to continue.");
       return res.redirect("/school/login");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };
 
 // view Fee-structure data
 exports.viweFeeStructure = (req, res) => {
+  let session = req.session;
   try {
-    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY id DESC `;
+    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}'`;
 
-    dbcon.query(feeStrucData, (err, res) => {
+    dbcon.query(feeStrucData, (err, data) => {
       if (err) {
-        req.flash("err_msg", "No Data found.");
-        res.redirect("/school/dashboard");
-      } else if (res[0].count == 0) {
-        console.log(res);
-        res.locals.data = res;
-        res.redirect("/school/dashboard");
+        console.log(err);
+        // res.locals.data = data;
+        // req.flash("err_msg", "No Data found.");
+        // res.redirect("/school/dashboard");
+      } else if(data.count == 0) {
+        // res.locals.data = data;
+        // req.flash("no_data", "No data found");
+       return res.redirect("/school/dashboard", {data});
+      } else {
+        res.locals.data = data;
+        return res.redirect("/school/dashboard", {data});
       }
     });
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 };

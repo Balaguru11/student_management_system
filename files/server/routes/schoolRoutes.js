@@ -2,7 +2,7 @@ const express = require("express");
 const schoolRouter = express.Router();
 // const dbcon = require("../DB/database");
 
-const { isAuth } = require("../middlewares/auth-school");
+const { isSchool } = require("../middlewares/auth");
 // const bcrypt = require('bcryptjs');
 
 // importing schoolController here
@@ -27,15 +27,15 @@ schoolRouter.get("/login", getSchoolLogin);
 
 schoolRouter.post("/login", postSchoolLogin);
 
-schoolRouter.get("/dashboard", isAuth, getSchoolDashBoard);
+schoolRouter.get("/dashboard", isSchool, getSchoolDashBoard);
 
-schoolRouter.post("/add-classroom", postAddClassroom);
+schoolRouter.post("/add-classroom", isSchool, postAddClassroom);
 
-schoolRouter.post("/add-user", postAddUser);
+schoolRouter.post("/add-user", isSchool, postAddUser);
 
-schoolRouter.post("/add-subject", postAddSubject);
+schoolRouter.post("/add-subject", isSchool, postAddSubject);
 
-schoolRouter.post("/add-fees", postAddFeeStructure);
+schoolRouter.post("/add-fees", isSchool, postAddFeeStructure);
 
 //redirect urls
 schoolRouter.get("/add-classroom", (req, res) => {
@@ -55,6 +55,6 @@ schoolRouter.get("/add-subject", (req, res) => {
 });
 
 // View data from db with the get routes.
-schoolRouter.get("/add-fees", isAuth, viweFeeStructure);
+schoolRouter.get("/add-fees", isSchool, viweFeeStructure);
 
 module.exports = schoolRouter;

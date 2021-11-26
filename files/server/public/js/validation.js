@@ -152,3 +152,19 @@ $(function() {
       }
     });
 });
+
+
+$(document).ready(function(){
+  // // Handling data-toggle manually
+  //     $('.nav-tabs a').click(function(){
+  //         $(this).tab('show');
+  //     });
+  // The on tab shown event
+      $('.nav-pills button').on('shown.bs.tab', function (e) {
+          var current_tab = e.target;
+          // if(current_tab.id == ){
+          //   //show elements
+          // }
+          var previous_tab = e.relatedTarget;
+      });
+  });
