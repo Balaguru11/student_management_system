@@ -387,3 +387,23 @@ exports.postAddFeeStructure = (req, res) => {
     console.log(e);
   }
 };
+
+// view Fee-structure data
+exports.viweFeeStructure = (req, res) => {
+  try {
+    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY id DESC `;
+
+    dbcon.query(feeStrucData, (err, res) => {
+      if (err) {
+        req.flash("err_msg", "No Data found.");
+        res.redirect("/school/dashboard");
+      } else if (res[0].count == 0) {
+        console.log(res);
+        res.locals.data = res;
+        res.redirect("/school/dashboard");
+      }
+    });
+  } catch (e) {
+    console.log(e);
+  }
+};

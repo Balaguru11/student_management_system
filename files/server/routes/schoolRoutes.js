@@ -1,6 +1,6 @@
 const express = require("express");
 const schoolRouter = express.Router();
-const dbcon = require("../DB/database");
+// const dbcon = require("../DB/database");
 
 const { isAuth } = require("../middlewares/auth-school");
 // const bcrypt = require('bcryptjs');
@@ -16,6 +16,7 @@ const {
   postAddUser,
   postAddSubject,
   postAddFeeStructure,
+  viweFeeStructure,
 } = require("../controllers/schoolController");
 
 schoolRouter.get("/create", getCreateSchool);
@@ -53,20 +54,7 @@ schoolRouter.get("/add-subject", (req, res) => {
   res.redirect("/school/dashboard");
 });
 
-// working here
-schoolRouter.get("/add-fees", (req, res) => {
-  var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY id DESC `;
-
-  dbcon.query(feeStrucData, (err, res) => {
-    if (err) {
-      req.flash("err_msg", "No Data found.");
-      res.redirect("/school/dashboard");
-    } else if (res[0].count == 0) {
-      console.log(res);
-      res.locals.data = res;
-      res.redirect("/school/dashboard");
-    }
-  });
-});
+// View data from db with the get routes.
+schoolRouter.get("/add-fees", isAuth, viweFeeStructure);
 
 module.exports = schoolRouter;
