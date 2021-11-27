@@ -1,33 +1,33 @@
-<nav class="navbar sticky-top navbar-expand-lg navbar-light bg-light">
+<nav class="navbar fixed-top navbar-expand-lg navbar-light bg-dark">
     <div class="container">
-        <a href="/" class="navbar-brand">School Management Tool</a>
+        <a href="/" class="navbar-brand text-white">School Management Tool</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a href="/" class="nav-link active" aria-current="page">Home</a>
+                    <a href="/" class="nav-link active text-white" aria-current="page">Home</a>
                 </li>
                 <% if(locals.schoolUserName){ %>
                     <li class="nav-item">
-                        <a href="/school/dashboard" class="nav-link active" aria-current="page"><%= schoolUserName %></a>
+                        <a href="/school/dashboard" class="nav-link active text-white" aria-current="page"><%= schoolUserName %></a>
                     </li>
                     <% } else { %>
                 <li class="nav-item">
-                    <a href="/school/create" class="nav-link active" aria-current="page">Add A School</a>
+                    <a href="/school/create" class="nav-link active text-white" aria-current="page">Add A School</a>
                 </li>
                 <li class="nav-item">
-                    <a href="/school/login" class="nav-link active" aria-current="page">School Login</a>
+                    <a href="/school/login" class="nav-link active text-white" aria-current="page">School Login</a>
                 </li>
                 
                 <% if(locals.staffUsername) { %>
                     <li class="nav-item">
-                        <a href="/staff/dashboard" class="nav-link active" aria-current="page">Howdy, <%= staffUsername %></a>
+                        <a href="/staff/dashboard" class="nav-link active text-white" aria-current="page">Howdy, <%= staffUsername %></a>
                     </li>
                     <% } else { %>
                     <li class="nav-item">
-                        <a href="/staff/login" class="nav-link active" aria-current="page">User Login</a>
+                        <a href="/staff/login" class="nav-link active text-white" aria-current="page">User Login</a>
                     </li>
                     <% } %>
                 <% } %>
@@ -38,7 +38,7 @@
                     <% } %>
                 <% if(locals.loggedin) { %>
                     <li class="nav-item">
-                        <a href="/logout" class="nav-link active" aria-current="page">Logout</a>
+                        <a href="/logout" class="nav-link active text-white" aria-current="page">Logout</a>
                     </li>
                     <% }  %>
                 

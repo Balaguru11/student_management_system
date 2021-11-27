@@ -1,0 +1,51 @@
+<div class="container p-5">
+    <div class="row d-flex justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-10">
+            <% if(locals.err_msg.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <%= err_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+                
+            <% } %>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 col-sm-12">
+            <div class="pt-5 p-2 sticky-top bg-light">
+                <%- include ('../partials/components/add-subject') %>
+            </div>
+        </div>
+        <div class="col-lg-6 col-sm-12 overflow-auto border">
+          <div class="pt-5">
+            <h4 class="text-center">View Subjects</h4><br>
+            <table class="table table-light text-center">
+              <thead>
+                <tr>
+                <th scope="col">S.No</th>
+                <th scope="col">Subject Title</th>
+                <th width="200px">Actions</th>
+              </tr>
+              </thead>
+              <tbody>
+                <% if(locals.data.length > 0) {                    
+                  for(var i = 0; i < locals.data.length; i++) {%>
+                    <tr>
+                      <th scope="row"><%= (i+1) %></th>
+                      <td><%= locals.data[i].subject_name %></td>
+                      <td><a class="btn btn-warning edit" href="../subjects/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../subjects/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
+                    </tr>
+              <%  }
+                  } else { %>
+                        <tr>
+                          <td colspan="5" class="text-center"><mark>No Subjects found.</mark></td>
+                        </tr>
+                  <% } %>
+              </tbody>
+            </table>
+          </div>
+      </div>
+    </div>
+</div>

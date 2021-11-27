@@ -17,6 +17,9 @@ const {
   postAddSubject,
   postAddFeeStructure,
   viweFeeStructure,
+  viewUserAccounts,
+  viewSubjects,
+  viewClassSections,
 } = require("../controllers/schoolController");
 
 schoolRouter.get("/create", getCreateSchool);
@@ -55,6 +58,12 @@ schoolRouter.get("/add-subject", (req, res) => {
 });
 
 // View data from db with the get routes.
-schoolRouter.get("/add-fees", isSchool, viweFeeStructure);
+schoolRouter.get("/dashboard/fee-structure", isSchool, viweFeeStructure);
+
+schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
+
+schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
+
+schoolRouter.get("/dashboard/sections", isSchool, viewClassSections);
 
 module.exports = schoolRouter;

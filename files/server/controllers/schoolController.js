@@ -170,7 +170,7 @@ exports.getSchoolDashBoard = (req, res) => {
 
     if (session.logged_in && session.schoolStatus == "Active") {
       res.render("schoolLevel/school-dashboard", {
-        title: "School Master Dashboard", 
+        title: "School Master Dashboard",
       });
     } else if (session.logged_in && session.schoolStatus == "Inactive") {
       res.render("schoolLevel/school-dashboard", {
@@ -343,7 +343,6 @@ exports.postAddSubject = (req, res) => {
 exports.postAddFeeStructure = (req, res) => {
   try {
     let session = req.session;
-
     if (session.logged_in) {
       const school_id = session.schoolId;
       const class_std = req.body.class_std;
@@ -387,6 +386,14 @@ exports.postAddFeeStructure = (req, res) => {
 
 // view Fee-structure data
 exports.viweFeeStructure = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}'`;
@@ -397,13 +404,146 @@ exports.viweFeeStructure = (req, res) => {
         // res.locals.data = data;
         // req.flash("err_msg", "No Data found.");
         // res.redirect("/school/dashboard");
-      } else if(data.count == 0) {
-        // res.locals.data = data;
-        // req.flash("no_data", "No data found");
-       return res.redirect("/school/dashboard", {data});
       } else {
         res.locals.data = data;
-        return res.redirect("/school/dashboard", {data});
+        return res.render("schoolLevel/school-feeStructure", {
+          title: "Fee Structure",
+          data,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// view User Accounts
+exports.viewUserAccounts = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}'`;
+
+    dbcon.query(userAccData, (err, data) => {
+      if (err) {
+        console.log(err);
+        // res.locals.data = data;
+        // req.flash("err_msg", "No Data found.");
+        // res.redirect("/school/dashboard");
+      } else {
+        console.log(data);
+        const datalength = data.length;
+        console.log(datalength);
+        for (let i = 0; i < data.length; i++) {
+          switch (data[i].role_id_fk) {
+            case 2:
+              data[i].role_id_fk = "Non-teaching Faculty";
+              break;
+            case 4:
+              data[i].role_id_fk = "Head Master";
+              break;
+            case 8:
+              data[i].role_id_fk = "Teaching Faculty";
+              break;
+            case 9:
+              data[i].role_id_fk = "Admin";
+              break;
+            default:
+              data[i].role_id_fk = "Student";
+          }
+        }
+        res.locals.data = data;
+        return res.render("schoolLevel/school-users", {
+          title: "User Accounts",
+          data,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// view Subjects from School dashboard
+exports.viewSubjects = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var subjectsData = `SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'`;
+
+    dbcon.query(subjectsData, (err, data) => {
+      if (err) {
+        console.log(err);
+        // res.locals.data = data;
+        // req.flash("err_msg", "No Data found.");
+        // res.redirect("/school/dashboard");
+      } else {
+        res.locals.data = data;
+        return res.render("schoolLevel/school-subjects", {
+          title: "School Subjects",
+          data,
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// view Class Sections from school dashboard
+exports.viewClassSections = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var classSecData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'`;
+
+    dbcon.query(classSecData, (err, data) => {
+      if (err) {
+        console.log(err);
+        // res.locals.data = data;
+        // req.flash("err_msg", "No Data found.");
+        // res.redirect("/school/dashboard");
+      } else {
+        // for (let i = 0; i < data.length; i++) {
+        //   //something here
+        //   const classFromFeeStr = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' AND id='${data[i].class_id}'`;
+        //   dbcon.query(classFromFeeStr, (err, result) => {
+        //     if (err) throw err;
+        //     console.log(result);
+        //     const class_std = result[i].class_std;
+        //     res.locals.class_std = class_std;
+        //     const medium = result[i].medium;
+        //     res.locals.medium = medium;
+        //   });
+        // }
+        res.locals.data = data;
+        return res.render("schoolLevel/school-classSections", {
+          title: "Classes & Sections",
+          data,
+          class_std,
+          medium,
+        });
       }
     });
   } catch (err) {

@@ -51,32 +51,3 @@
                   </button>
                 </div>
               </form>
-              <hr>
-              <br>
-              <h4 class="text-center">View Fee Structure</h4>
-              <table class="table table-light">
-                <thead>
-                  <tr>
-                  <th scope="col">S.No</th>
-                  <th scope="col">Class</th>
-                  <th scope="col">Medium</th>
-                  <th scope="col">Fee Amount</th>
-                  <th width="200px">Actions</th>
-                </tr>
-                </thead>
-                <tbody>
-                  <% if(locals.data) {                    
-                    for(var i = 0; i < locals.data.length; i++) {%>
-                      <tr>
-                        <th scope="row"><%= (i+1) %></th>
-                        <td><%= locals.data[i].class %></td>
-                        <td><a class="btn btn-success edit" href="../users/edit/<%= locals.data[i].id %>">Edit</a></td>                                            
-                      </tr>
-                <%  }
-                    } else { %>
-			              <tr>
-          			      <td colspan="5" class="text-center">No records found.</td>
-       			        </tr>
-                    <% } %>
-                </tbody>
-              </table>

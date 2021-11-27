@@ -1,11 +1,12 @@
-<div class="container p-5">
-  <div class="row d-flex justify-content-center">
+
+<div class="container">
+  <div class="row d-flex justify-content-center p-4 m-5">
     
     <!-- <h2 class="text-center">School Master Dashboard</h2> -->
     <% if(locals.welcome_msg) { %>
       <div class="row">
-        <div class="col-6">
-          <h4><%= welcome_msg %></h4>
+        <div class="col-6 m-2 p-3">
+          <h5><%= welcome_msg %></h5>
         </div>
       </div>
     <% } %>
@@ -34,7 +35,7 @@
       <div class="col-lg-6 col-md-8 col-sm-10">
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
           <li class="nav-item" role="presentation">
-            <button
+            <a
               class="nav-link active"
               id="pills-fee-tab"
               data-bs-toggle="pill"
@@ -43,12 +44,13 @@
               role="tab"
               aria-controls="pills-fee"
               aria-selected="false"
+              href="#fees"
             >
               Add Fee Structure
-            </button>
+          </a>
           </li>
           <li class="nav-item" role="presentation">
-            <button
+            <a
               class="nav-link"
               id="pills-staff-tab"
               data-bs-toggle="pill"
@@ -57,12 +59,13 @@
               role="tab"
               aria-controls="pills-staff"
               aria-selected="false"
+              href="#staff"
             >
               Add Users
-            </button>
+          </a>
           </li>
           <li class="nav-item" role="presentation">
-            <button
+            <a
               class="nav-link"
               id="pills-subject-tab"
               data-bs-toggle="pill"
@@ -71,12 +74,13 @@
               role="tab"
               aria-controls="pills-subject"
               aria-selected="false"
+              href="#subject"
             >
               Add Subject
-            </button>
+          </a>
           </li>
           <li class="nav-item" role="presentation">
-            <button
+            <a
               class="nav-link"
               id="pills-classroom-tab"
               data-bs-toggle="pill"
@@ -85,9 +89,10 @@
               role="tab"
               aria-controls="pills-classroom"
               aria-selected="true"
+              href="#classroom"
             >
               Add Class Sections
-            </button>
+          </a>
           </li>
         </ul>
         <div class="tab-content" id="pills-tabContent">
