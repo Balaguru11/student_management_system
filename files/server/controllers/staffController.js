@@ -73,6 +73,7 @@ exports.getStaffDashboard = (req, res) => {
           });
           break;
         default:
+          req.flash("err_msg", "No role assigned to this account.");
           res.redirect("/");
       }
     } else {
@@ -292,7 +293,7 @@ exports.postEditStaffProfile = (req, res) => {
     const school_id = session.school_id;
     staff_email = session.email;
 
-    if (session.logged_in && session.staffStatus == 'Active') {
+    if (session.logged_in && session.staffStatus == "Active") {
       var profileQuery = `UPDATE school_staff SET name = '${req.body.staffName}', date_of_birth = '${req.body.staff_dob}',      mobile_number = '${req.body.staff_mobile}', qualification = '${req.body.staff_qualification}', city = '${req.body.staff_city}', state = '${req.body.staff_state}' WHERE role_id='${role_id}' AND staff_id='${staff_id}' AND  school_id='${school_id}' AND email='${staff_email}'`;
 
       dbcon.query(profileQuery, function (err, result) {

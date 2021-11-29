@@ -73,7 +73,6 @@ exports.postCreateSchool = async (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err); //server error?
     return res.status(500).send(err);
   }
 };
@@ -187,12 +186,21 @@ exports.getSchoolDashBoard = (req, res) => {
 
 exports.postAddClassroom = async (req, res) => {
   try {
+    //flashing err_msg
+    let err_msg = "";
+    err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = "";
+    success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+
     let session = req.session;
 
     if (session.logged_in && session.schoolStatus == "Active") {
       const schoolId = session.schoolId;
 
-      var classCheck = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_section='${req.body.class_section}' AND medium='${req.body.medium}' AND school_id='${schoolId}' ) AS count`;
+      var classCheck = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${req.body.class}' AND class_section='${req.body.section}' AND school_id='${schoolId}' ) AS count`;
 
       dbcon.query(classCheck, (err, data) => {
         if (err) {
@@ -200,10 +208,10 @@ exports.postAddClassroom = async (req, res) => {
             "err_msg",
             "We could not create a new classroom at the moment."
           );
-          return res.status(500).redirect("/school/dashboard");
+          return res.status(500).redirect("/school/dashboard/sections");
         } else {
           if (data[0].count == 0) {
-            const addClass = `INSERT INTO school_classroom(school_id, class_section, medium, students_strength) VALUES ('${schoolId}', '${req.body.class_section}', '${req.body.medium}', '${req.body.strength}');`;
+            const addClass = `INSERT INTO school_classroom(school_id, class_id, class_section, students_strength) VALUES ('${schoolId}', '${req.body.class}', '${req.body.section}', '${req.body.strength}');`;
 
             dbcon.query(addClass, function (err) {
               if (err) {
@@ -211,13 +219,13 @@ exports.postAddClassroom = async (req, res) => {
                   "err_msg",
                   "There is an error when adding a classroom. Please try again later."
                 );
-                return res.redirect("/school/school-dashboard");
+                return res.redirect("/school/dashboard/sections");
               } else {
                 req.flash(
                   "success",
                   "A New classroom has been added. You can enroll and add students to this class."
                 );
-                return res.redirect("/school/dashboard");
+                return res.redirect("/school/dashboard/sections");
               }
             });
           } else {
@@ -225,7 +233,7 @@ exports.postAddClassroom = async (req, res) => {
               "err_msg",
               "This classroom is already added to this School."
             );
-            return res.redirect("/school/dashboard");
+            return res.redirect("/school/dashboard/sections");
           }
         }
       });
@@ -248,6 +256,14 @@ exports.postAddClassroom = async (req, res) => {
 // Schools can add users when, it is active.
 exports.postAddUser = async (req, res) => {
   try {
+    //flashing err_msg
+    let err_msg = "";
+    err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = "";
+    success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
     let session = req.session;
 
     if (session.logged_in && session.schoolStatus == "Active") {
@@ -259,7 +275,7 @@ exports.postAddUser = async (req, res) => {
         if (err) {
           console.log(err);
           req.flash("err_msg", "We could not add new user at the moment.");
-          return res.redirect("/school/dashboard");
+          return res.redirect("/school/dashboard/users");
         } else {
           if (data[0].count == 0) {
             // password hashing
@@ -270,15 +286,14 @@ exports.postAddUser = async (req, res) => {
 
             dbcon.query(addClass, function (err) {
               if (err) {
-                console.log(err);
                 req.flash(
                   "err_msg",
                   "There is an error when adding an user. Please try again later."
                 );
-                return res.redirect("/school/dashboard");
+                return res.redirect("/school/dashboard/users");
               } else {
                 req.flash("success", "A New User account has been added.");
-                return res.redirect("/school/dashboard");
+                return res.redirect("/school/dashboard/users");
               }
             });
           } else {
@@ -286,7 +301,7 @@ exports.postAddUser = async (req, res) => {
               "err_msg",
               "This Username / email is already registered with this School."
             );
-            return res.redirect("/school/dashboard");
+            return res.redirect("/school/dashboard/users");
           }
         }
       });
@@ -309,6 +324,14 @@ exports.postAddUser = async (req, res) => {
 // Post Subjects for the school
 exports.postAddSubject = (req, res) => {
   try {
+    //flashing err_msg
+    let err_msg = "";
+    err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = "";
+    success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
     let session = req.session;
 
     // checing the school_subject table for duplicate entry
@@ -326,12 +349,12 @@ exports.postAddSubject = (req, res) => {
             console.log(err);
           } else {
             req.flash("success", "The Subject has been added successfully.");
-            return res.redirect("/school/dashboard");
+            return res.redirect("/school/dashboard/subjects");
           }
         });
       } else {
         req.flash("err_msg", "The Subject is already created.");
-        return res.redirect("/school/dashboard");
+        return res.redirect("/school/dashboard/subjects");
       }
     });
   } catch (err) {
@@ -342,6 +365,14 @@ exports.postAddSubject = (req, res) => {
 // Add fee Struture by School
 exports.postAddFeeStructure = (req, res) => {
   try {
+    //flashing err_msg
+    let err_msg = "";
+    err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = "";
+    success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
     let session = req.session;
     if (session.logged_in) {
       const school_id = session.schoolId;
@@ -349,13 +380,13 @@ exports.postAddFeeStructure = (req, res) => {
       const medium = req.body.medium;
       const actual_fee = req.body.fee;
 
-      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class='${class_std}' AND medium='${medium}') AS count`;
+      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class_std='${class_std}' AND medium='${medium}') AS count`;
 
       dbcon.query(feeQuery, (err, data) => {
         if (err) {
           console.log(err);
         } else if (data[0].count == 0) {
-          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class, medium, actual_fee) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}')`;
+          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}')`;
           dbcon.query(addFeeQuery, (err, response) => {
             if (err) {
               console.log(err);
@@ -364,7 +395,7 @@ exports.postAddFeeStructure = (req, res) => {
                 "success",
                 `Fee structure for ${class_std} STD - ${medium} Medium is added successfully.`
               );
-              return res.redirect("/school/dashboard");
+              return res.redirect("/school/dashboard/fee-structure");
             }
           });
         } else {
@@ -372,7 +403,7 @@ exports.postAddFeeStructure = (req, res) => {
             "err_msg",
             `Fee structure for ${class_std} STD - ${medium} Medium is already added.`
           );
-          return res.redirect("/school/dashboard");
+          return res.redirect("/school/dashboard/subjects");
         }
       });
     } else {
@@ -386,24 +417,21 @@ exports.postAddFeeStructure = (req, res) => {
 
 // view Fee-structure data
 exports.viweFeeStructure = (req, res) => {
-  //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
-  let session = req.session;
   try {
-    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}'`;
+    //flashing err_msg
+    let err_msg = "";
+    err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = "";
+    success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+    let session = req.session;
+    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std)`;
 
     dbcon.query(feeStrucData, (err, data) => {
       if (err) {
         console.log(err);
-        // res.locals.data = data;
-        // req.flash("err_msg", "No Data found.");
-        // res.redirect("/school/dashboard");
       } else {
         res.locals.data = data;
         return res.render("schoolLevel/school-feeStructure", {
@@ -434,13 +462,7 @@ exports.viewUserAccounts = (req, res) => {
     dbcon.query(userAccData, (err, data) => {
       if (err) {
         console.log(err);
-        // res.locals.data = data;
-        // req.flash("err_msg", "No Data found.");
-        // res.redirect("/school/dashboard");
       } else {
-        console.log(data);
-        const datalength = data.length;
-        console.log(datalength);
         for (let i = 0; i < data.length; i++) {
           switch (data[i].role_id_fk) {
             case 2:
@@ -488,9 +510,6 @@ exports.viewSubjects = (req, res) => {
     dbcon.query(subjectsData, (err, data) => {
       if (err) {
         console.log(err);
-        // res.locals.data = data;
-        // req.flash("err_msg", "No Data found.");
-        // res.redirect("/school/dashboard");
       } else {
         res.locals.data = data;
         return res.render("schoolLevel/school-subjects", {
@@ -516,36 +535,72 @@ exports.viewClassSections = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var classSecData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'`;
+    // var classSecData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'`;
+    var classSecData = `SELECT clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}'`;
 
     dbcon.query(classSecData, (err, data) => {
-      if (err) {
-        console.log(err);
-        // res.locals.data = data;
-        // req.flash("err_msg", "No Data found.");
-        // res.redirect("/school/dashboard");
-      } else {
-        // for (let i = 0; i < data.length; i++) {
-        //   //something here
-        //   const classFromFeeStr = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' AND id='${data[i].class_id}'`;
-        //   dbcon.query(classFromFeeStr, (err, result) => {
-        //     if (err) throw err;
-        //     console.log(result);
-        //     const class_std = result[i].class_std;
-        //     res.locals.class_std = class_std;
-        //     const medium = result[i].medium;
-        //     res.locals.medium = medium;
-        //   });
-        // }
+      if (err) throw err;
+
+      var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std);`;
+      dbcon.query(classDrop, (err, classOptions) => {
+        if (err) throw err;
+        // console.log(classOptions);
+        res.locals.classOptions = classOptions;
         res.locals.data = data;
         return res.render("schoolLevel/school-classSections", {
           title: "Classes & Sections",
-          data,
-          class_std,
-          medium,
         });
-      }
+      });
     });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// editing fee structure in school dashboard
+
+// get edit fee structure
+exports.getEditFeeStructure = (req, res, next) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    const feeS_id = req.params.id;
+    const feeS_query = `SELECT * FROM school_feestructure WHERE id='${feeS_id}'`;
+    dbcon.query(feeS_query, (err, fetchedData) => {
+      if (err) throw err;
+      res.locals.class_std = fetchedData[0].class_std;
+      res.locals.medium = fetchedData[0].medium;
+      res.locals.actual_fee = fetchedData[0].actual_fee;
+      return res.render("schoolLevel/school-edit-feeStructure", {
+        title: "Edit Fee Structure",
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// put Edit fee structure
+exports.putFeeStructure = (req, res, next) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    const check = req.params.id;
+    console.log(check);
   } catch (err) {
     console.log(err);
   }

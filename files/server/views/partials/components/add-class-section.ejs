@@ -8,14 +8,13 @@
                 <hr />
               </div>
               <div class="mb-3">
-                <label for="class">Class:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="class"
-                  id="class"
-                  placeholder="6 / LKG / UKG etc"
-                />
+                <label for="class">Class & Medium:</label>
+                <select id="class" class="form-control" name="class">
+                  <% if(locals.classOptions) {
+                    for (let i=0; i < locals.classOptions.length; i++) { %>
+                      <option value="<%= locals.classOptions[i].id %>"><%= locals.classOptions[i].class_std %> std - <%= locals.classOptions[i].medium %> Medium</option>
+                    <% } } %>
+                </select>
                 <span class="error" id="class_error"
                   >Class should not be empty.</span
                 >
@@ -31,18 +30,6 @@
                 />
                 <span class="error" id="section_error"
                   >Section should not be empty.</span
-                >
-              </div>
-              <div class="mb-3">
-                <label for="medium">Medium of Language:</label>
-                <select id="medium" class="form-control" name="medium">
-                  <option value="">Select One</option>
-                  <option value="Tamil">Tamil</option>
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                </select>
-                <span class="error" id="medium_error"
-                  >Please select the Medium.</span
                 >
               </div>
               <div class="mb-3">

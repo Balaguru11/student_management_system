@@ -1,13 +1,18 @@
-<div class="container p-5">
+<div class="container p-2">
     <div class="row d-flex justify-content-center">
         <div class="col-lg-6 col-md-8 col-sm-10">
-            <% if(locals.err_msg.length > 0) { %>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <%= err_msg %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
-                
-            <% } %>
+          <% if(locals.err_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= err_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+        <% } %>
+        <% if(locals.success_msg.length > 0) { %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <%= success_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+      <% } %>
         </div>
     </div>
 </div>
@@ -35,7 +40,7 @@
                     <tr>
                       <th scope="row"><%= (i+1) %></th>
                       <td><%= locals.data[i].subject_name %></td>
-                      <td><a class="btn btn-warning edit" href="../subjects/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../subjects/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
+                      <td><a class="btn btn-warning edit" href="../dashboard/subjects/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../dashboard/subjects/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
                     </tr>
               <%  }
                   } else { %>

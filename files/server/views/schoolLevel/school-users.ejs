@@ -1,13 +1,18 @@
-<div class="container p-5">
+<div class="container p-2">
     <div class="row d-flex justify-content-center">
         <div class="col-lg-6 col-md-8 col-sm-10">
-            <% if(locals.err_msg.length > 0) { %>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <%= err_msg %>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                  </div>
-                
-            <% } %>
+          <% if(locals.err_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <%= err_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+        <% } %>
+        <% if(locals.success_msg.length > 0) { %>
+          <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <%= success_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+      <% } %>
         </div>
     </div>
 </div>
@@ -41,7 +46,7 @@
                       <td><%= locals.data[i].username %></td>
                       <td><%= locals.data[i].email %></td>
                       <td><%= locals.data[i].status %></td>
-                      <td><a class="btn btn-warning edit" href="../users/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../users/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
+                      <td><a class="btn btn-warning edit" href="../dashboard/users/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../dashboard/users/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
                     </tr>
               <%  }
                   } else { %>

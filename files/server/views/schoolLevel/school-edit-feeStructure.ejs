@@ -1,0 +1,35 @@
+<div class="container p-5">
+  <div class="row d-flex justify-content-center">
+      <div class="col-lg-6 col-md-8 col-sm-10">
+        <% if(locals.err_msg.length > 0) { %>
+          <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              <%= err_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+      <% } %>
+      <% if(locals.success_msg.length > 0) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <%= success_msg %>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+    <% } %>
+      </div>
+      <div class="p-5 sticky-top mt-5">
+        <%- include ('../partials/components/edit-fee-structure') %>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Edit -->
+<!-- <div class="modal" id="editfee">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        
+      </div>
+    </div>
+  </div>
+</div> -->

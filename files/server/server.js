@@ -15,7 +15,7 @@ const app = express();
 require("dotenv").config();
 
 // //database
-require("./DB/database");
+const dbcon = require("./DB/database");
 
 const PORT = process.env.PORT || 8000;
 
@@ -70,7 +70,16 @@ app.get("/", (req, res) => {
   let success_msg = "";
   success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  return res.render("home", { title: "Home" });
+  try {
+    const fetch_role = `SELECT * FROM school_role`;
+    dbcon.query(fetch_role, (err, data) => {
+      if (err) throw err;
+      res.locals.data = data;
+      return res.render("home", { title: "Home" });
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
 app.get("/logout", (req, res) => {

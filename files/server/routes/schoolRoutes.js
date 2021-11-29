@@ -20,6 +20,8 @@ const {
   viewUserAccounts,
   viewSubjects,
   viewClassSections,
+  getEditFeeStructure,
+  putFeeStructure,
 } = require("../controllers/schoolController");
 
 schoolRouter.get("/create", getCreateSchool);
@@ -65,5 +67,17 @@ schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
 schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
 
 schoolRouter.get("/dashboard/sections", isSchool, viewClassSections);
+
+schoolRouter.get(
+  "/dashboard/fee-structure/edit/:id",
+  isSchool,
+  getEditFeeStructure
+);
+
+schoolRouter.put(
+  "/dashboard/fee-structure/edit/:id",
+  isSchool,
+  putFeeStructure
+);
 
 module.exports = schoolRouter;
