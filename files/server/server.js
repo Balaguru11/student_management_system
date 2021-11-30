@@ -26,7 +26,7 @@ app.use(
   session({
     name: "account",
     secret: "SecretStringForExpressSession",
-    cookie: { maxAge: 1200000 },
+    cookie: { maxAge: 1200000 }, // milli seconds
     resave: true,
     saveUninitialized: true,
   })

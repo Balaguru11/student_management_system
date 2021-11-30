@@ -16,24 +16,24 @@
 // });
 
 // working code before sequelize
-const mysql = require('mysql')
+const mysql = require("mysql");
 
 const con = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "student_management_system"
-})
+  host: "localhost",
+  user: "root",
+  password: "",
+  database: "student_management_system",
+  multipleStatements: true,
+});
 
-con.connect(function(err) {
-    if(err){
-        return console.log(err);
-    }
-    return console.log("Database connected successfully");
+con.connect(function (err) {
+  if (err) {
+    return console.log(err);
+  }
+  return console.log("Database connected successfully");
 });
 
 module.exports = con;
-
 
 // const Sequelize = require('sequelize');
 // require('dotenv').config();

@@ -1,0 +1,55 @@
+
+            <form id="addclass-form" action="/school/dashboard/section-subject-staff" method="POST">
+              <div class="mt-3 mb-3">
+                <h2 class="text-center">Assign Staff & Subjects</h2>
+                <p class="text-center">
+                  <small>Assigning Staff & Subjects to the class-sections</small>
+                </p>
+                <hr />
+              </div>
+              <div class="mb-3">
+                <label for="class">Class & Medium:</label>
+                <select id="class" class="form-control" name="class" required>
+                  <% if(locals.tableData) {
+                    for (let i=0; i < locals.tableData[0].length; i++) { %>
+                      <option value="<%= locals.tableData[0][i].clr_id %>"><%= locals.tableData[0][i].class_std %> std - <%= locals.tableData[0][i].medium %> Medium - <%= locals.tableData[0][i].class_section %> Section</option>
+                    <% } } %>
+                </select>
+                <span class="error" id="class_error"
+                  >Class should not be empty.</span
+                >
+              </div>
+      <!-- Subject -->
+              <div class="mb-3">
+                <label for="subject">Choose Subject: </label>
+                <select id="subject" class="form-control" name="subject" required>
+                  <% if(locals.tableData) {
+                    for (let i=0; i < locals.tableData[1].length; i++) { %>
+                      <option value="<%= locals.tableData[1][i].id %>"><%= locals.tableData[1][i].subject_name %></option>
+                    <% } } %>
+                </select>
+                <span class="error" id="subject_error"
+                  >Please Select a Subject.</span
+                >
+              </div>
+      <!-- staff -->
+              <div class="mb-3">
+                <label for="staff">Choose Faculty: </label>
+                <select id="staff" class="form-control" name="staff" required>
+                  <% if(locals.tableData) {
+                    for (let i=0; i < locals.tableData[2].length; i++) { %>
+                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].id %> - <%= locals.tableData[2][i].username %> </option>
+                    <% } } %>
+                </select>
+                <span class="error" id="staff_error"
+                  >Please assign a Staff.</span
+                >
+              </div>
+              
+              <div class="mb-3">
+                <button class="btn btn-secondary" type="submit" value="submit">
+                  Submit Assignment
+                </button>
+              </div>
+            </form>
+           

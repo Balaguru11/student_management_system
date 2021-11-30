@@ -605,3 +605,67 @@ exports.putFeeStructure = (req, res, next) => {
     console.log(err);
   }
 };
+
+// subject Staff Section mapping
+exports.getMapSubStaff = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+
+  try {
+    // fetching class_id, section from classroom
+    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
+    dbcon.query(class_med_sec, (err, tableData) => {
+      if (err) throw err;
+
+      var bridgeTableQuery = `SELECT scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
+      INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
+      INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
+      INNER JOIN school_main_login AS sml ON sml.id = scs.staff_id_assigned AND sml.status='Active'
+      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}'`;
+      dbcon.query(bridgeTableQuery, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        // console.log(tableData);
+        res.locals.tableData = tableData;
+        res.locals.result = result;
+        return res.render("schoolLevel/school-map-subject-staff", {
+          title: "Assign Staff to Subjects",
+        });
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// post Map Subject Staff
+exports.postMapSubStaff = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
+
+    dbcon.query(MapSubStaffSec, (err, bridgeData) => {
+      if (err) throw err;
+      console.log(bridgeData);
+      req.flash("success", "Subject and Staff Added to the classroom.");
+      return res.redirect("/dashboard/section-subject-staff");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};

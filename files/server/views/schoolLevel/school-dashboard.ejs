@@ -1,16 +1,12 @@
-    <div class="col-auto float-left">
-      <%- include ('../partials/components/school-sideMenu') %>
-    </div>
-    
-    <div class="col-lg-8 col-md-8 col-sm-10 float-right">
-    <p>Test content</p>
+ 
+ 
+  
+  <div class="col-xl-12 col-lg-12 col-md-8 col-sm-10 p-5 m-3 justify-content-center">
     <!-- <h2 class="text-center">School Master Dashboard</h2> -->
     <% if(locals.welcome_msg) { %>
-      <div class="row">
-        <div class="col-6 m-2 p-3">
+        <div class="col-6 m-4 p-2">
           <h5><%= welcome_msg %></h5>
         </div>
-      </div>
     <% } %>
     <br>
     <% if(locals.err_msg.length > 0) { %>
@@ -33,7 +29,8 @@
       <%- include ('../partials/components/school-inactive') %>
       <% } else { %>  
         <!-- active part -->
-      <div class="">
+        <%- include ('../partials/components/school-sideMenu') %>
+      <div class="col-xl-10">
         <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
           <li class="nav-item" role="presentation">
             <a
@@ -135,3 +132,9 @@
       <% } %>
       <!-- test -->
     </div>
+
+
+    <!-- closing tags from school-sidebarMenu -->
+    </div>
+  </div>
+</div>

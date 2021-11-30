@@ -22,6 +22,8 @@ const {
   viewClassSections,
   getEditFeeStructure,
   putFeeStructure,
+  getMapSubStaff,
+  postMapSubStaff,
 } = require("../controllers/schoolController");
 
 schoolRouter.get("/create", getCreateSchool);
@@ -80,4 +82,11 @@ schoolRouter.put(
   putFeeStructure
 );
 
+// section-subject-staff mapping
+schoolRouter.get("/dashboard/section-subject-staff", isSchool, getMapSubStaff);
+schoolRouter.post(
+  "/dashboard/section-subject-staff",
+  isSchool,
+  postMapSubStaff
+);
 module.exports = schoolRouter;
