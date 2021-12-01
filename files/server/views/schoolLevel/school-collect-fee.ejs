@@ -1,6 +1,7 @@
-<div class="container pt-5">
+
+<div class="container p-2">
     <div class="row d-flex justify-content-center">
-        <div class="col-lg-6 col-md-8 col-sm-10 pt-4">
+        <div class="col-lg-6 col-md-8 col-sm-10">
             <% if(locals.err_msg.length > 0) { %>
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     <%= err_msg %>
@@ -16,15 +17,17 @@
         </div>
     </div>
 </div>
-<div class="container pt-3">
+<div class="container pb-5">
     <div class="row">
-        <div class="col-lg-4 col-sm-12">
-            <div class="pt-5 p-2 sticky-top bg-light">
-                <%- include ('../partials/components/create/sub-staff-mapping') %>
+        <div class="col-lg-6 col-sm-12">
+            <div class="p-5 sticky-top mt-5">
+                <%- include ('../partials/components/create/add-collect-fee') %>
             </div>
         </div>
-        <div class="col-lg-8 col-sm-12 overflow-auto border">
-          <%- include ('../partials/components/read/view-sub-staff-mapping') %>
-      </div>
+        <div class="col-lg-6 col-sm-12 overflow-auto p-2 border">
+            
+          <%- include ('../partials/components/read/view-fee-collection') %>
+
+        </div>
     </div>
 </div>

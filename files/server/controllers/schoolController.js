@@ -669,3 +669,124 @@ exports.postMapSubStaff = (req, res) => {
     console.log(err);
   }
 };
+
+// Announcement CRUD
+exports.getMessageR = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // Dos something here
+    return res.status(200);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.postMessageC = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // Dos something here
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.putMessageU = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // Dos something here
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.deleteMessageD = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // Dos something here
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// Collect Fee CRUD
+exports.getFeeCollection = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    if (session.schoolStatus == "Active") {
+      var fee_data = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, clr.students_filled, (clr.students_strength - clr.students_filled) AS clr_seats_free, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); `;
+
+      // SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(school_feestructure.class_std); SELECT * FROM school_classroom where school_id='${session.schoolId}'; `;
+      dbcon.query(fee_data, (err, feeData) => {
+        if (err) throw err;
+        console.log(feeData);
+        res.locals.feeData = feeData;
+        return res.render("schoolLevel/school-collect-fee", {
+          title: "Fee Collection",
+        });
+      });
+    } else {
+      req.flash("err_msg", "Please Activate the School to collect Fee.");
+      return res.redirect("/school/dashboard");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// postFeeCollection
+exports.postFeeCollection = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // fetch data from other tables.
+  } catch (err) {
+    console.log(err);
+  }
+};

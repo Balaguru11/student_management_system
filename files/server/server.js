@@ -26,7 +26,7 @@ app.use(
   session({
     name: "account",
     secret: "SecretStringForExpressSession",
-    cookie: { maxAge: 1200000 }, // milli seconds
+    cookie: { maxAge: 1200000 },
     resave: true,
     saveUninitialized: true,
   })
@@ -54,11 +54,13 @@ app.set("view engine", "ejs");
 const schoolRoutes = require("./routes/schoolRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 const schoolActivate = require("./routes/activate");
+const apiRoutes = require("./routes/apiRoute");
 
 //using imported routes
 app.use("/school", schoolRoutes);
 app.use("/staff", staffRoutes);
 app.use("/activate", schoolActivate);
+app.use("/api", apiRoutes);
 
 //routes
 app.get("/", (req, res) => {

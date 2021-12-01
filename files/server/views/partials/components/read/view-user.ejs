@@ -1,0 +1,33 @@
+<div class="pt-5">
+    <h4 class="text-center">View User Accounts</h4><br>
+    <table class="table table-light text-center">
+      <thead>
+        <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Role</th>
+        <th scope="col">Username</th>
+        <th scope="col">Email ID</th>
+        <th scope="col">Status</th>
+        <th width="200px">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+        <% if(locals.data.length > 0) {                    
+          for(var i = 0; i < locals.data.length; i++) {%>
+            <tr>
+              <th scope="row"><%= (i+1) %></th>
+              <td><%= locals.data[i].role_id_fk %></td>
+              <td><%= locals.data[i].username %></td>
+              <td><%= locals.data[i].email %></td>
+              <td><%= locals.data[i].status %></td>
+              <td><a class="btn btn-warning edit" href="../dashboard/users/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../dashboard/users/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
+            </tr>
+      <%  }
+          } else { %>
+                <tr>
+                  <td colspan="5" class="text-center">No User accounts added.</td>
+                </tr>
+          <% } %>
+      </tbody>
+    </table>
+  </div>

@@ -1,0 +1,31 @@
+<div class="pt-5">
+    <h4 class="text-center">Assign Class-section, Staff & Subject</h4><br>
+    <table class="table table-light text-center">
+      <thead>
+        <tr>
+        <th scope="col">S.No</th>
+        <th width="300px">Class-Section - Medium</th>
+        <th width="150px">Subjects</th>
+        <th width="150px">Faculty</th>
+        <th width="200px">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+        <% if(locals.result.length > 0) {                    
+          for(var i = 0; i < locals.result.length; i++) {%>
+            <tr>
+              <th scope="row"><%= (i+1) %></th>
+              <td><b><%= locals.result[i].class_std %></b> std-<b><%= locals.result[i].medium %></b> Medium - <b><%= locals.result[i].class_section %></b> Sec</td>
+              <td><%= locals.result[i].subject_name %></td>
+              <td><%= locals.result[i].username %></td>
+              <td><a class="btn btn-warning edit" href="../dashboard/section-subject-staff/edit/<%= locals.result[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../dashboard/section-subject-staff/delete/<%= locals.result[i].id %>">Delete</a></td>                                            
+            </tr>
+      <%  }
+          } else { %>
+                <tr>
+                  <td colspan="5" class="text-center"><mark>No Class / Sections / Staff assigned.</mark></td>
+                </tr>
+          <% } %>
+      </tbody>
+    </table>
+  </div>

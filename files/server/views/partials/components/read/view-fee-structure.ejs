@@ -1,0 +1,31 @@
+<div>
+    <h4 class="text-center">View Class Standards</h4><br>
+      <table class="table table-light text-center">
+        <thead>
+          <tr>
+          <th scope="col">S.No</th>
+          <th scope="col">Class</th>
+          <th scope="col">Medium</th>
+          <th scope="col">Fee Amount</th>
+          <th width="200px">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+          <% if(locals.data.length > 0) {        
+            for(var i = 0; i < locals.data.length; i++) { %>
+              <tr>
+                <th scope="row"><%= (i+1) %></th>
+                <td><%= locals.data[i].class_std %></td>
+                <td><%= locals.data[i].medium %></td>
+                <td><%= locals.data[i].actual_fee %></td>
+                <td><a class="btn btn-warning edit" href="../dashboard/fee-structure/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../dashboard/fee-structure/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
+              </tr>
+        <%  }  
+          } else { %>
+                  <tr>
+                    <td colspan="5" class="text-center">No records found.</td>
+                   </tr>
+            <% } %>
+        </tbody>
+      </table>
+</div>

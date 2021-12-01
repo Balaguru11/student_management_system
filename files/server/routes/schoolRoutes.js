@@ -24,63 +24,49 @@ const {
   putFeeStructure,
   getMapSubStaff,
   postMapSubStaff,
+  getMessageR,
+  postMessageC,
+  putMessageU,
+  deleteMessageD,
+  getFeeCollection,
 } = require("../controllers/schoolController");
 
+// CREATE SCHOOL
 schoolRouter.get("/create", getCreateSchool);
-
 schoolRouter.post("/create", postCreateSchool);
 
+// School Login
 schoolRouter.get("/login", getSchoolLogin);
-
 schoolRouter.post("/login", postSchoolLogin);
 
+// School Dashboard
 schoolRouter.get("/dashboard", isSchool, getSchoolDashBoard);
 
-schoolRouter.post("/add-classroom", isSchool, postAddClassroom);
-
-schoolRouter.post("/add-user", isSchool, postAddUser);
-
-schoolRouter.post("/add-subject", isSchool, postAddSubject);
-
-schoolRouter.post("/add-fees", isSchool, postAddFeeStructure);
-
-//redirect urls
-schoolRouter.get("/add-classroom", (req, res) => {
-  // 2 queries
-  // view class sections data
-
-  // fetch class
-  res.redirect("/school/dashboard");
-});
-
-schoolRouter.get("/add-user", (req, res) => {
-  res.redirect("/school/dashboard");
-});
-
-schoolRouter.get("/add-subject", (req, res) => {
-  res.redirect("/school/dashboard");
-});
-
-// View data from db with the get routes.
+// Fee Structure CRUD
 schoolRouter.get("/dashboard/fee-structure", isSchool, viweFeeStructure);
-
-schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
-
-schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
-
-schoolRouter.get("/dashboard/sections", isSchool, viewClassSections);
-
+schoolRouter.post("/dashboard/fee-structure", isSchool, postAddFeeStructure);
 schoolRouter.get(
   "/dashboard/fee-structure/edit/:id",
   isSchool,
   getEditFeeStructure
 );
-
 schoolRouter.put(
   "/dashboard/fee-structure/edit/:id",
   isSchool,
   putFeeStructure
 );
+
+// USERS CRUD
+schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
+schoolRouter.post("/dashboard/add-user", isSchool, postAddUser);
+
+// Subjects CRUD
+schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
+schoolRouter.post("/dashboard/add-subject", isSchool, postAddSubject);
+
+// Class Section CRUD
+schoolRouter.get("/dashboard/sections", isSchool, viewClassSections);
+schoolRouter.post("/dashboard/sections", isSchool, postAddClassroom);
 
 // section-subject-staff mapping
 schoolRouter.get("/dashboard/section-subject-staff", isSchool, getMapSubStaff);
@@ -89,4 +75,15 @@ schoolRouter.post(
   isSchool,
   postMapSubStaff
 );
+
+// not completed yet
+// Announcements
+schoolRouter.get("/dashboard/message", isSchool, getMessageR);
+schoolRouter.post("/dashboard/message", isSchool, postMessageC);
+schoolRouter.put("/dashboard/message/:id", isSchool, putMessageU);
+schoolRouter.delete("/dashboard/message/:id", isSchool, deleteMessageD);
+
+// fee collection CRUD
+schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
+
 module.exports = schoolRouter;
