@@ -29,6 +29,8 @@ const {
   putMessageU,
   deleteMessageD,
   getFeeCollection,
+  getAddStudent,
+  postAddStudent,
 } = require("../controllers/schoolController");
 
 // CREATE SCHOOL
@@ -59,6 +61,7 @@ schoolRouter.put(
 // USERS CRUD
 schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
 schoolRouter.post("/dashboard/add-user", isSchool, postAddUser);
+schoolRouter.put("/dashboard/user", isSchool, postAddUser);
 
 // Subjects CRUD
 schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
@@ -75,6 +78,10 @@ schoolRouter.post(
   isSchool,
   postMapSubStaff
 );
+
+// STUDDNT CRUD
+schoolRouter.get("/dashboard/students", isSchool, getAddStudent);
+schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent);
 
 // not completed yet
 // Announcements

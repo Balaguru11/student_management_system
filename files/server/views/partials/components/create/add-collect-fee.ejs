@@ -47,16 +47,16 @@
         <label for="academic_year">Fee Paying for the Acadmic Year: </label>
         <input type="number" class="form-control"
         name="academic_year"
-        id="academic_year">
+        id="academic_year" value="<%= new Date().getFullYear(); %>">
         <span class="error" id="academic_year_error">Please enter the academic year.</span>
     </div>
     <div class="mb-3">
-      <label for="class_medium">Class - Medium & Section: </label>
+      <label for="class_medium">Class & Medium: </label>
       <select id="class_medium" class="form-control" name="class_medium" required>
         <option value="">Select Std & Medium</option>
         <% if(locals.feeData) {
           for (let i=0; i < locals.feeData.length; i++) { %>
-            <option value="<%= locals.feeData[i].class_id %>"><%= locals.feeData[i].class_std %> std - <%= locals.feeData[i].medium %> Medium </option>
+            <option value="<%= locals.feeData[i].id %>"><%= locals.feeData[i].class_std %> std - <%= locals.feeData[i].medium %> Medium -- Rs. <%= locals.feeData[i].actual_fee %> /-</option>
           <% } } %>
       </select>
       <span class="error" id="class_medium_error">Please choose Class & medium.</span>
@@ -67,13 +67,12 @@
     </select>
     <span class="error" id="class_medium_error">Please choose Class & medium.</span>
 </div>
-    <div class="mb-3">
-        <label for="fee_amount">Fee Amount: </label>
+    <!-- <div class="mb-3">
+        <label for="fee_amount">Fee Amount: </label>     
         <input type="number" class="form-control"
         name="fee_amount"
-        id="fee_amount"
-        placeholder="in INR" disabled>
-    </div>
+        id="fee_amount" placeholder="in INR" disabled>
+    </div> -->
     <div class="mb-3">
         <label for="fee_paid">Amount Paying: </label>
         <input type="number" class="form-control"
@@ -87,7 +86,7 @@
         <input type="date" class="form-control"
         name="fee_paid_date"
         id="fee_paid_date"
-        placeholder="Date of Payment">
+        placeholder="Date of Payment" value="">
         <span class="error" id="fee_paid_date">Please enter the date when the fee received to the School Bank Account.</span>
     </div>
     <div class="mb-3">
@@ -98,22 +97,24 @@
         <option value="card">Debit / Credit Card</option>
         <option value="cheque">Cheque</option>
         <option value="netbanking">Netbanking</option>
+        <option value="emi">EMI</option>
       </select>
       <span class="error" id="payment_mode_error"
         >Please select the Payment Mode.</span
       >
     </div>
-    <div class="mb-3">
+    <!-- <div class="mb-3">
         <label for="due_status">Fee Due Status:</label>
         <select id="due_status" class="form-control" name="due_status" disabled>
+          <option value="paid" selected>New Admission</option>
           <option value="paid">Fully Paid</option>
           <option value="due">Pending</option>
-          <option value="notpaid" selected>Not Paid</option>
+          <option value="notpaid">Not Paid</option>
         </select>
         <span class="error" id="payment_mode_error"
           >Please select the Payment Mode.</span
         >
-      </div>
+      </div> -->
 
     <div class="mb-3">
       <button class="btn btn-secondary" type="submit" value="submit">

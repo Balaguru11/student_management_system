@@ -457,7 +457,7 @@ exports.viewUserAccounts = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}'`;
+    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND NOT(role_id_fk='1')`;
 
     dbcon.query(userAccData, (err, data) => {
       if (err) {
@@ -753,12 +753,10 @@ exports.getFeeCollection = (req, res) => {
   let session = req.session;
   try {
     if (session.schoolStatus == "Active") {
-      var fee_data = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, clr.students_filled, (clr.students_strength - clr.students_filled) AS clr_seats_free, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); `;
-
-      // SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(school_feestructure.class_std); SELECT * FROM school_classroom where school_id='${session.schoolId}'; `;
+      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_classroom AS clr
+      INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
       dbcon.query(fee_data, (err, feeData) => {
         if (err) throw err;
-        console.log(feeData);
         res.locals.feeData = feeData;
         return res.render("schoolLevel/school-collect-fee", {
           title: "Fee Collection",
@@ -790,3 +788,88 @@ exports.postFeeCollection = (req, res) => {
     console.log(err);
   }
 };
+
+// STUDENT CRUD
+exports.getAddStudent = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var StudentData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='1'`;
+
+    dbcon.query(StudentData, (err, data) => {
+      if (err) throw err;
+      console.log(data);
+      res.locals.data = data;
+      return res.render("schoolLevel/school-students", {
+        title: "Student Accounts",
+        data,
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// Add Student
+exports.postAddStudent = (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    if (session.schoolStatus == "Active") {
+      var userCheck = `SELECT EXISTS (SELECT * FROM school_main_login WHERE username='${req.body.username}' OR email='${req.body.email}' AND school_id='${session.schoolId}' ) AS count`;
+
+      dbcon.query(userCheck, (err, data) => {
+        if (err) {
+          req.flash("err_msg", "We could not add new user at the moment.");
+          return res.redirect("/school/dashboard/users");
+        } else if (data[0].count == 0) {
+          const userPassword = req.body.password;
+          const hashedPass = bcrypt.hashSync(`${userPassword}`, 10);
+
+          const addStudent = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${session.schoolId}', '1', '${req.body.username}', '${hashedPass}', '${req.body.email}', 'Inactive');`;
+
+          dbcon.query(addStudent, function (err) {
+            if (err) {
+              req.flash(
+                "err_msg",
+                "There is an error when adding new student. Please try again later."
+              );
+              return res.redirect("/school/dashboard/students");
+            } else {
+              req.flash("success", "A New Student account has been added.");
+              return res.redirect("/school/dashboard/students");
+            }
+          });
+        } else {
+          req.flash(
+            "err_msg",
+            "This Username / email is already registered with this School."
+          );
+          return res.redirect("/school/dashboard/students");
+        }
+      });
+    } else {
+      req.flash("err_msg", "The School is not active.");
+      return res.status(401).redirect("/school/dashboard");
+    }
+  } catch (err) {
+    console.log(err);
+    return res.status(500).send(err);
+  }
+};
+
+//view A Student Profile

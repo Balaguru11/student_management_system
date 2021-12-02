@@ -1,0 +1,142 @@
+ 
+ 
+  
+  <div class="col-xl-12 col-lg-12 col-md-8 col-sm-10 p-5 m-3 justify-content-center">
+    <h2 class="text-center">Student Dashboard</h2>
+    <% if(locals.welcome_msg) { %>
+        <div class="col-6 m-4 p-2">
+          <h5><%= welcome_msg %></h5>
+        </div>
+    <% } %>
+    <br>
+    <% if(locals.err_msg.length > 0) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= err_msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+   <% } %>
+
+    <% if(locals.success_msg.length > 0) { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <%= success_msg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+
+    <!-- When Inactive -->
+    <% if(locals.status == "Inactive") { %>
+      <!-- Inactive Part -->
+      <%- include ('../partials/components/school-inactive') %>
+      <% } else { %>  
+        <!-- active part -->
+        <%- include ('../partials/components/school-sideMenu') %>
+        <!-- This whole div will be removed from Dashboard -->
+        <!-- Display Reports Here -->
+      <div class="col-xl-10">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link active"
+              id="pills-fee-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-fee"
+              type="button"
+              role="tab"
+              aria-controls="pills-fee"
+              aria-selected="false"
+              href="#fees"
+            >
+              Add Fee Structure
+          </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              id="pills-staff-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-staff"
+              type="button"
+              role="tab"
+              aria-controls="pills-staff"
+              aria-selected="false"
+              href="#staff"
+            >
+              Add Users
+          </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              id="pills-subject-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-subject"
+              type="button"
+              role="tab"
+              aria-controls="pills-subject"
+              aria-selected="false"
+              href="#subject"
+            >
+              Add Subject
+          </a>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a
+              class="nav-link"
+              id="pills-classroom-tab"
+              data-bs-toggle="pill"
+              data-bs-target="#pills-classroom"
+              type="button"
+              role="tab"
+              aria-controls="pills-classroom"
+              aria-selected="true"
+              href="#classroom"
+            >
+              Add Class Sections
+          </a>
+          </li>
+        </ul>
+        <div class="tab-content" id="pills-tabContent">
+          <div
+            class="tab-pane fade show active"
+            id="pills-fee"
+            role="tabpanel"
+            aria-labelledby="pills-fee-tab"
+          >
+          <%- include ('../partials/components/create/add-fee-structure') %>
+          </div>
+          <div
+              class="tab-pane fade"
+              id="pills-classroom"
+              role="tabpanel"
+              aria-labelledby="pills-classroom-tab"
+            >
+
+            <%- include ('../partials/components/create/add-class-section') %>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="pills-staff"
+            role="tabpanel"
+            aria-labelledby="pills-staff-tab"
+          >
+          <%- include ('../partials/components/create/add-user') %>
+          </div>
+          <div
+            class="tab-pane fade"
+            id="pills-subject"
+            role="tabpanel"
+            aria-labelledby="pills-subject-tab"
+          >
+          <%- include ('../partials/components/create/add-subject') %>
+          </div>
+        </div>
+      </div>
+      <% } %>
+      <!-- test -->
+    </div>
+
+
+    <!-- closing tags from school-sidebarMenu -->
+    </div>
+  </div>
+</div>

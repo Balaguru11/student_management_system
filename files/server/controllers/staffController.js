@@ -4,6 +4,14 @@ const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 
 exports.postStaffLogin = (req, res) => {
+  // flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
   try {
     var staffLoginQuery = `SELECT * FROM school_main_login WHERE role_id_fk='${req.body.role}' AND username='${req.body.username}'`;
 
@@ -44,9 +52,16 @@ exports.postStaffLogin = (req, res) => {
 };
 
 exports.getStaffDashboard = (req, res) => {
+  // flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
   try {
     let session = req.session;
-    console.log(session);
     if (session.logged_in) {
       staff_role = session.roleId;
       res.locals.staff_status = session.staffStatus;

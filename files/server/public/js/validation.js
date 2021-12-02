@@ -176,20 +176,51 @@ $(document).ready(function () {
       url: "/api/get-class-sections",
       type: "POST",
       data: {
-        name: "school_classroom",
-        id: class_medium,
+        class_id: class_medium,
       },
       dataType: "json",
       success: function (result) {
         $("#class_section").html(
-          '<option value="">Select A Class Section</option>'
+          '<option value="">Select Class Section here.</option>'
         );
-        $.each(result.class_section, function (key, value) {
+        $.each(result.class_secs, function (key, value) {
           $("#class_section").append(
-            '<option value="' + value.id + '">' + value.name + "</option>"
+            '<option value="' +
+              value.id +
+              '">' +
+              value.class_section +
+              " Sec - " +
+              value.seats_free +
+              " Seats Left </option>"
           );
         });
       },
     });
   });
 });
+
+// dynamic select opption based on selected option in HTML form
+// $(document).ready(function () {
+//   $("#class_medium").on("change", function () {
+//     var class_medium_1 = this.value;
+//     $("#fee_amount").val("");
+//     $.ajax({
+//       url: "/api/get-class-fee",
+//       type: "POST",
+//       data: {
+//         class_id: class_medium_1,
+//       },
+//       dataType: "json",
+//       success: function (result) {
+//         console.log(result);
+//         $("#fee_amount").val("Rs. 0");
+//         $.each(result.class_fee, function (key, value) {
+//           $("#fee_amount").val(value.actual_fee);
+//         });
+//       },
+//       error: function (result) {
+//         alert(err);
+//       },
+//     });
+//   });
+// });

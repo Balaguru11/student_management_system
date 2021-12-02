@@ -55,10 +55,12 @@ const schoolRoutes = require("./routes/schoolRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 const schoolActivate = require("./routes/activate");
 const apiRoutes = require("./routes/apiRoute");
+const studentRouter = require("./routes/studentRoute");
 
 //using imported routes
 app.use("/school", schoolRoutes);
 app.use("/staff", staffRoutes);
+app.use("/student", studentRouter);
 app.use("/activate", schoolActivate);
 app.use("/api", apiRoutes);
 

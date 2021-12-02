@@ -75,9 +75,9 @@
               role="tabpanel"
               aria-labelledby="pills-classroom-tab"
             >
-              <% if(locals.err_msg) { %>
+              <% if(locals.err_msg.length > 0) { %>
               <div class="alert alert-danger" role="alert"><%= err_msg %></div>
-              <% } %> <% if(locals.success_msg) { %>
+              <% } %> <% if(locals.success_msg.length > 0) { %>
               <div class="alert alert-success" role="success">
                 <%= success_msg %>
               </div>

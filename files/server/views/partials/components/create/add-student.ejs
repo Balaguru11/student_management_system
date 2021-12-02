@@ -1,0 +1,54 @@
+<form id="addadmin-form" method="POST" action="/school/dashboard/add-student">
+    <h2 class="text-center">Add New Student</h2>
+    <hr />
+
+    <div class="mt-3 mb-3">
+      <label for="select">Role:</label>
+      <select id="role" name="role" class="form-control">
+        <option value="1" selected>Student</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="username">Username:</label>
+      <input
+        type="text"
+        class="form-control"
+        name="username"
+        placeholder="Username"
+        id="username"
+      />
+      <span class="error" id="username-error"
+        >Username should be at least 3 characters long.</span
+      >
+    </div>
+    <div class="mb-3">
+      <label for="password">Password:</label>
+      <input
+        type="password"
+        class="form-control"
+        name="password"
+        placeholder="Type your Password here"
+        id="password"
+      />
+      <span class="error" id="password-error"
+        >Password should contain 8 characters with a Uppercase, a
+        lowercase, a Number and a Special character.</span
+      >
+    </div>
+    <div class="mb-3">
+      <label for="email">Email:</label>
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        placeholder="Type your email here"
+        id="email"
+      />
+      <span class="error" id="email-error">Email is invalid.</span>
+    </div>
+    <div class="login">
+      <button class="btn btn-secondary" type="submit">
+        Add New Student
+      </button>
+    </div>
+  </form>
