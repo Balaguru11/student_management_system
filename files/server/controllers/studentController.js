@@ -66,7 +66,7 @@ exports.viewStuDashboard = (req, res) => {
   try {
     let session = req.session;
     if (session.logged_in && session.roleId == "1") {
-      res.locals.staff_status = session.staffStatus;
+      res.locals.student_status = session.studentstatus;
       res.locals.username = session.username;
       return res.render("studentLevel/student-dashboard", {
         title: "Student Dashboard",
