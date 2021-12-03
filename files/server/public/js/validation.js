@@ -200,27 +200,23 @@ $(document).ready(function () {
 });
 
 // dynamic select opption based on selected option in HTML form
-// $(document).ready(function () {
-//   $("#class_medium").on("change", function () {
-//     var class_medium_1 = this.value;
-//     $("#fee_amount").val("");
-//     $.ajax({
-//       url: "/api/get-class-fee",
-//       type: "POST",
-//       data: {
-//         class_id: class_medium_1,
-//       },
-//       dataType: "json",
-//       success: function (result) {
-//         console.log(result);
-//         $("#fee_amount").val("Rs. 0");
-//         $.each(result.class_fee, function (key, value) {
-//           $("#fee_amount").val(value.actual_fee);
-//         });
-//       },
-//       error: function (result) {
-//         alert(err);
-//       },
-//     });
-//   });
-// });
+$(document).ready(function () {
+  $("#class_medium").on("change", function () {
+    var class_medium_1 = this.value;
+    $("#fee_amount").val("");
+    $.ajax({
+      url: "/api/get-class-fee",
+      type: "POST",
+      data: {
+        class_id: class_medium_1,
+      },
+      dataType: "json",
+      success: function (data) {
+        $("#fee_amount").val(data).text(data);
+      },
+      error: function (err) {
+        alert(err);
+      },
+    });
+  });
+});

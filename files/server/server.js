@@ -86,6 +86,10 @@ app.get("/", (req, res) => {
   }
 });
 
+app.get("/login", (req, res) => {
+  return res.redirect("/");
+});
+
 app.get("/logout", (req, res) => {
   try {
     let session = req.session;
@@ -95,8 +99,8 @@ app.get("/logout", (req, res) => {
       console.log("logged out");
       return res.redirect("/");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    console.log(err);
   }
 });
 

@@ -29,6 +29,7 @@ const {
   putMessageU,
   deleteMessageD,
   getFeeCollection,
+  postFeeCollection,
   getAddStudent,
   postAddStudent,
 } = require("../controllers/schoolController");
@@ -81,7 +82,11 @@ schoolRouter.post(
 
 // STUDDNT CRUD
 schoolRouter.get("/dashboard/students", isSchool, getAddStudent);
-schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent);
+schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent); // Adding student to main_login (Inactive)
+
+// fee collection CRUD
+schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
+schoolRouter.post("/dashboard/fee-collection", isSchool, postFeeCollection);
 
 // not completed yet
 // Announcements
@@ -89,8 +94,5 @@ schoolRouter.get("/dashboard/message", isSchool, getMessageR);
 schoolRouter.post("/dashboard/message", isSchool, postMessageC);
 schoolRouter.put("/dashboard/message/:id", isSchool, putMessageU);
 schoolRouter.delete("/dashboard/message/:id", isSchool, deleteMessageD);
-
-// fee collection CRUD
-schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
 
 module.exports = schoolRouter;

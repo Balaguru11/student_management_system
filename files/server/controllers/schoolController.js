@@ -103,6 +103,14 @@ exports.getSchoolLogin = (req, res) => {
 };
 
 exports.postSchoolLogin = async (req, res) => {
+  // flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
   try {
     var loginQuery = `SELECT * FROM school_add_school WHERE school_login='${req.body.schoolUserName}'`;
     dbcon.query(loginQuery, function (err, result) {
@@ -143,6 +151,7 @@ exports.postSchoolLogin = async (req, res) => {
   }
 };
 
+// view Dashboard after login
 exports.getSchoolDashBoard = (req, res) => {
   try {
     let session = req.session;
@@ -782,8 +791,25 @@ exports.postFeeCollection = (req, res) => {
   success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
+  console.log(session);
   try {
-    // fetch data from other tables.
+    var selectStud = `SELECT * FROM school_main_login WHERE email='${req.body.email}'`;
+    dbcon.query(selectStud, (err, student) => {
+      if (err) throw err;
+      console.log(student);
+      // inserting record to school_student_admission
+      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '2000', '${req.body.fee_paid}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
+      dbcon.query(admissionQuery, (err, respo) => {
+        if (err) throw err;
+        //updating student status in main_login
+        var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
+        dbcon.query(studUpdateLogin, (err, result) => {
+          if (err) throw err;
+          req.flash("success", "Payment record added.");
+          return res.redirect("/school/dashboard/fee-collection");
+        });
+      });
+    });
   } catch (err) {
     console.log(err);
   }

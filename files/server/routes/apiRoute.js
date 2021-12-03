@@ -9,7 +9,7 @@ apiRouter.post("/get-class-sections", (req, res) => {
   var getclassection =
     'SELECT *, (students_strength - students_filled) AS seats_free FROM school_classroom WHERE class_id= "' +
     req.body.class_id +
-    '"';
+    '" AND students_strength - students_filled != "0"';
   dbcon.query(getclassection, (err, rows) => {
     if (err) {
       res.json({ msg: "error" });
@@ -22,22 +22,22 @@ apiRouter.post("/get-class-sections", (req, res) => {
   });
 });
 
-// apiRouter.post("/get-class-fee", (req, res) => {
-//   var getclassfee =
-//     'SELECT * FROM school_feestructure WHERE class_id= "' +
-//     req.body.class_id +
-//     '"';
-//   dbcon.query(getclassfee, (err, row) => {
-//     if (err) {
-//       res.json({ msg: "error", err });
-//     } else {
-//       console.log(row);
-//       res.json({
-//         msg: "success",
-//         class_fee: row,
-//       });
-//     }
-//   });
-// });
+apiRouter.post("/get-class-fee", (req, res) => {
+  var getclassfee =
+    'SELECT actual_fee FROM school_feestructure WHERE id= "' +
+    req.body.class_id +
+    '"';
+  dbcon.query(getclassfee, (err, row) => {
+    if (err) {
+      res.json({ msg: "error", err });
+    } else {
+      console.log(row);
+      res.json({
+        msg: "success",
+        class_fee: row,
+      });
+    }
+  });
+});
 
 module.exports = apiRouter;

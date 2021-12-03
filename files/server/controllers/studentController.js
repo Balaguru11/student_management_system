@@ -3,7 +3,8 @@ const dbcon = require("../DB/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 
-exports.postStuLogin = (req, res) => {
+// student loggin into his account
+exports.postStuLogin = async (req, res) => {
   // flashing err_msg
   let err_msg = "";
   err_msg = req.flash("err_msg");
@@ -19,6 +20,7 @@ exports.postStuLogin = (req, res) => {
       if (err) {
         console.log(err);
       } else if (result.length == 1) {
+        console.log(result);
         // password verification
         const passwordEntered = req.body.password;
         const studentPass = result[0].password;
@@ -49,7 +51,6 @@ exports.postStuLogin = (req, res) => {
     });
   } catch (err) {
     console.log(err);
-    return res.status(500).send(err);
   }
 };
 
