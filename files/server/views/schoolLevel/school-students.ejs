@@ -1,17 +1,17 @@
 <%- include ('../partials/components/school-sideMenu') %>
 
 
-<div class="container pt-3">
-    <div class="row d-flex justify-content-center">
-        <div class="col-lg-6 col-md-8 col-sm-10">
+<div class="container-fluid p-2">
+  <div class="row d-flex justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-10 mt-3">
           <% if(locals.err_msg.length > 0) { %>
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
                 <%= err_msg %>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
               </div>
         <% } %>
         <% if(locals.success_msg.length > 0) { %>
-          <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
               <%= success_msg %>
               <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
@@ -19,14 +19,14 @@
         </div>
     </div>
 </div>
-<div class="container">
-    <div class="row d-flex">
-        <div class="col-lg-4 col-xl-4 col-sm-10">
-            <div class="pt-5 p-2 sticky-top bg-light">
+<div class="container-fluid">
+    <div class="row mt-5">
+        <div class="col-lg-4 col-xl-4 col-sm-12">
+            <div class="pt-5 sticky-top bg-light">
                 <%- include ('../partials/components/create/add-student') %>
             </div>
         </div>
-        <div class="col-xl-6 col-lg-6 col-sm-10 overflow-auto border">
+        <div class="col-xl-8 col-lg-8 col-sm-12 overflow-auto border">
           <%- include ('../partials/components/read/view-student') %>
       </div>
     </div>

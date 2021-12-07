@@ -327,3 +327,67 @@ exports.postEditStaffProfile = (req, res) => {
     console.log(err);
   }
 };
+
+// view students assigned to the staff
+//there is an issue with this controller. Want to display only the students assigned to this staff but getting all.
+exports.getStudentsList = (req, res) => {
+  let session = req.session;
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  try {
+    if (session.roleId == "8") {
+      var studentList = `SELECT DISTINCT adm.student_id, sml.username, adm.email, adm.mobile_number, scs.classroom_id, scs.staff_id_assigned, sfs.class_std, sfs.medium, clr.class_section FROM school_class_subjects AS scs 
+      INNER JOIN school_classroom AS clr ON scs.classroom_id = clr.id 
+      INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id 
+      INNER JOIN school_student_admission AS adm ON adm.class_section = scs.classroom_id AND scs.staff_id_assigned = '${session.staff_id}'
+      INNER JOIN school_main_login AS sml ON sml.school_id = '${session.school_id}' AND sml.role_id_fk='1' AND sml.status='Active' 
+      WHERE scs.school_id='${session.school_id}'`;
+      dbcon.query(studentList, (err, list) => {
+        if (err) throw err;
+        res.locals.list = list;
+        return res.render("staffLevel/view-students-list", {
+          title: "Students List",
+        });
+      });
+    } else {
+      req.flash("err_msg", "You are not authorized.");
+      return res.redirect("/staff/dashboard");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// view the list of classes assigned to the teaching staff
+exports.getClassAssigned = (req, res) => {
+  let session = req.session;
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  try {
+    if (session.roleId == "8") {
+      var classAssigned = `SELECT DISTINCT scs.subject_id, scs.classroom_id, clr.class_id, clr.class_section, clr.students_filled, sfs.class_std, sfs.medium, sub.subject_name FROM school_class_subjects AS scs
+      INNER JOIN school_classroom AS clr ON scs.classroom_id = clr.id
+      INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id
+      INNER JOIN school_subjects AS sub ON scs.subject_id=sub.id
+      WHERE scs.school_id='${session.school_id}'`;
+      dbcon.query(classAssigned, (err, assignedClasses) => {
+        if (err) throw err;
+        console.log(assignedClasses);
+        res.locals.assignedClasses = assignedClasses;
+        return res.render("staffLevel/view-classes-assigned", {
+          title: "Classes Assigned",
+        });
+      });
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};

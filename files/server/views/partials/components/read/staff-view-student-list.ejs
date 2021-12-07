@@ -1,0 +1,33 @@
+<div class="pt-5">
+    <h4 class="text-center">View Students List</h4><br>
+    <table class="table table-light text-center">
+      <thead>
+        <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Class & Section</th>
+        <th scope="col">Student userName</th>
+        <th scope="col">Email ID</th>
+        <th scope="col">Mobile No</th>
+        <th width="200px">Actions</th>
+      </tr>
+      </thead>
+      <tbody>
+        <% if(locals.list.length > 0) {                    
+          for(var i = 0; i < locals.list.length; i++) {%>
+            <tr>
+              <th scope="row"><%= (i+1) %></th>
+              <td><%= locals.list[i].class_std %> std <%= locals.list[i].medium %> - Sec <%= locals.list[i].class_section %></td>
+              <td><%= locals.list[i].username %></td>
+              <td><%= locals.list[i].email %></td>
+              <td><%= locals.list[i].mobile_number %></td>
+              <td><a class="btn btn-info View" href="../dashboard/students/view/<%= locals.list[i].id %>"><i class="far fa-eye"></i></a> <a class="btn btn-warning edit" href="../dashboard/students/edit/<%= locals.list[i].id %>"><i class="fas fa-user-edit"></i></a> <a class="btn btn-danger delete" href="../dashboard/students/delete/<%= locals.list[i].id %>"><i class="far fa-trash-alt"></i></a></td>                                            
+            </tr>
+      <%  }
+          } else { %>
+                <tr>
+                  <td colspan="6" class="text-center">No Students assigned to this Staff.</td>
+                </tr>
+          <% } %>
+      </tbody>
+    </table>
+  </div>

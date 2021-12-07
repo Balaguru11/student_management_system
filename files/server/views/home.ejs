@@ -1,15 +1,27 @@
-    <div class="container p-4 mt-5">
+    <div class="container-fluid p-3">
+        <div class="row d-flex justify-content-center mt-5 bg-info">
+            
+            <div class="col-6 justify-content-center m-4">
+                <h2 class="display-5 text-center"> One Stop Solution to Manage your School.</h2><br>
+                <div class="text-center">
+                    <h5>Lets get started by adding the school you want to manage.</h5>
+                    <a class="btn btn-dark" role="button" href="/school/create"><i class="far fa-plus-square"></i> Add School</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container p-2">
         <div class="row d-flex justify-content-center">
-            <div class="col-lg-6 col-md-6 col-sm-10">
+            <div class="col-lg-6 col-md-6 col-sm-10 mt-3">
                     <% if(locals.err_msg.length > 0) { %>
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
                             <%- err_msg %>
                             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                           </div>
                     <% } %>
                     <% if(locals.success_msg.length > 0) { %>
         
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
                                     <%= success_msg %>
                                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                                   </div>
@@ -18,8 +30,8 @@
         </div>
     </div>
     <div class="container pb-5">
-            <div class="row d-flex justify-content-center ">
-                <div class="col-lg-6 col-md-6 col-sm-10 p-4 align-middle">
+            <div class="row d-flex mt-5 justify-content-center">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 align-middle px-5">
                    <div class="text-center">
                     <span class="iconsizing">
                         <i class="fas fa-school"></i>
@@ -44,7 +56,7 @@
                         </div>
                     </form>
                 </div>
-                <div class="col-lg-6 col-md-6 col-sm-10 p-4 align-top">
+                <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 align-top px-5">
                     <div class="text-center">
                         <span class="iconsizing">
                             <i class="fas fa-user"></i>

@@ -1,0 +1,35 @@
+<div>
+    <h4 class="text-center">View Fee Collection Records</h4><br>
+      <table class="table table-light text-center">
+        <thead>
+          <tr>
+          <th scope="col">S.No</th>
+          <th scope="col">Student Email</th>
+          <th scope="col">Mobile Number</th>
+          <th scope="col">Course Fee</th>
+          <th scope="col">Fee Paid</th>
+          <th scope="col">Due Status</th>
+          <th width="200px">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+          <% if(locals.data.length > 0) {        
+            for(var i = 0; i < locals.data.length; i++) { %>
+              <tr>
+                <th scope="row"><%= (i+1) %></th>
+                <td><%= locals.data[i].email %></td>
+                <td><%= locals.data[i].mobile_number %></td>
+                <td><%= locals.data[i].actual_fee %></td>
+                <td><%= locals.data[i].paying_amount %></td>
+                <td><%= locals.data[i].payment_status %></td>
+                <td><a class="btn btn-info view" href="../dashboard/fee-collection/view/<%= locals.data[i].id %>"><i class="far fa-eye"></i></a> <a class="btn btn-warning edit" href="../dashboard/fee-collection/edit/<%= locals.data[i].id %>"><i class="far fa-edit"></i></a> <a class="btn btn-danger delete" href="../dashboard/fee-collection/delete/<%= locals.data[i].id %>"><i class="far fa-trash-alt"></i></a></td>                                            
+              </tr>
+        <%  }  
+          } else { %>
+                  <tr>
+                    <td colspan="7" class="text-center">No records found.</td>
+                   </tr>
+            <% } %>
+        </tbody>
+      </table>
+</div>

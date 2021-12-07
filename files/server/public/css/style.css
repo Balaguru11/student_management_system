@@ -1,8 +1,8 @@
-.wrapper {
+/* .wrapper {
     width: 100%;
     margin: 0 auto;
-    /* padding: 0px; */
-}
+    padding: 0px;
+} */
 
 footer {
     text-align: center;
@@ -47,7 +47,7 @@ input.valid, textarea.valid{
   .iconsizing{
       font-size: 4em;
       border-color: black;
-      border-radius: 100%;
-      align-content: center;
+      /* border-radius: 100%; */
+      /* align-content: center; */
 
   }

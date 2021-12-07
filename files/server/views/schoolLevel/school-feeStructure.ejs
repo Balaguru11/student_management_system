@@ -1,15 +1,17 @@
 
-<div class="container p-2">
+<%- include ('../partials/components/school-sideMenu') %>
+
+<div class="container-fluid p-2">
     <div class="row d-flex justify-content-center">
-        <div class="col-lg-6 col-md-8 col-sm-10">
+        <div class="col-lg-6 col-md-8 col-sm-10 mt-3">
             <% if(locals.err_msg.length > 0) { %>
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
                     <%= err_msg %>
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                   </div>
             <% } %>
             <% if(locals.success_msg.length > 0) { %>
-              <div class="alert alert-success alert-dismissible fade show" role="alert">
+              <div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
                   <%= success_msg %>
                   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -17,17 +19,22 @@
         </div>
     </div>
 </div>
-<div class="container pb-5">
-    <div class="row">
-        <div class="col-lg-6 col-sm-12">
-            <div class="p-5 sticky-top mt-5">
+<div class="container-fluid">
+    <div class="row mt-5">
+        <div class="col-lg-6 col-xl-4 col-sm-12">
+            <div class="sticky-top bg-light pt-5">
                 <%- include ('../partials/components/create/add-fee-structure') %>
             </div>
         </div>
-        <div class="col-lg-6 col-sm-12 overflow-auto p-2 border">
+        <div class="col-lg-6 col-xl-8 col-sm-12 overflow-auto border">
             
           <%- include ('../partials/components/read/view-fee-structure') %>
 
         </div>
     </div>
+</div>
+
+ <!-- closing tags from school-sidebarMenu -->
+</div>
+</div>
 </div>

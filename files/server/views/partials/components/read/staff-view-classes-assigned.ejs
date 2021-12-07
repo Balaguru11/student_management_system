@@ -1,0 +1,33 @@
+<div class="pt-5">
+    <h4 class="text-center">View Classes Assigned</h4><br>
+    <table class="table table-light text-center">
+      <thead>
+        <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Class & Medium</th>
+        <th scope="col">Section</th>
+        <th scope="col">Subject</th>
+        <th scope="col">No of Students</th>
+        <!-- <th width="200px">Actions</th> -->
+      </tr>
+      </thead>
+      <tbody>
+        <% if(locals.assignedClasses.length > 0) {                    
+          for(var i = 0; i < locals.assignedClasses.length; i++) {%>
+            <tr>
+              <th scope="row"><%= (i+1) %></th>
+              <td><%= locals.assignedClasses[i].class_std %> std <%= locals.assignedClasses[i].medium %></td>
+              <td><%= locals.assignedClasses[i].class_section %> Sec</td>
+              <td><%= locals.assignedClasses[i].subject_name %></td>
+              <td><%= locals.assignedClasses[i].students_filled %></td>
+              <!-- <td><a class="btn btn-info View" href="../dashboard/students/view/<%= locals.assignedClasses[i].id %>"><i class="far fa-eye"></i></a> <a class="btn btn-warning edit" href="../dashboard/students/edit/<%= locals.assignedClasses[i].id %>"><i class="fas fa-user-edit"></i></a> <a class="btn btn-danger delete" href="../dashboard/students/delete/<%= locals.assignedClasses[i].id %>"><i class="far fa-trash-alt"></i></a></td>                                             -->
+            </tr>
+      <%  }
+          } else { %>
+                <tr>
+                  <td colspan="5" class="text-center">No Students assigned to this Staff.</td>
+                </tr>
+          <% } %>
+      </tbody>
+    </table>
+  </div>

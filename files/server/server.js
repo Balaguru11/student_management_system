@@ -75,12 +75,23 @@ app.get("/", (req, res) => {
   success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   try {
-    const fetch_role = `SELECT * FROM school_role`;
-    dbcon.query(fetch_role, (err, data) => {
-      if (err) throw err;
-      res.locals.data = data;
-      return res.render("home", { title: "Home" });
-    });
+    let session = req.session;
+    console.log(session);
+    if (!session.logged_in) {
+      const fetch_role = `SELECT * FROM school_role`;
+      dbcon.query(fetch_role, (err, data) => {
+        if (err) throw err;
+        res.locals.data = data;
+        return res.render("home", {
+          title: "Home",
+          layout: "./layouts/home_layout",
+        });
+      });
+    } else if (session.schoolUserName) {
+      return res.redirect("/school/dashboard");
+    } else {
+      return res.redirect("/staff/dashboard");
+    }
   } catch (err) {
     console.log(err);
   }

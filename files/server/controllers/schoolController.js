@@ -177,8 +177,14 @@ exports.getSchoolDashBoard = (req, res) => {
     res.locals.status = status;
 
     if (session.logged_in && session.schoolStatus == "Active") {
-      res.render("schoolLevel/school-dashboard", {
-        title: "School Master Dashboard",
+      var countData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='8'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='8'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='1'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='1'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='2'; SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT school_name FROM school_add_school WHERE id='${session.schoolId}'`;
+
+      dbcon.query(countData, (err, countNos) => {
+        if (err) throw err;
+        res.locals.countNos = countNos;
+        res.render("schoolLevel/school-dashboard", {
+          title: "School Master Dashboard",
+        });
       });
     } else if (session.logged_in && session.schoolStatus == "Inactive") {
       res.render("schoolLevel/school-dashboard", {
@@ -553,7 +559,6 @@ exports.viewClassSections = (req, res) => {
       var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std);`;
       dbcon.query(classDrop, (err, classOptions) => {
         if (err) throw err;
-        // console.log(classOptions);
         res.locals.classOptions = classOptions;
         res.locals.data = data;
         return res.render("schoolLevel/school-classSections", {
@@ -640,8 +645,6 @@ exports.getMapSubStaff = (req, res) => {
       INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}'`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) throw err;
-        console.log(result);
-        // console.log(tableData);
         res.locals.tableData = tableData;
         res.locals.result = result;
         return res.render("schoolLevel/school-map-subject-staff", {
@@ -670,7 +673,6 @@ exports.postMapSubStaff = (req, res) => {
 
     dbcon.query(MapSubStaffSec, (err, bridgeData) => {
       if (err) throw err;
-      console.log(bridgeData);
       req.flash("success", "Subject and Staff Added to the classroom.");
       return res.redirect("/dashboard/section-subject-staff");
     });
@@ -766,9 +768,16 @@ exports.getFeeCollection = (req, res) => {
       INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
       dbcon.query(fee_data, (err, feeData) => {
         if (err) throw err;
-        res.locals.feeData = feeData;
-        return res.render("schoolLevel/school-collect-fee", {
-          title: "Fee Collection",
+
+        // view fee records
+        var feeRecords = `SELECT * FROM school_student_admission WHERE school_id='${session.schoolId}'`;
+        dbcon.query(feeRecords, (err, records) => {
+          if (err) throw err;
+          res.locals.data = records;
+          res.locals.feeData = feeData;
+          return res.render("schoolLevel/school-collect-fee", {
+            title: "Fee Collection",
+          });
         });
       });
     } else {
@@ -791,12 +800,10 @@ exports.postFeeCollection = (req, res) => {
   success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
-  console.log(session);
   try {
-    var selectStud = `SELECT * FROM school_main_login WHERE email='${req.body.email}'`;
+    var selectStud = `SELECT * FROM school_main_login WHERE email='${req.body.email}' AND role_id_fk='1'`;
     dbcon.query(selectStud, (err, student) => {
       if (err) throw err;
-      console.log(student);
       // inserting record to school_student_admission
       var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '2000', '${req.body.fee_paid}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
       dbcon.query(admissionQuery, (err, respo) => {
@@ -831,7 +838,6 @@ exports.getAddStudent = (req, res) => {
 
     dbcon.query(StudentData, (err, data) => {
       if (err) throw err;
-      console.log(data);
       res.locals.data = data;
       return res.render("schoolLevel/school-students", {
         title: "Student Accounts",
