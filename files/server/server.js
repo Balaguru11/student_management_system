@@ -4,6 +4,7 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 const methodOverride = require("method-override");
+const payUMoney = require("payumoney_nodejs");
 
 // const { sequelize } = require('./DB/database');
 // models import
@@ -32,6 +33,13 @@ app.use(
   })
 );
 app.use(flash());
+
+payUMoney.setSandboxKeys(
+  (MERCHANT_KEY = process.env.MERCHANT_KEY),
+  (MERCHANT_SALT = process.env.MERCHANT_SALT),
+  (PAYUMONEY_AUTHORIZATION_HEADER = process.env.AUTHORIZATION_HEADER)
+);
+// sandbox mode ON
 
 //body-parser deprecated
 app.use(express.urlencoded({ extended: true }));

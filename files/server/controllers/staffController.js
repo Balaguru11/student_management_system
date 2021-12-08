@@ -340,12 +340,11 @@ exports.getStudentsList = (req, res) => {
   res.locals.success_msg = success_msg;
   try {
     if (session.roleId == "8") {
-      var studentList = `SELECT DISTINCT adm.student_id, sml.username, adm.email, adm.mobile_number, scs.classroom_id, scs.staff_id_assigned, sfs.class_std, sfs.medium, clr.class_section FROM school_class_subjects AS scs 
-      INNER JOIN school_classroom AS clr ON scs.classroom_id = clr.id 
-      INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id 
-      INNER JOIN school_student_admission AS adm ON adm.class_section = scs.classroom_id AND scs.staff_id_assigned = '${session.staff_id}'
-      INNER JOIN school_main_login AS sml ON sml.school_id = '${session.school_id}' AND sml.role_id_fk='1' AND sml.status='Active' 
-      WHERE scs.school_id='${session.school_id}'`;
+      var studentList = `SELECT DISTINCT adm.student_id, adm.mobile_number, adm.email, clr.class_id, clr.class_section, sml.username, sfs.class_std, sfs.medium FROM school_student_admission AS adm 
+      INNER JOIN school_class_subjects AS scs ON scs.classroom_id=adm.class_section AND scs.staff_id_assigned = '${session.staff_id}'
+      INNER JOIN school_feestructure AS sfs ON sfs.id = adm.class_medium
+      INNER JOIN school_classroom AS clr ON clr.id=adm.class_section
+      INNER JOIN school_main_login AS sml ON sml.id=adm.student_id WHERE scs.staff_id_assigned = '${session.staff_id}'`;
       dbcon.query(studentList, (err, list) => {
         if (err) throw err;
         res.locals.list = list;

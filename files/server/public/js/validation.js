@@ -220,3 +220,10 @@ $(document).ready(function () {
     });
   });
 });
+
+//payment success
+onPaymentSuccess(data, any);
+{
+  window.location.href = data.payulink;
+  //This will redirect you to payumoney payment form
+}

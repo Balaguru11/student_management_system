@@ -1,0 +1,101 @@
+<div class="container-fluid p-2">
+    <div class="row d-flex justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-10 mt-3">
+            <% if(locals.err_msg.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
+                    <%= err_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+            <% } %>
+            <% if(locals.success_msg.length > 0) { %>
+              <div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
+                  <%= success_msg %>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+          <% } %>
+        </div>
+    </div>
+</div>
+<div class="container-fluid p-5">
+    <div class="row justify-content-center mt-5">
+        <!-- <div class="col-lg-6 col-xl-4 col-sm-12">
+            <div class="sticky-top bg-light pt-5">
+                <%- include ('../partials/components/create/add-fee-structure') %>
+            </div>
+        </div> -->
+        <div class="col-lg-8 col-xl-8 col-sm-12 overflow-auto border">
+            
+            <form id="activation-form" action="/activate/school-activation-request" method="POST">
+                <div class="mt-3 mb-3">
+                  <label for="activation" class="mb-3"><b>Choose Plan:</b> </label>
+                  <div class="row">
+                    <div class="col-3">
+                      <div class="card">
+                        <input class="form-check-input" type="radio" name="plan" id="plan1" value="1 Year">
+                        <label class="form-check-label align-center" for="plan1">
+                          <h6 class="text-center">Plan 1</h6><hr>
+                          <h4 class="display-5 text-center">1 Year</h4>
+                          <h5 class="text-center">Rs. 1,999/-</h5>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="card">
+                        <input class="form-check-input" type="radio" name="plan" id="plan2" value="2 Years" >
+                        <label class="form-check-label align-center" for="plan2">
+                          <h6 class="text-center">Plan 2</h6><hr>
+                          <h4 class="display-5 text-center">2 Years</h4>
+                          <h5 class="text-center">Rs. 3,499/-</h5>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="col-3">
+                      <div class="card">
+                        <input class="form-check-input" type="radio" name="plan" id="plan3" value="5 Years">
+                        <label class="form-check-label align-center" for="plan3">
+                          <h6 class="text-center">Plan 3</h6><hr>
+                          <h4 class="display-5 text-center">5 Years</h4>
+                          <h5 class="text-center">Rs. 8,599/-</h5>
+                        </label>
+                      </div>
+                    </div>
+                      <div class="col-3">
+                        <div class="card">
+                          <input class="form-check-input" type="radio" name="plan" id="plan4" value="10 Years">
+                          <label class="form-check-label align-center" for="plan4">
+                            <h6 class="text-center">Plan 4</h6><hr>
+                            <h4 class="display-5 text-center">10 Years</h4>
+                            <h5 class="text-center">Rs. 14,999/-</h5>
+                          </label>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                    <label for="email" class="mb-3">Registered Email ID: </label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      name="email"
+                      id="email"
+                      placeholder="Enter the Registered Email Id."
+                    />
+                    <span class="error" id="activation_error"
+                      >It is not a valid Email ID.</span
+                    >
+                  </div>
+                  
+                <div class="mb-3">
+                  <button class="btn btn-primary" type="submit" value="submit">
+                    Make Payment
+                  </button>
+                </div>
+              </form>
+        </div>
+    </div>
+</div>
+
+ <!-- closing tags from school-sidebarMenu -->
+</div>
+</div>
+</div>

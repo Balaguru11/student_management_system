@@ -187,9 +187,10 @@ exports.getSchoolDashBoard = (req, res) => {
         });
       });
     } else if (session.logged_in && session.schoolStatus == "Inactive") {
-      res.render("schoolLevel/school-dashboard", {
-        title: "School Master Dashboard",
-      });
+      return res.redirect("/activate/school");
+      // res.render("schoolLevel/school-dashboard", {
+      //   title: "School Master Dashboard",
+      // });
     } else {
       req.flash("err_msg", "You are unauthorized. Please login.");
       return res.status(401).redirect("/school/login");

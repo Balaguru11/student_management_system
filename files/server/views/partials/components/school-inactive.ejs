@@ -1,28 +1,57 @@
-
-<div class="col d-flex justify-content-center"></div>
-  <div class="alert alert-info" role="alert">
-    <h4 class="text-center">Product Activation required.</h4>
-    <p class="text-center">Please Submit your Activation code below.</p>
-    <hr>
-    <form id="activation-form" action="/activate/school" method="POST">
-      <div class="mt-3 mb-3">
-        <label for="activation">Activation Code: </label>
-        <input
-          type="text"
-          class="form-control"
-          name="activation"
-          id="activation"
-          placeholder="Enter the Activation code."
-        />
-        <span class="error" id="activation_error"
-          >It is not valid.</span
-        >
+<div class="container-fluid p-5">
+  <div class="row d-flex mt-5 justify-content-center">
+    <div class="col-xl-8 col-lg-8 col-sm-12 justify-content-center">
+      
+        <% if(locals.err_msg.length > 0) { %>
+            <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
+                <%= err_msg %>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+        <% } %>
+        <% if(locals.success_msg.length > 0) { %>
+          <div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
+              <%= success_msg %>
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+      <% } %>
+  
+      <div class="alert alert-info" role="alert">
+        <div class="text-center">
+          <span class="iconsizing text-danger"><i class="fas fa-ban"></i></span>
+        </div>
+        <h3 class="text-center text-danger display-5"><b>Product Activation required.</b></h3>
+        <p class="text-center">Please Submit your Activation code below.</p>
+        <hr>
+          <div class="row">
+            <div class="col-8">
+              <h5 class="text-center">Dont have an acivation code? Get one here.</h5>
+            </div>
+            <div class="col-4">
+              <a href="/activate/school-activation-request" class="btn btn-secondary" role="button">Get Activation Code Now</a>
+            </div>
+          </div>
+        <hr>
+        <form id="activation-form" action="/activate/school" method="POST">
+          <div class="mt-3 mb-3">
+            <label for="activation" class="mb-3"><b>Please Enter the Activation Code:</b> </label>
+            <input
+              type="text"
+              class="form-control"
+              name="activation"
+              id="activation"
+              placeholder="Enter the Activation code."
+            />
+            <span class="error" id="activation_error"
+              >It is not valid.</span
+            >
+          </div>
+          <div class="mb-3">
+            <button class="btn btn-primary" type="submit" value="submit">
+              Activate
+            </button>
+          </div>
+        </form>
       </div>
-      <div class="mb-3">
-        <button class="btn btn-secondary" type="submit" value="submit">
-          Activate
-        </button>
-      </div>
-    </form>
-    </form>
-  </div>
+</div>
+</div>
+</div>
