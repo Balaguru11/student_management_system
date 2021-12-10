@@ -18,11 +18,13 @@
       <% } %>
 
       <% if(locals.staff_status == "Inactive"){ %>
+        <div class=" m-5 p-5">
         <p>Howdy, <%= username %>, </p>
         <p>This is visible. Because you are NOT ACTIVE.</p>
         <div class="alert alert-danger" role="alert">
           <h4 class="text-center">You are a Teaching Faculty.</h4>
           <p class="text-center">The code is working fine.</p>
+        </div>
           <hr>
           <!-- <form id="activation-form" action="/activate-school/" method="POST">
             <div class="mt-3 mb-3">
@@ -49,7 +51,20 @@
         <p>Howdy,  <%= username %>, </p>
         <%- include ('../partials/components/staff-sideMenu') %>
 
-        <p class="p-5">STAFF DASHBOARD.. Your account is ACTIVE.</p>
+        <div class="p-5">
+          <h3>STAFF DASHBOARD.. Your account is ACTIVE.</h3>
+          <p>Being a Teaching Faculty you get access to the following:</p>
+          <ul>
+            <li>Manage your Profile</li>
+            <li>See the list of subjects handled by you. With the total no of students.</li>
+            <li>View the Student Details</li>
+            <li>View class Schedules and make student attendance based on the schedule</li>
+            <li>See Your Salary Details, Payslip etc.</li>
+            <li>Send Messages to your students and receive from higher authorities.</li>
+            <li>Assign Exams to the Students and record marks to the students</li>
+            <li>View Performance Records of each students assigned to the staff.</li>
+          </ul>
+        </div>
         
         <% } %>
     </div>

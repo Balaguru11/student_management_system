@@ -1,3 +1,4 @@
 IGNORED_FILE.txt
 /files/client/node_modules/*
 /files/server/node_modules/*
+.env

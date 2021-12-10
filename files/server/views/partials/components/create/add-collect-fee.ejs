@@ -1,62 +1,127 @@
-
-<form id="collect-fee-form" action="/school/dashboard/fee-collection" method="POST">
-    <div class="mb-3">
-      <h2 class="text-center">Student Fee Record</h2>
-      <hr />
-    </div>
-    <div class="row g-3">
-      <div class="col">
-      <input type="email" class="form-control"
-      name="email"
-      id="email" placeholder="Email ID:">
-      <span class="error" id="email_error">Please enter the Student's Email.</span>
-      </div>
-      <div class="col">
-        <input type="tel" class="form-control" placeholder="Mobile Number:" aria-label="Last name" name="mobile"
-        id="mobile">
-        <span class="error" id="mobile_error">Please enter the Student's 10 Digit Mobile Number.</span>
-      </div>
-    </div>
-    <div class="mt-3 mb-3">
-      <select id="class_medium" class="form-control" name="class_medium" required aria-placeholder="Class & Medium:">
-        <option value="">Class Std & Medium:</option>
-        <% if(locals.feeData) {
-          for (let i=0; i < locals.feeData.length; i++) { %>
-            <option value="<%= locals.feeData[i].id %>"><%= locals.feeData[i].class_std %> std - <%= locals.feeData[i].medium %> Medium -- Rs. <%= locals.feeData[i].actual_fee %> /-</option>
-          <% } } %>
-      </select>
-      <span class="error" id="class_medium_error">Please choose Class & medium.</span>
-  </div>
+<form
+  id="collect-fee-form"
+  action="/school/dashboard/fee-collection"
+  method="POST"
+>
   <div class="mb-3">
-    <select id="class_section" class="form-control" name="class_section" required placeholder="Choose A Section:">
-    </select>
-    <span class="error" id="class_medium_error">Please choose Class & medium.</span>
-</div>
-<div class="row g-3">
-  <div class="col">
-    <input type="number" class="form-control"
-    name="fee_amount"
-    id="fee_amount" placeholder="Fee Amount in INR" disabled>
+    <h2 class="text-center">Student Fee Record</h2>
+    <hr />
   </div>
-  <div class="col">
-    <input type="number" class="form-control"
-    name="fee_paid"
-    id="fee_paid"
-    placeholder="Amount Paying:">
-    <span class="error" id="fee_paid_error">Please enter the amount.</span>
-  </div>
-</div>
-<div class="mt-3 mb-3">
-  <label for="fee_paid_date">Payment Date: </label>
-  <input type="text" class="form-control" disabled
-  name="fee_paid_date"
-  id="fee_paid_date"
-  value="<%= new Date().getDate(); %>-<%= new Date().getMonth()+1; %>-<%= new Date().getFullYear(); %>">
-  <span class="error" id="fee_paid_date">Please enter the date when the fee received to the School Bank Account.</span>
-</div>
   <div class="row g-3">
     <div class="col">
-      <select id="payment_mode" class="form-control" name="payment_mode" aria-placeholder="Payment Mode:">
+      <input
+        type="email"
+        class="form-control"
+        name="email"
+        id="email"
+        placeholder="Email ID:"
+      />
+      <span class="error" id="email_error"
+        >Please enter the Student's Email.</span
+      >
+    </div>
+    <div class="col">
+      <input
+        type="tel"
+        class="form-control"
+        placeholder="Mobile Number:"
+        aria-label="Last name"
+        name="mobile"
+        id="mobile"
+      />
+      <span class="error" id="mobile_error"
+        >Please enter the Student's 10 Digit Mobile Number.</span
+      >
+    </div>
+  </div>
+  <div class="mt-3 mb-3">
+    <label for="dob">Date of Birth: </label>
+    <input
+      type="date"
+      class="form-control"
+      name="dob"
+      id="dob"
+      placeholder="Enter Official Date of Birth"
+    />
+    <span class="error" id="dob_error">Please enter your date of birth.</span>
+  </div>
+  <div class="mt-3 mb-3">
+    <select
+      id="class_medium"
+      class="form-control"
+      name="class_medium"
+      required
+      aria-placeholder="Class & Medium:"
+    >
+      <option value="">Class Std & Medium:</option>
+      <% if(locals.feeData) { for (let i=0; i < locals.feeData.length; i++) { %>
+      <option value="<%= locals.feeData[i].id %>">
+        <%= locals.feeData[i].class_std %> std - <%= locals.feeData[i].medium %>
+        Medium -- Rs. <%= locals.feeData[i].actual_fee %> /-
+      </option>
+      <% } } %>
+    </select>
+    <span class="error" id="class_medium_error"
+      >Please choose Class & medium.</span
+    >
+  </div>
+  <div class="mb-3">
+    <select
+      id="class_section"
+      class="form-control"
+      name="class_section"
+      required
+      placeholder="Choose A Section:"
+    ></select>
+    <span class="error" id="class_medium_error"
+      >Please choose Class & medium.</span
+    >
+  </div>
+  <div class="row g-3">
+    <div class="col">
+      <input
+        type="number"
+        class="form-control"
+        name="fee_amount"
+        id="fee_amount"
+        placeholder="Fee Amount in INR"
+        disabled
+      />
+    </div>
+    <div class="col">
+      <input
+        type="number"
+        class="form-control"
+        name="fee_paid"
+        id="fee_paid"
+        placeholder="Amount Paying:"
+      />
+      <span class="error" id="fee_paid_error">Please enter the amount.</span>
+    </div>
+  </div>
+  <div class="mt-3 mb-3">
+    <label for="fee_paid_date">Payment Date: </label>
+    <input
+      type="text"
+      class="form-control"
+      disabled
+      name="fee_paid_date"
+      id="fee_paid_date"
+      value="<%= new Date().getDate(); %>-<%= new Date().getMonth()+1; %>-<%= new Date().getFullYear(); %>"
+    />
+    <span class="error" id="fee_paid_date"
+      >Please enter the date when the fee received to the School Bank
+      Account.</span
+    >
+  </div>
+  <div class="row g-3">
+    <div class="col">
+      <select
+        id="payment_mode"
+        class="form-control"
+        name="payment_mode"
+        aria-placeholder="Payment Mode:"
+      >
         <option value="">Select Payment Mode</option>
         <option value="cash">Cash</option>
         <option value="card">Debit / Credit Card</option>
@@ -69,7 +134,12 @@
       >
     </div>
     <div class="col">
-      <select id="due_status" class="form-control" name="due_status" aria-placeholder="Payment Status:">
+      <select
+        id="due_status"
+        class="form-control"
+        name="due_status"
+        aria-placeholder="Payment Status:"
+      >
         <option value="">Select Payment Status</option>
         <option value="paid">Paid</option>
         <option value="notpaid">Not Paid</option>
@@ -79,9 +149,9 @@
       >
     </div>
   </div>
-    <div class=" mt-3 mb-3">
-      <button class="btn btn-secondary" type="submit" value="submit">
-       Add Fee Record
-      </button>
-    </div>
-  </form>
+  <div class="mt-3 mb-3">
+    <button class="btn btn-secondary" type="submit" value="submit">
+      Add Fee Record
+    </button>
+  </div>
+</form>

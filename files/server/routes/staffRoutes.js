@@ -13,6 +13,7 @@ const {
   getStaffProfileEdit,
   postEditStaffProfile,
   getStudentsList,
+  getOneStudentProfile,
   getClassAssigned,
 } = require("../controllers/staffController");
 
@@ -30,6 +31,11 @@ staffRouter.put("/profile-edit", isStaff, postEditStaffProfile);
 // teaching staff = roleId 8
 // view Students asigned to the staff
 staffRouter.get("/dashboard/students-list", isStaff, getStudentsList);
+staffRouter.get(
+  "/dashboard/students-list/profile/:student_id",
+  isStaff,
+  getOneStudentProfile
+);
 // view classes handled by this staff
 staffRouter.get("/dashboard/class-assigned", isStaff, getClassAssigned);
 

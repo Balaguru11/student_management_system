@@ -1,16 +1,30 @@
-<div class="container-flex p-4">
+<!-- <div class="container p-1">
     <div class="row d-flex justify-content-center">
       <div class="col-lg-12 col-md-12 col-sm-12">
         
-      </div>
+      </div> -->
+      <% if(locals.err_msg.length > 0) { %>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+          <%= err_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+     <% } %>
+  
+      <% if(locals.success_msg.length > 0) { %>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+          <%= success_msg %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
       <% if(locals.staff_status == "Inactive"){ %>
-        <p>Howdy,  <%= username %>, </p>
-        <p>This is visible. Becasue you are NOT ACTIVE.</p>
+        <p>Howdy, <%= username %>, </p>
+        <p>This is visible. Because you are NOT ACTIVE.</p>
         <div class="alert alert-danger" role="alert">
-          <h4 class="text-center">You are An Admin</h4>
-          <p class="text-center">The code is working fine.</p>
+          <h4 class="text-center">You are an Administrator.</h4>
+          <p class="text-center">But, Your account is not active.</p>
           <hr>
-          <form id="activation-form" action="/activate-school/" method="POST">
+          <!-- <form id="activation-form" action="/activate-school/" method="POST">
             <div class="mt-3 mb-3">
               <label for="activation">Activation Code: </label>
               <input
@@ -29,203 +43,14 @@
                 Activate
               </button>
             </div>
-          </form>
-          </form>
+          </form> -->
         </div>
       <% } else { %>
-        
-        
-        <div class="row">
-          <div class="col-lg-3 col-md-3 col-sm-0 bg-light p-3">
-            <h3>Howdy,  <%= username %>, </h3>
-            <p>Account Status: ACTIVE</p>
-            <hr>
-            <div class="col align-self-end">
-              <a class="btn btn-info" role="button" href="/staff/profile-create">Profile</a>
-            </div>
-            <a href="/add-fee">Collect Fee</a>
-          </div>
-          <div class="col-lg-9 col-md-9 col-sm-12 p-5">
-            <div class="">
-              <%- include('../partials/components/collect-fee') %>
-              <hr>
-              <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link active"
-                    id="pills-classroom-tab"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-classroom"
-                    type="button"
-                    role="tab"
-                    aria-controls="pills-classroom"
-                    aria-selected="true"
-                  >
-                    Add Classroom
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button
-                    class="nav-link"
-                    id="pills-staff-tab"
-                    data-bs-toggle="pill"
-                    data-bs-target="#pills-staff"
-                    type="button"
-                    role="tab"
-                    aria-controls="pills-staff"
-                    aria-selected="false"
-                  >
-                    Add Users
-                  </button>
-                </li>
-              </ul>
-              <div class="tab-content" id="pills-tabContent">
-                <div
-                  class="tab-pane fade show active"
-                  id="pills-classroom"
-                  role="tabpanel"
-                  aria-labelledby="pills-classroom-tab"
-                >
-                  <% if(locals.err_msg) { %>
-                  <div class="alert alert-danger" role="alert"><%= err_msg %></div>
-                  <% } %> <% if(locals.success_msg) { %>
-                  <div class="alert alert-success" role="success">
-                    <%= success_msg %>
-                  </div>
-                  <% } %>
-      
-                  <form id="addclass-form" action="/school/add-classroom" method="POST">
-                    <div class="mt-3 mb-3">
-                      <h2 class="text-center">Add Classroom</h2>
-                      <p class="text-center">
-                        <small>Adding a Classroom to the school.</small>
-                      </p>
-                      <hr />
-                    </div>
-                    <div class="mb-3">
-                      <label for="class_section">Class & Section:</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        name="class_section"
-                        id="class_section"
-                        placeholder="6-A"
-                      />
-                      <span class="error" id="class_section_error"
-                        >Class & Section should be at least 3 characters long.</span
-                      >
-                    </div>
-                    <div class="mb-3">
-                      <label for="medium">Medium of Language:</label>
-                      <select id="medium" class="form-control" name="medium">
-                        <option value="">Select One</option>
-                        <option value="Tamil">Tamil</option>
-                        <option value="English">English</option>
-                        <option value="Hindi">Hindi</option>
-                      </select>
-                      <span class="error" id="medium_error"
-                        >Please select the Medium.</span
-                      >
-                    </div>
-                    <div class="mb-3">
-                      <label for="strength">Classroom Strength: </label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        name="strength"
-                        id="strength"
-                        placeholder="Enter the classroom strength."
-                      />
-                      <span class="error" id="board_error"
-                        >strength should be a number.</span
-                      >
-                    </div>
-                    <div class="mb-3">
-                      <button class="btn btn-secondary" type="submit" value="submit">
-                        Create School
-                      </button>
-                    </div>
-                  </form>
-                </div>
-                <div
-                  class="tab-pane fade"
-                  id="pills-staff"
-                  role="tabpanel"
-                  aria-labelledby="pills-staff-tab"
-                >
-                <% if(locals.err_msg) { %>
-                  <div class="alert alert-danger" role="alert"><%= err_msg %></div>
-                  <% } %> <% if(locals.success_msg) { %>
-                  <div class="alert alert-success" role="success">
-                    <%= success_msg %>
-                  </div>
-                  <% } %>
-                  <form id="addadmin-form" method="POST" action="/school/add-user">
-                    <h2 class="text-center">Create Users</h2>
-                    <hr />
-      
-                    <div class="mt-3 mb-3">
-                      <label for="select">Role:</label>
-                      <select id="role" name="role" class="form-control">
-                        <option value="9">Admin</option>
-                        <option value="4">Head Master</option>
-                        <option value="8">Teaching Faculty</option>
-                        <option value="2">Non-teaching Faculty</option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label for="username">Username:</label>
-                      <input
-                        type="text"
-                        class="form-control"
-                        name="username"
-                        placeholder="Username"
-                        id="username"
-                      />
-                      <span class="error" id="username-error"
-                        >Username should be at least 3 characters long.</span
-                      >
-                    </div>
-                    <div class="mb-3">
-                      <label for="password">Password:</label>
-                      <input
-                        type="password"
-                        class="form-control"
-                        name="password"
-                        placeholder="Type your Password here"
-                        id="password"
-                      />
-                      <span class="error" id="password-error"
-                        >Password should contain 8 characters with a Uppercase, a
-                        lowercase, a Number and a Special character.</span
-                      >
-                    </div>
-                    <div class="mb-3">
-                      <label for="email">Email:</label>
-                      <input
-                        type="email"
-                        class="form-control"
-                        name="email"
-                        placeholder="Type your email here"
-                        id="email"
-                      />
-                      <span class="error" id="email-error">Email is invalid.</span>
-                    </div>
-                    <div class="login">
-                      <button class="btn btn-secondary" type="submit">
-                        Create User
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <p>Howdy, <%= username %>, </p>
+        <%- include ('../partials/components/staff-sideMenu') %>
 
-
-       
-      
+        <p class="p-5">STAFF DASHBOARD.. Your account is ACTIVE.</p>
+        
         <% } %>
     </div>
   </div>

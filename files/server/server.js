@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 const methodOverride = require("method-override");
 const payUMoney = require("payumoney_nodejs");
+// const nodemailer = require("nodemailer");
 
 // const { sequelize } = require('./DB/database');
 // models import
@@ -44,6 +45,19 @@ payUMoney.setSandboxKeys(
 //body-parser deprecated
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+//email transporter
+// let transporter = nodemailer.createTransport({
+//   service: "gmail",
+//   auth: {
+//     type: "OAuth2",
+//     user: process.env.MAIL_USERNAME,
+//     pass: process.env.MAIL_PASSWORD,
+//     clientId: process.env.OAUTH_CLIENTID,
+//     clientSecret: process.env.OAUTH_CLIENT_SECRET,
+//     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
+//   },
+// });
 
 //layouts
 app.use(expressLayouts);
@@ -122,6 +136,10 @@ app.get("/logout", (req, res) => {
     console.log(err);
   }
 });
+
+// app.use ((req, res) => {
+//   return res.send('loading...');
+// })
 
 // //errorhandling
 // app.use((err, req, res, next) => {

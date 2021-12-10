@@ -1,8 +1,9 @@
 <div class="pt-5">
-    <h4 class="text-center">View Students List</h4><br>
-    <table class="table table-light text-center">
-      <thead>
-        <tr>
+  <h4 class="text-center">View Students List</h4>
+  <br />
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
         <th scope="col">S.No</th>
         <th scope="col">Class & Section</th>
         <th scope="col">Student userName</th>
@@ -10,24 +11,81 @@
         <th scope="col">Mobile No</th>
         <th width="200px">Actions</th>
       </tr>
-      </thead>
-      <tbody>
-        <% if(locals.list.length > 0) {                    
-          for(var i = 0; i < locals.list.length; i++) {%>
-            <tr>
-              <th scope="row"><%= (i+1) %></th>
-              <td><%= locals.list[i].class_std %> std <%= locals.list[i].medium %> - Sec <%= locals.list[i].class_section %></td>
-              <td><%= locals.list[i].username %></td>
-              <td><%= locals.list[i].email %></td>
-              <td><%= locals.list[i].mobile_number %></td>
-              <td><a class="btn btn-info View" href="../dashboard/students/view/<%= locals.list[i].id %>"><i class="far fa-eye"></i></a> <a class="btn btn-warning edit" href="../dashboard/students/edit/<%= locals.list[i].id %>"><i class="fas fa-user-edit"></i></a> <a class="btn btn-danger delete" href="../dashboard/students/delete/<%= locals.list[i].id %>"><i class="far fa-trash-alt"></i></a></td>                                            
-            </tr>
-      <%  }
-          } else { %>
-                <tr>
-                  <td colspan="6" class="text-center">No Students assigned to this Staff.</td>
-                </tr>
-          <% } %>
-      </tbody>
-    </table>
+    </thead>
+    <tbody>
+      <% if(locals.list.length > 0) { for(var i = 0; i < locals.list.length;
+      i++) {%>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td>
+          <%= locals.list[i].class_std %> std <%= locals.list[i].medium %> - Sec
+          <%= locals.list[i].class_section %>
+        </td>
+        <td><%= locals.list[i].username %></td>
+        <td><%= locals.list[i].email %></td>
+        <td><%= locals.list[i].mobile_number %></td>
+        <td>
+          <a
+            class="btn btn-info View"
+            data-toggle="modal"
+            data-target="#viewStuProf"
+            href="../dashboard/students-list/profile/<%= locals.list[i].student_id %>"
+            ><i class="far fa-eye"></i
+          ></a>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="6" class="text-center">
+          No Students assigned to this Staff.
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+  <!-- modal code -->
+  <div
+    class="modal fade"
+    id="viewStuProf"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title" id="exampleModalLabel">Student Profile</h4>
+          <button
+            type="button"
+            class="close"
+            data-dismiss="modal"
+            aria-label="Close"
+          >
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label>uname</label>
+              <input type="text" class="form-control" placeholder="User Name" />
+              <label>upwd</label>
+              <input
+                type="password"
+                class="form-control"
+                placeholder="password"
+              />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success">Login</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal">
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
+</div>

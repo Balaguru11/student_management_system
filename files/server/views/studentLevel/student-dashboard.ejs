@@ -1,21 +1,13 @@
- 
- 
-  
-  <div class="col-xl-12 col-lg-12 col-md-8 col-sm-10 p-5 m-3 justify-content-center">
-    <h2 class="text-center">Student Dashboard</h2>
-    <% if(locals.welcome_msg) { %>
-        <div class="col-6 m-4 p-2">
-          <h5><%= welcome_msg %></h5>
-        </div>
-    <% } %>
-    <br>
+<!-- <div class="col-xl-12 col-lg-12 col-md-8 col-sm-10 p-5 m-3 justify-content-center">
+    <h2 class="text-center">Student Dashboard</h2> -->
+
     <% if(locals.err_msg.length > 0) { %>
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <%= err_msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
    <% } %>
-
+   
     <% if(locals.success_msg.length > 0) { %>
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         <%= success_msg %>
@@ -23,24 +15,42 @@
       </div>
     <% } %>
 
-    <!-- When Inactive -->
-    <% if(locals.status == "Inactive") { %>
+    <% if(locals.welcome_msg) { %>
+        <div class="col-6 m-4 p-2">
+          <h5><%= welcome_msg %></h5>
+        </div>
+    <% } %>
+    <br>
+
+    <!-- When Account is Inactive -->
+    <% if(locals.student_status == "Inactive") { %>
       <!-- Inactive Part -->
-      <%- include ('../partials/components/school-inactive') %>
-      <% } else { %>  
+      <div class="p-5">
+      <p>Howdy, <%= username %>, </p>
+        <p>This is visible. Because you are NOT ACTIVE.</p>
+        <div class="alert alert-danger" role="alert">
+          <h4 class="text-center">You are a Student.</h4>
+          <p class="text-center">Your account is not active. Student Activation module is getting ready. It will send activation code to the registered email id. And the same has to be entered in the form below (Which will be available soon) to activate your account.</p>
+        </div>
+          <hr>
+      <% } else { %>
         <!-- active part -->
-        <%- include ('../partials/components/school-sideMenu') %>
-        <!-- This whole div will be removed from Dashboard -->
-        <!-- Display Reports Here -->
-      <div class="col-xl-10">
-        <p>Text content</p>
+        
+        <%- include ('../partials/components/student-sideMenu') %>
+      <div class="p-5">
+        <p>Howdy <%= username %>, Good to see you again..! </p>
+        <h5><%= username %>'s Dashboard</h5>
+        <p>Being a Student, you get access to do the following:</p>
+        <ul>
+          <li>Manage your Profile</li>
+          <li>See Your Staff Information and ask your doubts.</li>
+          <li>Can check your ddaily test Marks</li>
+          <li>Check Report card in your section.</li>
+          <li>See Where you stand in your school.</li>
+          <li>See your class student's profile.</li>
+          <li>and much more ...</li>
+        </ul>
       </div>
       <% } %>
-      <!-- test -->
     </div>
-
-
-    <!-- closing tags from school-sidebarMenu -->
     </div>
-  </div>
-</div>

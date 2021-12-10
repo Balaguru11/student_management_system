@@ -659,7 +659,7 @@ exports.getMapSubStaff = (req, res) => {
 };
 
 // post Map Subject Staff
-exports.postMapSubStaff = (req, res) => {
+exports.postMapSubStaff = async (req, res) => {
   //flashing err_msg
   let err_msg = "";
   err_msg = req.flash("err_msg");
@@ -670,12 +670,24 @@ exports.postMapSubStaff = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
+    var checkmapping = `SELECT EXISTS(SELECT * FROM school_class_subjects WHERE school_id='${session.schoolId}' AND subject_id='${req.body.subject}' AND classroom_id='${req.body.class}') AS count`;
 
-    dbcon.query(MapSubStaffSec, (err, bridgeData) => {
-      if (err) throw err;
-      req.flash("success", "Subject and Staff Added to the classroom.");
-      return res.redirect("/dashboard/section-subject-staff");
+    dbcon.query(checkmapping, (err, isMapped) => {
+      if(err) {
+        throw err;
+      } else if(isMapped[0].count == 0){
+        console.log(isMapped);
+        var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
+
+        dbcon.query(MapSubStaffSec, (err, bridgeData) => {
+          if (err) throw err;
+          req.flash("success", "Subject and Staff Added to the classroom.");
+          return res.redirect("/school/dashboard/section-subject-staff");
+        });
+      } else {
+        req.flash('err_msg', 'This Subject of the Class Section is already assigned to a staff.');
+        return res.redirect("/school/dashboard/section-subject-staff");
+      }
     });
   } catch (err) {
     console.log(err);
@@ -806,7 +818,7 @@ exports.postFeeCollection = (req, res) => {
     dbcon.query(selectStud, (err, student) => {
       if (err) throw err;
       // inserting record to school_student_admission
-      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '2000', '${req.body.fee_paid}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
+      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, date_of_birth,  academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.dob}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '2000', '${req.body.fee_paid}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
       dbcon.query(admissionQuery, (err, respo) => {
         if (err) throw err;
         //updating student status in main_login

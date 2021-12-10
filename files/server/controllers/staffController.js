@@ -190,7 +190,7 @@ exports.postStaffProfile = async (req, res) => {
         if (err) {
           req.flash(
             "err_msg",
-            "There is a Problem in updating your Profile Page. Please try again later."
+            "There is a Problem in creating your Profile Page. Please try again later."
           );
           return res.status(500).redirect("/staff/dashboard");
         } else if (result) {
@@ -347,6 +347,7 @@ exports.getStudentsList = (req, res) => {
       INNER JOIN school_main_login AS sml ON sml.id=adm.student_id WHERE scs.staff_id_assigned = '${session.staff_id}'`;
       dbcon.query(studentList, (err, list) => {
         if (err) throw err;
+        console.log(list);
         res.locals.list = list;
         return res.render("staffLevel/view-students-list", {
           title: "Students List",
@@ -356,6 +357,29 @@ exports.getStudentsList = (req, res) => {
       req.flash("err_msg", "You are not authorized.");
       return res.redirect("/staff/dashboard");
     }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// get One Student profile from the Student list
+exports.getOneStudentProfile = (req, res) => {
+  let session = req.session;
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  try {
+    // See Profile of a student
+    var student_id = req.params.student_id;
+    var stuProfile = `SELECT * FROM school_student WHERE student_id='${student_id}'`;
+    dbcon.query(stuProfile, (err, stuProfile) => {
+      if (err) throw err;
+      res.locals.stuProfile = stuProfile;
+      return res.redirect("/dashboard/students-list");
+    });
   } catch (err) {
     console.log(err);
   }
