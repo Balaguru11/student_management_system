@@ -77,28 +77,28 @@
       >Please choose Class & medium.</span
     >
   </div>
-  <div class="row g-3">
-    <div class="col">
-      <input
-        type="number"
-        class="form-control"
-        name="fee_amount"
-        id="fee_amount"
-        placeholder="Fee Amount in INR"
-        disabled
-      />
-    </div>
-    <div class="col">
-      <input
-        type="number"
-        class="form-control"
-        name="fee_paid"
-        id="fee_paid"
-        placeholder="Amount Paying:"
-      />
-      <span class="error" id="fee_paid_error">Please enter the amount.</span>
-    </div>
+  <!-- <div class="mb-3 form-group">
+    <label for="fee_amount">Fee to be paid:</label>
+    <input
+    type="number"
+    class="form-control"
+    name="fee_amount"
+    id="fee_amount"
+    placeholder="Fee Amount in INR"
+    disabled
+  />
+  </div> -->
+  <div class="mb-3">
+    <input
+    type="number"
+    class="form-control"
+    name="fee_paid"
+    id="fee_paid"
+    placeholder="Amount Paying:" min="0" max="<%= locals.data.actual_fee %>"
+  />
+  <span class="error" id="fee_paid_error">Please enter the amount.</span>
   </div>
+  
   <div class="mt-3 mb-3">
     <label for="fee_paid_date">Payment Date: </label>
     <input

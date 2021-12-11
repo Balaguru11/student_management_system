@@ -31,10 +31,9 @@ apiRouter.post("/get-class-fee", (req, res) => {
     if (err) {
       res.json({ msg: "error", err });
     } else {
-      console.log(row);
       res.json({
         msg: "success",
-        class_fee: row,
+        class_fee: row[0].actual_fee,
       });
     }
   });

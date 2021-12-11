@@ -212,7 +212,9 @@ $(document).ready(function () {
       },
       dataType: "json",
       success: function (data) {
-        $("#fee_amount").val(data).text(data);
+        $("#class_section").after(function(){
+          return "<div class='mb-3'><label class='mt-3'>Fee Amount:</label><h5 class='form-control'> Rs." + data.class_fee + "</h5></div>";
+        })
       },
       error: function (err) {
         alert(err);
