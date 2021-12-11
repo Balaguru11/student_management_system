@@ -32,6 +32,8 @@ const {
   postFeeCollection,
   getAddStudent,
   postAddStudent,
+  getSchedulePlanForm,
+  postSchedulePlanForm
 } = require("../controllers/schoolController");
 
 // CREATE SCHOOL
@@ -87,6 +89,10 @@ schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent); // Adding
 // fee collection CRUD
 schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
 schoolRouter.post("/dashboard/fee-collection", isSchool, postFeeCollection);
+
+// schedule template CRUD
+schoolRouter.get("/dashboard/schedule-plan", isSchool, getSchedulePlanForm);
+schoolRouter.post("/dashboard/schedule-plan", isSchool, postSchedulePlanForm);
 
 // not completed yet
 // Announcements

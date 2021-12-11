@@ -98,7 +98,6 @@ app.get("/", (req, res) => {
   res.locals.success_msg = success_msg;
   try {
     let session = req.session;
-    console.log(session);
     if (!session.logged_in) {
       const fetch_role = `SELECT * FROM school_role`;
       dbcon.query(fetch_role, (err, data) => {

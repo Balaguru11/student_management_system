@@ -673,9 +673,9 @@ exports.postMapSubStaff = async (req, res) => {
     var checkmapping = `SELECT EXISTS(SELECT * FROM school_class_subjects WHERE school_id='${session.schoolId}' AND subject_id='${req.body.subject}' AND classroom_id='${req.body.class}') AS count`;
 
     dbcon.query(checkmapping, (err, isMapped) => {
-      if(err) {
+      if (err) {
         throw err;
-      } else if(isMapped[0].count == 0){
+      } else if (isMapped[0].count == 0) {
         console.log(isMapped);
         var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
 
@@ -685,7 +685,10 @@ exports.postMapSubStaff = async (req, res) => {
           return res.redirect("/school/dashboard/section-subject-staff");
         });
       } else {
-        req.flash('err_msg', 'This Subject of the Class Section is already assigned to a staff.');
+        req.flash(
+          "err_msg",
+          "This Subject of the Class Section is already assigned to a staff."
+        );
         return res.redirect("/school/dashboard/section-subject-staff");
       }
     });
@@ -918,3 +921,49 @@ exports.postAddStudent = (req, res) => {
 };
 
 //view A Student Profile
+
+// Showing Schedule Template Form
+exports.getSchedulePlanForm = async (req, res) => {
+  //flashing err_msg
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var getScheduleTemps = `SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'`;
+    dbcon.query(getScheduleTemps, (err, templates) => {
+      if(err) throw err;
+      res.locals.templates = templates;
+      return res.render("schoolLevel/school-schedule-template", {
+        title: "School Schedule Template",
+      });
+    })
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// Add Schedule Plan to the School (POST)
+exports.postSchedulePlanForm = async(req, res) => {
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    //
+    var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, school_timing_from, school_timing_to, period_time, lunch_time, no_of_intervals, interval_time, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.school_start}', '${req.body.school_end}', '${req.body.school_period_time}', '${req.body.school_lunch_time}', '${req.body.school_interval_count}', '${req.body.school_interval_time}', (('${req.body.school_end}' - '${req.body.school_start}') - ('${req.body.school_lunch_time}' / 60) - (('${req.body.school_interval_count}' * '${req.body.school_interval_time}') / 60))/ ('${req.body.school_period_time}' / 60))`;
+    dbcon.query(addScheduleTemps, (err, data) => {
+      if(err) throw err;
+      return res.redirect('/school/dashboard/schedule-plan');
+    })
+  } catch(err) {
+    console.log(err);
+  }
+};
