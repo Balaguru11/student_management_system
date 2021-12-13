@@ -821,7 +821,7 @@ exports.postFeeCollection = (req, res) => {
     dbcon.query(selectStud, (err, student) => {
       if (err) throw err;
       // inserting record to school_student_admission
-      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, date_of_birth,  academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.dob}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '2000', '${req.body.fee_paid}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
+      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, date_of_birth, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.dob}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
       dbcon.query(admissionQuery, (err, respo) => {
         if (err) throw err;
         //updating student status in main_login

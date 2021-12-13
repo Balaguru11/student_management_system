@@ -2,40 +2,40 @@
     <h2 class="text-center">Student Dashboard</h2> -->
 
     <% if(locals.err_msg.length > 0) { %>
-      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
         <%= err_msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
    <% } %>
    
     <% if(locals.success_msg.length > 0) { %>
-      <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
         <%= success_msg %>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
       </div>
     <% } %>
 
     <% if(locals.welcome_msg) { %>
-        <div class="col-6 m-4 p-2">
+        <div class="col-6 m-4 p-2 mt-5">
           <h5><%= welcome_msg %></h5>
         </div>
     <% } %>
-    <br>
+<br>
 
     <!-- When Account is Inactive -->
     <% if(locals.student_status == "Inactive") { %>
       <!-- Inactive Part -->
       <div class="p-5">
-      <p>Howdy, <%= username %>, </p>
+        <p>Howdy, <%= username %>, </p>
         <p>This is visible. Because you are NOT ACTIVE.</p>
         <div class="alert alert-danger" role="alert">
           <h4 class="text-center">You are a Student.</h4>
           <p class="text-center">Your account is not active. Student Activation module is getting ready. It will send activation code to the registered email id. And the same has to be entered in the form below (Which will be available soon) to activate your account.</p>
         </div>
+      </div>
           <hr>
       <% } else { %>
         <!-- active part -->
-        
         <%- include ('../partials/components/student-sideMenu') %>
       <div class="p-5">
         <p>Howdy <%= username %>, Good to see you again..! </p>
@@ -52,5 +52,3 @@
         </ul>
       </div>
       <% } %>
-    </div>
-    </div>

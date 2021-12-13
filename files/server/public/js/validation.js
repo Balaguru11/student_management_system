@@ -195,6 +195,9 @@ $(document).ready(function () {
           );
         });
       },
+      error: function (err) {
+        console.log(err);
+      },
     });
   });
 });
@@ -203,7 +206,7 @@ $(document).ready(function () {
 $(document).ready(function () {
   $("#class_medium").on("change", function () {
     var class_medium_1 = this.value;
-    $("#fee_amount").val("");
+    $("#actual_fee").val("");
     $.ajax({
       url: "/api/get-class-fee",
       type: "POST",
@@ -212,20 +215,82 @@ $(document).ready(function () {
       },
       dataType: "json",
       success: function (data) {
+        $('#fee-one, #fee-two').remove()
         $("#class_section").after(function(){
-          return "<div class='mb-3'><label class='mt-3'>Fee Amount:</label><h5 class='form-control'> Rs." + data.class_fee + "</h5></div>";
+          return "<div class='mb-3' id='fee-one'><label class='mt-3'>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='"+ data.class_fee +"'disabled ></input></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' min='0' max=" + data.class_fee + "><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>";
         })
       },
       error: function (err) {
-        alert(err);
+        console.log(err);
       },
     });
   });
 });
 
+// show previously paid amount in total;
+// $(document).ready(function () {
+//   $('#email').on('change', function (){
+//     var email_id = this.value;
+//     $('#academic_year').on('change', function(){
+//       var academic = this.value;
+//       $("#class_medium").on("change", function () {
+//         var class_med = this.value;
+//         $("#fee_earlier").val("");
+//         $.ajax({
+//           url: "/api/get-paid-amount",
+//           type: "POST",
+//           data: {
+//             email: email_id,
+//             academic_year: academic,
+//             class_id: class_med,
+//           },
+//           dataType: "Json",
+//           success: function(data) {
+//             // show data in the element.
+//             alert('Called');
+//           },
+//           error: function (err) {
+//             alert(err);
+//           },
+//         })
+//       })
+//     })
+//   })
+// }) // last close
+
+// combining one
+$(document).ready(function () {
+  $('#email, #academic_year, #class_medium').on('change', function (){
+    var email_id = $('#email').val();
+    var academic = $('#academic_year').val();
+    var class_med = $('#class_medium').val();
+    $("#fee_earlier").val("");
+      $.ajax({
+        url: "/api/get-paid-amount",
+        type: "POST",
+        data: {
+          email: email_id,
+          academic_year: academic,
+          class_id: class_med,
+        },
+        dataType: "Json",
+        success: function(data) {
+          // show data in the element.
+          $('#actual_fee').after(function(){
+            return "<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='"+ data.amount_earlier_paid +"' disabled /></div>"
+          })
+        },
+        error: function (err) {
+          console.log(err);
+        },
+      })
+  })
+}) // last close
+
+
 //payment success
-onPaymentSuccess(data, any);
-{
-  window.location.href = data.payulink;
-  //This will redirect you to payumoney payment form
-}
+// onPaymentSuccess(data, any);
+// {
+//   window.location.href = data.payulink;
+//   //This will redirect you to payumoney payment form
+// }

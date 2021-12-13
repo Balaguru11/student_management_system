@@ -39,4 +39,25 @@ apiRouter.post("/get-class-fee", (req, res) => {
   });
 });
 
+apiRouter.post('/get-paid-amount', (req, res) => {
+  var getPaidAmount = `SELECT paying_amount FROM school_student_admission WHERE email="${req.body.email}" AND academic_year="${req.body.academic_year}" AND class_medium="${req.body.class_id}"`;
+  dbcon.query(getPaidAmount, (err, result) => {
+    if (err) {
+      res.json({ msg: "error", err });
+    } else {
+      let amountPaid = 0;
+      for (let i=0; i < result.length; i++){
+        amountPaid = amountPaid + result[i].paying_amount;
+      }
+      console.log(amountPaid);      
+      res.json({
+        msg: "success",
+        amount_earlier_paid: amountPaid,
+      });
+    }
+  })
+})
+
 module.exports = apiRouter;
+
+// 

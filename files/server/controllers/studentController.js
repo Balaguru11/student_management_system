@@ -118,14 +118,20 @@ exports.getStuProfileForm = (req, res) => {
           res.locals.activeStud = activeStud;
           return res.redirect("/student/profile");
         } else {
-          var getStudentTabData = `SELECT * FROM school_student_admission WHERE email='${session.email}' AND school_id='${session.school_id}'`;
+          var getStudentTabData = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE email='${session.email}' AND school_id='${session.school_id}') AS count`;
           dbcon.query(getStudentTabData, (err, student) => {
             if (err) throw err;
-            res.locals.email = session.email;
-            res.locals.student_mobile = student[0].mobile_number;
-            return res.render("studentLevel/create-student-profile", {
+            else if(student[0].count == 1){
+              res.locals.email = session.email;
+              res.locals.student_mobile = student[0].mobile_number;
+              return res.render("studentLevel/create-student-profile", {
               title: "Create Student Profile",
             });
+            } else {
+              req.flash('err_msg', "Please Pay the tution fee (at least Rs. 100) to proceed further.");
+              return res.redirect('/student/dashboard')
+              // return res.redirect('/student/admission-fee-payment');
+            }
           });
         }
       });
@@ -283,3 +289,24 @@ exports.postEditStuProfile = (req, res) => {
     console.log(err);
   }
 };
+
+
+exports.getPaymentForm = (req, res) => {
+  let session = req.session;
+  console.log(session);
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  try {
+    // create a form using school_student_admission table and make it work.
+  } catch(err){
+    console.log(err);
+  }
+}
+
+exports.postPaymentForm = (req, res) => {
+  // student making payment by his own
+}

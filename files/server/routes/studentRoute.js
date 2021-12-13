@@ -12,6 +12,8 @@ const {
   showStuProfile,
   getStuProfileEdit,
   postEditStuProfile,
+  getPaymentForm,
+  postPaymentForm
 } = require("../controllers/studentController");
 
 //middlewares - isStudent
@@ -28,5 +30,9 @@ studentRouter.put("/profile-edit", isStudent, postEditStuProfile);
 
 // Viewing Student Dasboard after Login
 studentRouter.get("/dashboard", isStudent, viewStuDashboard);
+
+// student making paymnent for his own
+studentRouter.get("/admission-fee-payment", isStudent, getPaymentForm);
+studentRouter.post("/admission-fee-payment", isStudent, postPaymentForm);
 
 module.exports = studentRouter;

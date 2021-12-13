@@ -25,7 +25,6 @@
         type="tel"
         class="form-control"
         placeholder="Mobile Number:"
-        aria-label="Last name"
         name="mobile"
         id="mobile"
       />
@@ -45,6 +44,21 @@
     />
     <span class="error" id="dob_error">Please enter your date of birth.</span>
   </div>
+
+  <div class="mt-3 mb-3">
+    <label for="academic_year">Academic Year: </label>
+    <input
+      type="text"
+      class="form-control"
+      name="academic_year"
+      id="academic_year"
+      value="<%= new Date().getFullYear(); %>"
+    />
+    <span class="error" id="academic_year"
+      >Please enter the academic year.</span
+    >
+  </div>
+  
   <div class="mt-3 mb-3">
     <select
       id="class_medium"
@@ -57,7 +71,7 @@
       <% if(locals.feeData) { for (let i=0; i < locals.feeData.length; i++) { %>
       <option value="<%= locals.feeData[i].id %>">
         <%= locals.feeData[i].class_std %> std - <%= locals.feeData[i].medium %>
-        Medium -- Rs. <%= locals.feeData[i].actual_fee %> /-
+        Medium
       </option>
       <% } } %>
     </select>
@@ -77,28 +91,7 @@
       >Please choose Class & medium.</span
     >
   </div>
-  <!-- <div class="mb-3 form-group">
-    <label for="fee_amount">Fee to be paid:</label>
-    <input
-    type="number"
-    class="form-control"
-    name="fee_amount"
-    id="fee_amount"
-    placeholder="Fee Amount in INR"
-    disabled
-  />
-  </div> -->
-  <div class="mb-3">
-    <input
-    type="number"
-    class="form-control"
-    name="fee_paid"
-    id="fee_paid"
-    placeholder="Amount Paying:" min="0" max="<%= locals.data.actual_fee %>"
-  />
-  <span class="error" id="fee_paid_error">Please enter the amount.</span>
-  </div>
-  
+
   <div class="mt-3 mb-3">
     <label for="fee_paid_date">Payment Date: </label>
     <input
@@ -140,9 +133,10 @@
         name="due_status"
         aria-placeholder="Payment Status:"
       >
-        <option value="">Select Payment Status</option>
-        <option value="paid">Paid</option>
-        <option value="notpaid">Not Paid</option>
+        <option value="">Select Due Status</option>
+        <option value="No Due">No Due</option>
+        <option value="Due">Due</option>
+        <option value="Not Paid">Not Paid</option>
       </select>
       <span class="error" id="payment_mode_error"
         >Please select the Payment Status.</span
@@ -155,3 +149,4 @@
     </button>
   </div>
 </form>
+
