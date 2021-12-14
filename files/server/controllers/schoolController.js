@@ -821,7 +821,7 @@ exports.postFeeCollection = (req, res) => {
     dbcon.query(selectStud, (err, student) => {
       if (err) throw err;
       // inserting record to school_student_admission
-      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, date_of_birth, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.dob}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
+      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
       dbcon.query(admissionQuery, (err, respo) => {
         if (err) throw err;
         //updating student status in main_login
@@ -888,7 +888,7 @@ exports.postAddStudent = (req, res) => {
           const userPassword = req.body.password;
           const hashedPass = bcrypt.hashSync(`${userPassword}`, 10);
 
-          const addStudent = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${session.schoolId}', '1', '${req.body.username}', '${hashedPass}', '${req.body.email}', 'Inactive');`;
+          const addStudent = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${session.schoolId}', '1', '${req.body.username}', '${hashedPass}', '${req.body.email}', 'Active');`;
 
           dbcon.query(addStudent, function (err) {
             if (err) {
@@ -936,19 +936,19 @@ exports.getSchedulePlanForm = async (req, res) => {
   try {
     var getScheduleTemps = `SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'`;
     dbcon.query(getScheduleTemps, (err, templates) => {
-      if(err) throw err;
+      if (err) throw err;
       res.locals.templates = templates;
       return res.render("schoolLevel/school-schedule-template", {
         title: "School Schedule Template",
       });
-    })
+    });
   } catch (err) {
     console.log(err);
   }
 };
 
 // Add Schedule Plan to the School (POST)
-exports.postSchedulePlanForm = async(req, res) => {
+exports.postSchedulePlanForm = async (req, res) => {
   let success_msg = "";
   success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
@@ -960,10 +960,10 @@ exports.postSchedulePlanForm = async(req, res) => {
     //
     var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, school_timing_from, school_timing_to, period_time, lunch_time, no_of_intervals, interval_time, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.school_start}', '${req.body.school_end}', '${req.body.school_period_time}', '${req.body.school_lunch_time}', '${req.body.school_interval_count}', '${req.body.school_interval_time}', (('${req.body.school_end}' - '${req.body.school_start}') - ('${req.body.school_lunch_time}' / 60) - (('${req.body.school_interval_count}' * '${req.body.school_interval_time}') / 60))/ ('${req.body.school_period_time}' / 60))`;
     dbcon.query(addScheduleTemps, (err, data) => {
-      if(err) throw err;
-      return res.redirect('/school/dashboard/schedule-plan');
-    })
-  } catch(err) {
+      if (err) throw err;
+      return res.redirect("/school/dashboard/schedule-plan");
+    });
+  } catch (err) {
     console.log(err);
   }
 };

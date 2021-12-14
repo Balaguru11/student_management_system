@@ -167,6 +167,33 @@ $(document).ready(function () {
   });
 });
 
+// Dynamic getting student data from fee-collection module
+$(document).ready(function () {
+  $("#stuId").on("change", function () {
+    var student_id = this.value;
+    $("#mobile, #name, #email").val("");
+    $.ajax({
+      url: "/api/get-student-data",
+      type: 'POST',
+      data: {
+        stuId: student_id,
+      },
+      dataType: "Json",
+      success: function(result) {
+        $('#stuId').after(function(){
+          return (
+            "<div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='" + result.student_name +"' /> </div> <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='" + result.student_email +"' /> <span class='error' id='email_error' >Please enter the Student's Email.</span > </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='" + result.student_mobile +"' /> <span class='error' id='mobile_error' >Please enter the Student's 10 Digit Mobile Number.</span > </div> </div>"
+          );
+        })
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    })
+  });
+});
+
+
 // dynamic select opption based on selected option in HTML form
 $(document).ready(function () {
   $("#class_medium").on("change", function () {
@@ -215,10 +242,16 @@ $(document).ready(function () {
       },
       dataType: "json",
       success: function (data) {
-        $('#fee-one, #fee-two').remove()
-        $("#class_section").after(function(){
-          return "<div class='mb-3' id='fee-one'><label class='mt-3'>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='"+ data.class_fee +"'disabled ></input></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' min='0' max=" + data.class_fee + "><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>";
-        })
+        $("#fee-one, #fee-two").remove();
+        $("#class_section").after(function () {
+          return (
+            "<div class='mb-3' id='fee-one'><label class='mt-3'>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='" +
+            data.class_fee +
+            "'disabled ></input></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' max=" +
+            data.class_fee +
+            "><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>"
+          );
+        });
       },
       error: function (err) {
         console.log(err);
@@ -227,66 +260,38 @@ $(document).ready(function () {
   });
 });
 
-// show previously paid amount in total;
-// $(document).ready(function () {
-//   $('#email').on('change', function (){
-//     var email_id = this.value;
-//     $('#academic_year').on('change', function(){
-//       var academic = this.value;
-//       $("#class_medium").on("change", function () {
-//         var class_med = this.value;
-//         $("#fee_earlier").val("");
-//         $.ajax({
-//           url: "/api/get-paid-amount",
-//           type: "POST",
-//           data: {
-//             email: email_id,
-//             academic_year: academic,
-//             class_id: class_med,
-//           },
-//           dataType: "Json",
-//           success: function(data) {
-//             // show data in the element.
-//             alert('Called');
-//           },
-//           error: function (err) {
-//             alert(err);
-//           },
-//         })
-//       })
-//     })
-//   })
-// }) // last close
-
 // combining one
 $(document).ready(function () {
-  $('#email, #academic_year, #class_medium').on('change', function (){
-    var email_id = $('#email').val();
-    var academic = $('#academic_year').val();
-    var class_med = $('#class_medium').val();
+  $("#stuId, #academic_year, #class_medium").on("change", function () {
+    var student_id = $("#stuId").val();
+    var academic = $("#academic_year").val();
+    var class_med = $("#class_medium").val();
     $("#fee_earlier").val("");
-      $.ajax({
-        url: "/api/get-paid-amount",
-        type: "POST",
-        data: {
-          email: email_id,
-          academic_year: academic,
-          class_id: class_med,
-        },
-        dataType: "Json",
-        success: function(data) {
-          // show data in the element.
-          $('#actual_fee').after(function(){
-            return "<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='"+ data.amount_earlier_paid +"' disabled /></div>"
-          })
-        },
-        error: function (err) {
-          console.log(err);
-        },
-      })
-  })
-}) // last close
-
+    $.ajax({
+      url: "/api/get-paid-amount",
+      type: "POST",
+      data: {
+        student_id: student_id,
+        academic_year: academic,
+        class_id: class_med,
+      },
+      dataType: "Json",
+      success: function (data) {
+        // show data in the element.
+        $("#actual_fee").after(function () {
+          return (
+            "<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='" +
+            data.amount_earlier_paid +
+            "' disabled /></div>"
+          );
+        });
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+}); // last close
 
 //payment success
 // onPaymentSuccess(data, any);

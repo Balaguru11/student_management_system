@@ -31,7 +31,7 @@ exports.postStuLogin = async (req, res) => {
           let session = req.session;
           session.student_id = result[0].id;
           //   session.school_id = result[0].school_id;
-          session.roleId = result[0].role_id_fk;
+          session.roleId = result[0].role_id_fk; //camelcase
           session.username = req.body.username;
           session.email = result[0].email;
           session.studentStatus = result[0].status;
@@ -101,43 +101,43 @@ exports.getStuProfileForm = (req, res) => {
   res.locals.err_msg = err_msg;
   try {
     let session = req.session;
-    if (
-      !session.logged_in ||
-      (session.logged_in && session.studentStatus == "Inactive")
-    ) {
-      req.flash(
-        "err_msg",
-        "You are required to close the due to create your Profile."
-      );
+    if (!session.logged_in) {
+      req.flash("err_msg", "Please login to continue.");
       return res.redirect("/student/dashboard");
-    } else if (session.studentStatus == "Active") {
-      var checkStuTable = `SELECT EXISTS(SELECT * FROM school_student WHERE email='${session.email}' AND school_id='${session.school_id}') AS count;`;
+    } else {
+      // checking the student_table - if there, load the profile or show the form to Create a new profile
+      var checkStuTable = `SELECT EXISTS(SELECT * FROM school_student WHERE student_id='${session.student_id}') AS count;`;
       dbcon.query(checkStuTable, (err, activeStud) => {
         if (err) throw err;
         else if (activeStud[0].count == 1) {
-          res.locals.activeStud = activeStud;
           return res.redirect("/student/profile");
         } else {
-          var getStudentTabData = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE email='${session.email}' AND school_id='${session.school_id}') AS count`;
-          dbcon.query(getStudentTabData, (err, student) => {
-            if (err) throw err;
-            else if(student[0].count == 1){
-              res.locals.email = session.email;
-              res.locals.student_mobile = student[0].mobile_number;
-              return res.render("studentLevel/create-student-profile", {
-              title: "Create Student Profile",
-            });
-            } else {
-              req.flash('err_msg', "Please Pay the tution fee (at least Rs. 100) to proceed further.");
-              return res.redirect('/student/dashboard')
-              // return res.redirect('/student/admission-fee-payment');
-            }
+          // show
+          res.locals.email = session.email;
+          return res.render("studentLevel/create-student-profile", {
+            title: "Create Student Profile",
           });
+          // var getStudentTabData = `SELECT *, DATE_FORMAT(date_of_birth, '%Y-%c-%d') AS dob FROM school_student_admission WHERE email='${session.email}' AND school_id='${session.school_id}'`;
+          // dbcon.query(getStudentTabData, (err, student) => {
+          //   if (err) throw err;
+          //   else if (student.length != 0) {
+          //     res.locals.email = session.email;
+          //     res.locals.student_mobile = student[0].mobile_number;
+          //     res.locals.dob = student[0].dob;
+          //     return res.render("studentLevel/create-student-profile", {
+          //       title: "Create Student Profile",
+          //     });
+          //   } else {
+          //     req.flash(
+          //       "err_msg",
+          //       "Please Pay the tution fee (at least Rs. 100) to proceed further."
+          //     );
+          //     return res.redirect("/student/dashboard");
+          //     // return res.redirect('/student/admission-fee-payment');
+          //   }
+          // });
         }
       });
-    } else {
-      req.flash("err_msg", "You are not allowed to view this Page.");
-      return res.redirect("/");
     }
   } catch (err) {
     console.log(err);
@@ -157,35 +157,16 @@ exports.postStuProfile = (req, res) => {
   let session = req.session;
   console.log(session);
   try {
-    if (
-      !session.logged_in ||
-      (session.logged_in && session.studentStatus == "Inactive")
-    ) {
-      req.flash(
-        "err_msg",
-        "You are required to close the due to create your Profile."
-      );
-      return res.redirect("/student/dashboard");
-    } else if (session.studentStatus == "Active") {
-      // check student table for duplicate entry and insert
-      var studentCheck = `SELECT * FROM school_main_login WHERE username='${session.username}' AND email='${session.email}' AND school_id='${session.school_id}'; SELECT * FROM school_student_admission WHERE school_id='${session.school_id}' AND student_id='${session.student_id}'`;
-      dbcon.query(studentCheck, (err, res) => {
-        if (err) throw err;
-        else if (res) {
-          var newStudent = `INSERT INTO school_student(school_id, student_id, studying, name, mobile_number, email, father_name, date_of_birth, city, state) VALUES ('${session.school_id}', '${res[0][0].id}', '${res[1][0].class_section}', '${req.body.studentName}', '${res[1][0].mobile_number}', '${res[0][0].email}', '${req.body.father_name}', '${res[1][0].date_of_birth}', '${req.body.student_city}', '${req.body.student_state}')`;
-          dbcon.query(newStudent, (err, profileSaved) => {
-            if (err) throw err;
-            req.flash("success", "Your Profile has been created.");
-            return res.redirect("/student/profile");
-          });
-        } else {
-          req.flash("err_msg", "No account found.");
-          return res.redirect("/student/profile");
-        }
-      });
-    } else {
+    if (!session.logged_in) {
       req.flash("err_msg", "Please login to continue.");
-      return res.redirect("/");
+      return res.redirect("/student/dashboard");
+    } else {
+      var newStudent = `INSERT INTO school_student(school_id, student_id, name, mobile_number, email, father_name, date_of_birth, city, state) VALUES ('${session.school_id}', '${session.student_id}', '${req.body.studentName}', '${req.body.student_mobile}', '${session.email}', '${req.body.father_name}', '${req.body.student_dob}', '${req.body.student_city}', '${req.body.student_state}')`;
+      dbcon.query(newStudent, (err, profileSaved) => {
+        if (err) throw err;
+        req.flash("success", "Your Profile has been created successfully.");
+        return res.redirect("/student/profile");
+      });
     }
   } catch (err) {
     console.log(err);
@@ -204,7 +185,7 @@ exports.showStuProfile = async (req, res) => {
   let session = req.session;
   if (session.logged_in) {
     // include all the profile data here
-    var getStuProfile = `SELECT * FROM school_student WHERE student_id='${session.student_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
+    var getStuProfile = `SELECT * FROM school_student WHERE student_id='${session.student_id}'`;
     dbcon.query(getStuProfile, (err, data) => {
       if (err) throw err;
       res.locals.name = data[0].name;
@@ -244,7 +225,7 @@ exports.getStuProfileEdit = (req, res) => {
         res.locals.mobile_number = data[0].mobile_number;
         res.locals.email = data[0].email;
         res.locals.father_name = data[0].father_name;
-        res.locals.date_of_birth = data[0].date_of_birth;
+        res.locals.date_of_birth = data[0].dob;
         res.locals.city = data[0].city;
         res.locals.state = data[0].state;
         return res.render("studentLevel/student-profile-edit", {
@@ -271,7 +252,7 @@ exports.postEditStuProfile = (req, res) => {
   res.locals.success_msg = success_msg;
   try {
     if (session.logged_in && session.studentStatus == "Active") {
-      var profileQuery = `UPDATE school_student SET name = '${req.body.studentName}', mobile_number = '${req.body.student_mobile}', date_of_birth = '${req.body.student_dob}',  father_name = '${req.body.student_father_name}', city = '${req.body.student_city}', state = '${req.body.student_state}' WHERE student_id='${session.student_id}' AND  school_id='${session.school_id}' AND email='${session.email}'`;
+      var profileQuery = `UPDATE school_student SET name = '${req.body.studentName}', date_of_birth = '${req.body.student_dob}',  father_name = '${req.body.father_name}', city = '${req.body.student_city}', state = '${req.body.student_state}' WHERE student_id='${session.student_id}'`;
 
       dbcon.query(profileQuery, function (err, result) {
         if (err) {
@@ -290,7 +271,6 @@ exports.postEditStuProfile = (req, res) => {
   }
 };
 
-
 exports.getPaymentForm = (req, res) => {
   let session = req.session;
   console.log(session);
@@ -302,11 +282,12 @@ exports.getPaymentForm = (req, res) => {
   res.locals.success_msg = success_msg;
   try {
     // create a form using school_student_admission table and make it work.
-  } catch(err){
+    // get student info, class and medium, academic year, fee amount, fee already paid, amount paying, payment mode, pay_status, entered by
+  } catch (err) {
     console.log(err);
   }
-}
+};
 
 exports.postPaymentForm = (req, res) => {
   // student making payment by his own
-}
+};
