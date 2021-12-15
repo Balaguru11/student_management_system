@@ -14,12 +14,13 @@ const {
   postEditStaffProfile,
   getStudentsList,
   getOneStudentProfile,
-  getClassAssigned,
+  getClassAssigned, allChangePwd
 } = require("../controllers/staffController");
 
 staffRouter.post("/login", postStaffLogin);
 
 staffRouter.get("/dashboard", isStaff, getStaffDashboard);
+staffRouter.all('/dashboard/change-password', isStaff, allChangePwd);
 
 // staff Profile CRUD Operations.
 staffRouter.get("/profile-create", isStaff, getStaffProfileForm);

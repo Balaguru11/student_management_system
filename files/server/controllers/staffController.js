@@ -34,6 +34,7 @@ exports.postStaffLogin = (req, res) => {
           session.username = req.body.username;
           session.email = result[0].email;
           session.staffStatus = result[0].status;
+          session.staffPwd = result[0].password;
           session.logged_in = true;
           return res.status(200).redirect("/staff/dashboard");
         } else {
@@ -414,3 +415,42 @@ exports.getClassAssigned = (req, res) => {
     console.log(err);
   }
 };
+
+// change passsword
+exports.allChangePwd = (req, res)=> {
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    if(req.method == 'GET'){
+      return res.render('changepassword', {title: 'Change Password', layout: "./layouts/home_layout",})
+    } else {
+      const currentPwd = req.body.schoolCurPassword;
+        const saved_pass = session.staffPwd;
+        const verified = bcrypt.compareSync(
+          `${currentPwd}`,
+          `${saved_pass}`
+        );
+
+        if (verified && (req.body.schoolNewPassword === req.body.schoolRetypePassword)) {
+          const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
+          var newPass = `UPDATE school_main_login SET password = '${newHash}' WHERE id='${session.staff_id}'`
+          dbcon.query(newPass, (err, response) => {
+            if(err) throw err;
+            // req.session.destroy();
+            req.flash('success', "Your Password has been changed.");
+            return res.redirect('/');
+          })
+        } else {
+          req.flash('err_msg', 'Please make sure to enter the correct passsword.');
+          return res.redirect('/staff/dashboard/change-password');
+        }
+    }
+  } catch(err){
+    console.log(err);
+  }
+}

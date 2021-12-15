@@ -97,7 +97,7 @@ exports.getSchoolLogin = (req, res) => {
     res.redirect("/school/dashboard");
   } else {
     res.render("schoolLevel/school-login", {
-      title: "School Master Login",
+      title: "School Master Login", layout: "./layouts/home_layout",
     });
   }
 };
@@ -130,6 +130,7 @@ exports.postSchoolLogin = async (req, res) => {
           session.schoolUserName = req.body.schoolUserName;
           session.schoolId = result[0].id;
           session.schoolStatus = result[0].status;
+          session.schoolPwd = result[0].school_secrete;
           session.logged_in = true;
           req.flash(
             "welcome",
@@ -638,7 +639,6 @@ exports.getMapSubStaff = (req, res) => {
     var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) throw err;
-
       var bridgeTableQuery = `SELECT scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
       INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
@@ -646,6 +646,7 @@ exports.getMapSubStaff = (req, res) => {
       INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}'`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) throw err;
+        console.log(result);
         res.locals.tableData = tableData;
         res.locals.result = result;
         return res.render("schoolLevel/school-map-subject-staff", {
@@ -817,21 +818,36 @@ exports.postFeeCollection = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var selectStud = `SELECT * FROM school_main_login WHERE email='${req.body.email}' AND role_id_fk='1'`;
+    var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'; SELECT * FROM school_student WHERE student_id='${req.body.stuId}'`;
     dbcon.query(selectStud, (err, student) => {
       if (err) throw err;
-      // inserting record to school_student_admission
-      var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0].school_id}', '${student[0].id}', '${req.body.mobile}', '${student[0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${req.body.due_status}', '${session.schoolId}')`;
-      dbcon.query(admissionQuery, (err, respo) => {
-        if (err) throw err;
-        //updating student status in main_login
-        var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
-        dbcon.query(studUpdateLogin, (err, result) => {
-          if (err) throw err;
-          req.flash("success", "Payment record added.");
-          return res.redirect("/school/dashboard/fee-collection");
-        });
-      });
+      console.log(student);
+      // admission table is for new enrollment only. So, checking if the data is already available 
+      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}') AS count`;
+      dbcon.query(checkAdmission, (err, data) => {
+        if(err) throw err;
+        else if(data[0].count == 0){
+          // inserting record to school_student_admission if not available
+          const payment_pending = req.body.actual_fee_hide - req.body.fee_paying;
+          let payment_status = (payment_pending == 0) ? "No Due" : "Due";
+          
+          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0][0].school_id}', '${student[0][0].id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.schoolId}')`;
+          dbcon.query(admissionQuery, (err, respo) => {
+            if (err) throw err;
+            //updating student status in main_login
+            var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
+            dbcon.query(studUpdateLogin, (err, result) => {
+              if (err) throw err;
+              req.flash("success", "Payment record added.");
+              return res.redirect("/school/dashboard/fee-collection");
+            });
+          });
+        } else {
+          req.flash('err_msg', 'This student already enrolled. Please use Due collection form instead.');
+          return res.redirect('/school/dashboard/fee-due-collection');
+        }
+      })
+     
     });
   } catch (err) {
     console.log(err);
@@ -967,3 +983,88 @@ exports.postSchedulePlanForm = async (req, res) => {
     console.log(err);
   }
 };
+
+// change password
+exports.allChangePwd = (req, res)=> {
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    if(req.method == 'GET'){
+      return res.render('changepassword', {title: 'Change Password', layout: "./layouts/home_layout",})
+    } else {
+      const currentPwd = req.body.schoolCurPassword;
+        const saved_pass = session.schoolPwd;
+        const verified = bcrypt.compareSync(
+          `${currentPwd}`,
+          `${saved_pass}`
+        );
+
+        if (verified && (req.body.schoolNewPassword === req.body.schoolRetypePassword)) {
+          const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
+          var newPass = `UPDATE school_add_School SET school_secrete = '${newHash}' WHERE id='${session.schoolId}'`
+          dbcon.query(newPass, (err, response) => {
+            if(err) throw err;
+            // req.session.destroy();
+            req.flash('success', "Your Password has been changed.");
+            return res.redirect('/');
+          })
+        } else {
+          req.flash('err_msg', 'Please make sure to enter the correct passsword.');
+          return res.redirect('/school/dashboard/change-password');
+        }
+    }
+  } catch(err){
+    console.log(err);
+  }
+}
+
+// DUE COLLECTION - 
+exports.allDueCollection = (req, res) => {
+  let success_msg = "";
+  success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = "";
+  err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    if(req.method == 'GET'){
+      // view fee collection records
+      var feeCollected = `SELECT * FROM school_student_admission WHERE school_id='${session.schoolId}'`;
+      dbcon.query(feeCollected, (err, feeData) => {
+        if(err) throw err;
+        res.locals.data = feeData;
+        return res.render('schoolLevel/school-collect-due', {title: 'Due Collection'});      
+      })
+      // display student data using jQ
+      // if(req.query.status == 'success'){
+      //   req.flash('success', "Fee updated.");
+      // }
+      
+    } else {
+      let due_amount = req.body.course_fee - req.body.paid_fee_hide - req.body.paying_fee;
+      let due_status = (due_amount == 0) ? "No Due" : "Due";
+
+      var dueColl = `INSERT INTO school_student_feedue(school_id, student_id, admission_id, actual_fee, currently_paying, payment_mode, due_status) VALUES ('${session.schoolId}', '${req.body.stuId_due}', '${req.body.admission_id}', '${req.body.course_fee}', '${req.body.paying_fee}', '${req.body.payment_mode}', '${due_status}')`;
+      dbcon.query(dueColl, (err, result) => {
+        if(err) throw err;
+        
+        var updateAdmisFee = `UPDATE school_student_admission SET paying_amount = paying_amount+'${req.body.paying_fee}', payment_status ='${due_status}' WHERE id='${req.body.admission_id}'`;
+        dbcon.query(updateAdmisFee, (err, updated) => {
+          if(err) throw err;
+          else {
+            req.flash('success', "Fee updated successfully.");
+            return res.redirect('/school/dashboard/fee-due-collection?_method=GET&status=success');
+          }
+        })
+      })
+    }
+  } catch(err){
+    console.log(err);
+  }
+}

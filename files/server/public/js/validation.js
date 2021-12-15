@@ -171,7 +171,7 @@ $(document).ready(function () {
 $(document).ready(function () {
   $("#stuId").on("change", function () {
     var student_id = this.value;
-    $("#mobile, #name, #email").val("");
+    // $("#mobile, #name, #email").val("");
     $.ajax({
       url: "/api/get-student-data",
       type: 'POST',
@@ -181,13 +181,14 @@ $(document).ready(function () {
       dataType: "Json",
       success: function(result) {
         $('#stuId').after(function(){
+          $('#student_data').remove();
           return (
-            "<div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='" + result.student_name +"' /> </div> <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='" + result.student_email +"' /> <span class='error' id='email_error' >Please enter the Student's Email.</span > </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='" + result.student_mobile +"' /> <span class='error' id='mobile_error' >Please enter the Student's 10 Digit Mobile Number.</span > </div> </div>"
+            "<div class='student_data' id='student_data'><div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='" + result.student_name +"' /> </div> <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='" + result.student_email +"' /> <span class='error' id='email_error' >Please enter the Student's Email.</span > </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='" + result.student_mobile +"' /> <span class='error' id='mobile_error' >Please enter the Student's 10 Digit Mobile Number.</span > </div> </div></div>"
           );
         })
       },
       error: function (err) {
-        console.log(err);
+        alert('No Student found');
       },
     })
   });
@@ -247,14 +248,16 @@ $(document).ready(function () {
           return (
             "<div class='mb-3' id='fee-one'><label class='mt-3'>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='" +
             data.class_fee +
-            "'disabled ></input></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' max=" +
+            "'disabled /><input type='hidden' class='form-control' name='actual_fee_hide' id='actual_fee_hide' value='" +
+            data.class_fee +
+            "'/></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' max=" +
             data.class_fee +
             "><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>"
           );
         });
       },
       error: function (err) {
-        console.log(err);
+        alert(err);
       },
     });
   });
@@ -292,6 +295,35 @@ $(document).ready(function () {
     });
   });
 }); // last close
+
+
+// Dynamic getting student data for fee due module from admission table
+$(document).ready(function () {
+  $("#stuId_due").on("change", function () {
+    var student_id = this.value;
+    // $("#mobile, #name, #email").val("");
+    $.ajax({
+      url: "/api/get-student-enrollment-data",
+      type: 'POST',
+      data: {
+        stuId: student_id,
+      },
+      dataType: "Json",
+      success: function(result) {
+        $('#stuId_due').after(function(){
+          var max_amount = result.actual_fee - result.earlier_paid;
+          $('#student_enroll_data').remove();
+          return (
+            "<div class='student_enroll_data' id='student_enroll_data'>            <div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='" + result.student_name +"' /> </div>                <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='" + result.student_email +"' /> </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='" + result.student_mobile +"' /> </div> </div>                <div class='mt-3 mb-3'> <label for='academic_year'>Academic Year: </label> <input type='text' class='form-control' name='academic_year' id='academic_year' disabled value='" + result.academic_year +"'/> </div>                 <div class='mb-3'> <label for='class_medium'>Class & Medium: </label> <input type='text' id='class_medium' class='form-control' name='class_medium' disabled value='" + result.class_std + " std - " + result.class_med + " medium' /> </div>                 <div class='mb-3'><label for='class_section'>Class section: </label> <input type='text' id='class_section' class='form-control' name='class_section' disabled value='" + result.class_sec +" Section' /> </div>                <div class='mb-3'><label for='course_fee' >Actual fee:</label><input type='number' class='form-control' name='course_fee' id='course_fee' value='" + result.actual_fee + "' /></div>                <div class='mb-3'><label for='paid_fee' >Amount Paid so far:</label><input type='number' class='form-control' name='paid_fee' id='paid_fee' value='" + result.earlier_paid + "' disabled /><input type='hidden' class='form-control' name='paid_fee_hide' id='paid_fee_hide' value='" + result.earlier_paid + "' /></div>                <div class='mb-1'><label for='paying_fee'>Amount Paying now:</label><input type='number' class='form-control' name='paying_fee' id='paying_fee' min='0' max='"+ max_amount +"' /></div>                <input type='hidden' id='admission_id' name='admission_id' value='"+ result.admission_id +"'></div>"
+          );
+        })
+      },
+      error: function (err) {
+        alert('No Student found.');
+      },
+    })
+  });
+});
 
 //payment success
 // onPaymentSuccess(data, any);

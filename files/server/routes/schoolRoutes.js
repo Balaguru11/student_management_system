@@ -33,7 +33,7 @@ const {
   getAddStudent,
   postAddStudent,
   getSchedulePlanForm,
-  postSchedulePlanForm
+  postSchedulePlanForm, allChangePwd, allDueCollection
 } = require("../controllers/schoolController");
 
 // CREATE SCHOOL
@@ -46,6 +46,9 @@ schoolRouter.post("/login", postSchoolLogin);
 
 // School Dashboard
 schoolRouter.get("/dashboard", isSchool, getSchoolDashBoard);
+
+// School change Password
+schoolRouter.all("/dashboard/change-password", isSchool, allChangePwd);
 
 // Fee Structure CRUD
 schoolRouter.get("/dashboard/fee-structure", isSchool, viweFeeStructure);
@@ -89,6 +92,8 @@ schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent); // Adding
 // fee collection CRUD
 schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
 schoolRouter.post("/dashboard/fee-collection", isSchool, postFeeCollection);
+// Due collection
+schoolRouter.all('/dashboard/fee-due-collection', isSchool, allDueCollection);
 
 // schedule template CRUD
 schoolRouter.get("/dashboard/schedule-plan", isSchool, getSchedulePlanForm);
