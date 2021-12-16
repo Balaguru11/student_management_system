@@ -1,9 +1,7 @@
 const express = require("express");
 const schoolRouter = express.Router();
-// const dbcon = require("../DB/database");
 
 const { isSchool } = require("../middlewares/auth");
-// const bcrypt = require('bcryptjs');
 
 // importing schoolController here
 const {
@@ -33,7 +31,9 @@ const {
   getAddStudent,
   postAddStudent,
   getSchedulePlanForm,
-  postSchedulePlanForm, allChangePwd, allDueCollection
+  postSchedulePlanForm,
+  allChangePwd,
+  allDueCollection,
 } = require("../controllers/schoolController");
 
 // CREATE SCHOOL
@@ -93,7 +93,7 @@ schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent); // Adding
 schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
 schoolRouter.post("/dashboard/fee-collection", isSchool, postFeeCollection);
 // Due collection
-schoolRouter.all('/dashboard/fee-due-collection', isSchool, allDueCollection);
+schoolRouter.all("/dashboard/fee-due-collection", isSchool, allDueCollection);
 
 // schedule template CRUD
 schoolRouter.get("/dashboard/schedule-plan", isSchool, getSchedulePlanForm);

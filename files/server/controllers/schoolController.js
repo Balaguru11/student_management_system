@@ -1,19 +1,15 @@
 // import required models here
-
+const Str = require("@supercharge/strings");
 const session = require("express-session");
-const dbcon = require("../DB/database");
+const dbcon = require("../config/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
+const sendMail = require("../config/email.config");
 
 exports.getCreateSchool = (req, res) => {
   // flash err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
-  //flash success_msg - not coming from anywhere
-  // let success_msg = "";
-  // success_msg = req.flash("success");
-  // res.lcoals.success_msg = success_msg;
   // rendering with message
   res.render("schoolLevel/school-create", {
     title: "Add a School",
@@ -27,9 +23,7 @@ exports.postCreateSchool = async (req, res) => {
 
     dbcon.query(check, (err, data) => {
       if (err) {
-        console.log(err);
-        req.flash("err_msg", "There is an error with Database connection.");
-        return res.redirect("school/create");
+        return res.render("server-error", { title: "Server Error" });
       } else {
         if (data[0].count == 0) {
           // passord hashing
@@ -40,7 +34,6 @@ exports.postCreateSchool = async (req, res) => {
 
           dbcon.query(sql, function (err, result) {
             if (err) {
-              console.log(err);
               req.flash("err_msg", "There is an error when adding new school");
               return res.redirect("/school/create");
             } else {
@@ -50,13 +43,29 @@ exports.postCreateSchool = async (req, res) => {
               const activationQuery = `INSERT INTO school_activate(school_id, activate_match_g) VALUES('${session.schoolId}', '${act_string}')`;
               dbcon.query(activationQuery, function (err) {
                 if (err) {
-                  console.log(err);
                   req.flash(
                     "err_msg",
                     "There is an error when creating Activation Code for your school"
                   );
                   return res.redirect("/school/create");
                 } else {
+                  // send a mail here.
+                  const mail = sendMail({
+                    from: process.env.MAIL_USERNAME,
+                    to: req.body.email,
+                    subject: "School Created.",
+                    html: `<p>School Username: ${req.body.schoolName}</p>`,
+                  });
+                  mail
+                    .then((result) => {
+                      console.log("Mail has been sent");
+                    })
+                    .catch((err) => {
+                      return res.render("server-error", {
+                        title: "Server Error",
+                      });
+                    });
+
                   req.flash(
                     "success",
                     "The school has been added successfully. Please Login & Submit your Product Activation code to start using it."
@@ -73,18 +82,16 @@ exports.postCreateSchool = async (req, res) => {
       }
     });
   } catch (err) {
-    return res.status(500).send(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 exports.getSchoolLogin = (req, res) => {
   //flash err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   //flash success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   //flash success_msg
   let inactive_msg = "";
@@ -97,25 +104,24 @@ exports.getSchoolLogin = (req, res) => {
     res.redirect("/school/dashboard");
   } else {
     res.render("schoolLevel/school-login", {
-      title: "School Master Login", layout: "./layouts/home_layout",
+      title: "School Master Login",
+      layout: "./layouts/home_layout",
     });
   }
 };
 
 exports.postSchoolLogin = async (req, res) => {
   // flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing sucecss_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   try {
     var loginQuery = `SELECT * FROM school_add_school WHERE school_login='${req.body.schoolUserName}'`;
     dbcon.query(loginQuery, function (err, result) {
       if (err) {
-        console.log(err);
+        return res.render("server-error", { title: "Server Error" });
       } else if (result.length == 1) {
         //password verification
         const passwordEntered = req.body.schoolPassword;
@@ -147,8 +153,7 @@ exports.postSchoolLogin = async (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
-    return res.status(500).send(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -157,20 +162,12 @@ exports.getSchoolDashBoard = (req, res) => {
   try {
     let session = req.session;
     //flashing welcome message
-    let welcome_msg = "";
-    welcome_msg = req.flash("welcome");
+    let welcome_msg = req.flash("welcome");
     res.locals.welcome_msg = welcome_msg;
-    // // flashing inactive_msg
-    // let inactive_msg = "";
-    // inactive_msg = req.flash("inactive_msg");
-    // res.locals.inactive_msg = inactive_msg;
-    //flashing err_msg
-    let err_msg = "";
-    err_msg = req.flash("err_msg");
+    let err_msg = req.flash("err_msg");
     res.locals.err_msg = err_msg;
     // flashing success_msg
-    let success_msg = "";
-    success_msg = req.flash("success");
+    let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     //status flashing
     let status = "";
@@ -181,7 +178,7 @@ exports.getSchoolDashBoard = (req, res) => {
       var countData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='8'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='8'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='1'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='1'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='2'; SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT school_name FROM school_add_school WHERE id='${session.schoolId}'`;
 
       dbcon.query(countData, (err, countNos) => {
-        if (err) throw err;
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.countNos = countNos;
         res.render("schoolLevel/school-dashboard", {
           title: "School Master Dashboard",
@@ -189,27 +186,22 @@ exports.getSchoolDashBoard = (req, res) => {
       });
     } else if (session.logged_in && session.schoolStatus == "Inactive") {
       return res.redirect("/activate/school");
-      // res.render("schoolLevel/school-dashboard", {
-      //   title: "School Master Dashboard",
-      // });
     } else {
       req.flash("err_msg", "You are unauthorized. Please login.");
       return res.status(401).redirect("/school/login");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 exports.postAddClassroom = async (req, res) => {
   try {
     //flashing err_msg
-    let err_msg = "";
-    err_msg = req.flash("err_msg");
+    let err_msg = req.flash("err_msg");
     res.locals.err_msg = err_msg;
     // flashing success_msg
-    let success_msg = "";
-    success_msg = req.flash("success");
+    let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
 
     let session = req.session;
@@ -265,7 +257,7 @@ exports.postAddClassroom = async (req, res) => {
       return res.redirect("/school/login");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
     return res.status(500).send(err);
   }
 };
@@ -274,12 +266,10 @@ exports.postAddClassroom = async (req, res) => {
 exports.postAddUser = async (req, res) => {
   try {
     //flashing err_msg
-    let err_msg = "";
-    err_msg = req.flash("err_msg");
+    let err_msg = req.flash("err_msg");
     res.locals.err_msg = err_msg;
     // flashing success_msg
-    let success_msg = "";
-    success_msg = req.flash("success");
+    let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     let session = req.session;
 
@@ -290,7 +280,6 @@ exports.postAddUser = async (req, res) => {
 
       dbcon.query(userCheck, (err, data) => {
         if (err) {
-          console.log(err);
           req.flash("err_msg", "We could not add new user at the moment.");
           return res.redirect("/school/dashboard/users");
         } else {
@@ -333,7 +322,7 @@ exports.postAddUser = async (req, res) => {
       return res.status(401).redirect("/school/login");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
     return res.status(500).send(err);
   }
 };
@@ -342,12 +331,10 @@ exports.postAddUser = async (req, res) => {
 exports.postAddSubject = (req, res) => {
   try {
     //flashing err_msg
-    let err_msg = "";
-    err_msg = req.flash("err_msg");
+    let err_msg = req.flash("err_msg");
     res.locals.err_msg = err_msg;
     // flashing success_msg
-    let success_msg = "";
-    success_msg = req.flash("success");
+    let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     let session = req.session;
 
@@ -356,14 +343,14 @@ exports.postAddSubject = (req, res) => {
 
     dbcon.query(checkSubject, (err, result) => {
       if (err) {
-        console.log(err);
+        return res.render("server-error", { title: "Server Error" });
       } else if (result[0].count == 0) {
         // result = 0, adding new subject
         var addSubject = `INSERT INTO school_subjects(subject_name, school_id) VALUES ('${req.body.subject}', '${session.schoolId}') `;
 
         dbcon.query(addSubject, (err, subject) => {
           if (err) {
-            console.log(err);
+            return res.render("server-error", { title: "Server Error" });
           } else {
             req.flash("success", "The Subject has been added successfully.");
             return res.redirect("/school/dashboard/subjects");
@@ -375,7 +362,7 @@ exports.postAddSubject = (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -383,12 +370,10 @@ exports.postAddSubject = (req, res) => {
 exports.postAddFeeStructure = (req, res) => {
   try {
     //flashing err_msg
-    let err_msg = "";
-    err_msg = req.flash("err_msg");
+    let err_msg = req.flash("err_msg");
     res.locals.err_msg = err_msg;
     // flashing success_msg
-    let success_msg = "";
-    success_msg = req.flash("success");
+    let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     let session = req.session;
     if (session.logged_in) {
@@ -401,12 +386,12 @@ exports.postAddFeeStructure = (req, res) => {
 
       dbcon.query(feeQuery, (err, data) => {
         if (err) {
-          console.log(err);
+          return res.render("server-error", { title: "Server Error" });
         } else if (data[0].count == 0) {
           var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}')`;
           dbcon.query(addFeeQuery, (err, response) => {
             if (err) {
-              console.log(err);
+              return res.render("server-error", { title: "Server Error" });
             } else {
               req.flash(
                 "success",
@@ -428,7 +413,7 @@ exports.postAddFeeStructure = (req, res) => {
       return res.redirect("/school/login");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -436,19 +421,17 @@ exports.postAddFeeStructure = (req, res) => {
 exports.viweFeeStructure = (req, res) => {
   try {
     //flashing err_msg
-    let err_msg = "";
-    err_msg = req.flash("err_msg");
+    let err_msg = req.flash("err_msg");
     res.locals.err_msg = err_msg;
     // flashing success_msg
-    let success_msg = "";
-    success_msg = req.flash("success");
+    let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     let session = req.session;
     var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std)`;
 
     dbcon.query(feeStrucData, (err, data) => {
       if (err) {
-        console.log(err);
+        return res.render("server-error", { title: "Server Error" });
       } else {
         res.locals.data = data;
         return res.render("schoolLevel/school-feeStructure", {
@@ -458,19 +441,17 @@ exports.viweFeeStructure = (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // view User Accounts
 exports.viewUserAccounts = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
@@ -478,7 +459,7 @@ exports.viewUserAccounts = (req, res) => {
 
     dbcon.query(userAccData, (err, data) => {
       if (err) {
-        console.log(err);
+        return res.render("server-error", { title: "Server Error" });
       } else {
         for (let i = 0; i < data.length; i++) {
           switch (data[i].role_id_fk) {
@@ -506,19 +487,17 @@ exports.viewUserAccounts = (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // view Subjects from School dashboard
 exports.viewSubjects = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
@@ -526,7 +505,7 @@ exports.viewSubjects = (req, res) => {
 
     dbcon.query(subjectsData, (err, data) => {
       if (err) {
-        console.log(err);
+        return res.render("server-error", { title: "Server Error" });
       } else {
         res.locals.data = data;
         return res.render("schoolLevel/school-subjects", {
@@ -536,19 +515,17 @@ exports.viewSubjects = (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // view Class Sections from school dashboard
 exports.viewClassSections = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
@@ -556,11 +533,11 @@ exports.viewClassSections = (req, res) => {
     var classSecData = `SELECT clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}'`;
 
     dbcon.query(classSecData, (err, data) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
 
       var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std);`;
       dbcon.query(classDrop, (err, classOptions) => {
-        if (err) throw err;
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.classOptions = classOptions;
         res.locals.data = data;
         return res.render("schoolLevel/school-classSections", {
@@ -569,7 +546,7 @@ exports.viewClassSections = (req, res) => {
       });
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -578,19 +555,17 @@ exports.viewClassSections = (req, res) => {
 // get edit fee structure
 exports.getEditFeeStructure = (req, res, next) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     const feeS_id = req.params.id;
     const feeS_query = `SELECT * FROM school_feestructure WHERE id='${feeS_id}'`;
     dbcon.query(feeS_query, (err, fetchedData) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       res.locals.class_std = fetchedData[0].class_std;
       res.locals.medium = fetchedData[0].medium;
       res.locals.actual_fee = fetchedData[0].actual_fee;
@@ -599,38 +574,34 @@ exports.getEditFeeStructure = (req, res, next) => {
       });
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // put Edit fee structure
 exports.putFeeStructure = (req, res, next) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     const check = req.params.id;
     console.log(check);
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // subject Staff Section mapping
 exports.getMapSubStaff = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
 
@@ -638,14 +609,14 @@ exports.getMapSubStaff = (req, res) => {
     // fetching class_id, section from classroom
     var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
     dbcon.query(class_med_sec, (err, tableData) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       var bridgeTableQuery = `SELECT scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
       INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
       INNER JOIN school_main_login AS sml ON sml.id = scs.staff_id_assigned AND sml.status='Active'
       INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}'`;
       dbcon.query(bridgeTableQuery, (err, result) => {
-        if (err) throw err;
+        if (err) return res.render("server-error", { title: "Server Error" });
         console.log(result);
         res.locals.tableData = tableData;
         res.locals.result = result;
@@ -655,19 +626,17 @@ exports.getMapSubStaff = (req, res) => {
       });
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // post Map Subject Staff
 exports.postMapSubStaff = async (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
@@ -675,13 +644,13 @@ exports.postMapSubStaff = async (req, res) => {
 
     dbcon.query(checkmapping, (err, isMapped) => {
       if (err) {
-        throw err;
+        return res.render("server-error", { title: "Server Error" });
       } else if (isMapped[0].count == 0) {
         console.log(isMapped);
         var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
 
         dbcon.query(MapSubStaffSec, (err, bridgeData) => {
-          if (err) throw err;
+          if (err) return res.render("server-error", { title: "Server Error" });
           req.flash("success", "Subject and Staff Added to the classroom.");
           return res.redirect("/school/dashboard/section-subject-staff");
         });
@@ -694,89 +663,79 @@ exports.postMapSubStaff = async (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // Announcement CRUD
 exports.getMessageR = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     // Dos something here
     return res.status(200);
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 exports.postMessageC = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     // Dos something here
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 exports.putMessageU = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     // Dos something here
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 exports.deleteMessageD = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     // Dos something here
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // Collect Fee CRUD
 exports.getFeeCollection = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
@@ -784,12 +743,12 @@ exports.getFeeCollection = (req, res) => {
       var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_classroom AS clr
       INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
       dbcon.query(fee_data, (err, feeData) => {
-        if (err) throw err;
+        if (err) return res.render("server-error", { title: "Server Error" });
 
         // view fee records
         var feeRecords = `SELECT * FROM school_student_admission WHERE school_id='${session.schoolId}'`;
         dbcon.query(feeRecords, (err, records) => {
-          if (err) throw err;
+          if (err) return res.render("server-error", { title: "Server Error" });
           res.locals.data = records;
           res.locals.feeData = feeData;
           return res.render("schoolLevel/school-collect-fee", {
@@ -802,74 +761,75 @@ exports.getFeeCollection = (req, res) => {
       return res.redirect("/school/dashboard");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // postFeeCollection
 exports.postFeeCollection = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'; SELECT * FROM school_student WHERE student_id='${req.body.stuId}'`;
     dbcon.query(selectStud, (err, student) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       console.log(student);
-      // admission table is for new enrollment only. So, checking if the data is already available 
+      // admission table is for new enrollment only. So, checking if the data is already available
       var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}') AS count`;
       dbcon.query(checkAdmission, (err, data) => {
-        if(err) throw err;
-        else if(data[0].count == 0){
+        if (err) return res.render("server-error", { title: "Server Error" });
+        else if (data[0].count == 0) {
           // inserting record to school_student_admission if not available
-          const payment_pending = req.body.actual_fee_hide - req.body.fee_paying;
-          let payment_status = (payment_pending == 0) ? "No Due" : "Due";
-          
+          const payment_pending =
+            req.body.actual_fee_hide - req.body.fee_paying;
+          let payment_status = payment_pending == 0 ? "No Due" : "Due";
+
           var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0][0].school_id}', '${student[0][0].id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.schoolId}')`;
           dbcon.query(admissionQuery, (err, respo) => {
-            if (err) throw err;
+            if (err)
+              return res.render("server-error", { title: "Server Error" });
             //updating student status in main_login
             var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
             dbcon.query(studUpdateLogin, (err, result) => {
-              if (err) throw err;
+              if (err)
+                return res.render("server-error", { title: "Server Error" });
               req.flash("success", "Payment record added.");
               return res.redirect("/school/dashboard/fee-collection");
             });
           });
         } else {
-          req.flash('err_msg', 'This student already enrolled. Please use Due collection form instead.');
-          return res.redirect('/school/dashboard/fee-due-collection');
+          req.flash(
+            "err_msg",
+            "This student already enrolled. Please use Due collection form instead."
+          );
+          return res.redirect("/school/dashboard/fee-due-collection");
         }
-      })
-     
+      });
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // STUDENT CRUD
 exports.getAddStudent = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     var StudentData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='1'`;
 
     dbcon.query(StudentData, (err, data) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       res.locals.data = data;
       return res.render("schoolLevel/school-students", {
         title: "Student Accounts",
@@ -877,19 +837,17 @@ exports.getAddStudent = (req, res) => {
       });
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // Add Student
 exports.postAddStudent = (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
@@ -931,8 +889,7 @@ exports.postAddStudent = (req, res) => {
       return res.status(401).redirect("/school/dashboard");
     }
   } catch (err) {
-    console.log(err);
-    return res.status(500).send(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -941,130 +898,127 @@ exports.postAddStudent = (req, res) => {
 // Showing Schedule Template Form
 exports.getSchedulePlanForm = async (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     var getScheduleTemps = `SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'`;
     dbcon.query(getScheduleTemps, (err, templates) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       res.locals.templates = templates;
       return res.render("schoolLevel/school-schedule-template", {
         title: "School Schedule Template",
       });
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // Add Schedule Plan to the School (POST)
 exports.postSchedulePlanForm = async (req, res) => {
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
     //
     var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, school_timing_from, school_timing_to, period_time, lunch_time, no_of_intervals, interval_time, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.school_start}', '${req.body.school_end}', '${req.body.school_period_time}', '${req.body.school_lunch_time}', '${req.body.school_interval_count}', '${req.body.school_interval_time}', (('${req.body.school_end}' - '${req.body.school_start}') - ('${req.body.school_lunch_time}' / 60) - (('${req.body.school_interval_count}' * '${req.body.school_interval_time}') / 60))/ ('${req.body.school_period_time}' / 60))`;
     dbcon.query(addScheduleTemps, (err, data) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       return res.redirect("/school/dashboard/schedule-plan");
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // change password
-exports.allChangePwd = (req, res)=> {
-  let success_msg = "";
-  success_msg = req.flash("success");
+exports.allChangePwd = (req, res) => {
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
-    if(req.method == 'GET'){
-      return res.render('changepassword', {title: 'Change Password', layout: "./layouts/home_layout",})
+    if (req.method == "GET") {
+      return res.render("changepassword", {
+        title: "Change Password",
+        layout: "./layouts/home_layout",
+      });
     } else {
       const currentPwd = req.body.schoolCurPassword;
-        const saved_pass = session.schoolPwd;
-        const verified = bcrypt.compareSync(
-          `${currentPwd}`,
-          `${saved_pass}`
+      const saved_pass = session.schoolPwd;
+      const verified = bcrypt.compareSync(`${currentPwd}`, `${saved_pass}`);
+
+      if (
+        verified &&
+        req.body.schoolNewPassword === req.body.schoolRetypePassword
+      ) {
+        const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
+        var newPass = `UPDATE school_add_School SET school_secrete = '${newHash}' WHERE id='${session.schoolId}'`;
+        dbcon.query(newPass, (err, response) => {
+          if (err) return res.render("server-error", { title: "Server Error" });
+          req.flash("success", "Your Password has been changed.");
+          return res.redirect("/");
+        });
+      } else {
+        req.flash(
+          "err_msg",
+          "Please make sure to enter the correct passsword."
         );
-
-        if (verified && (req.body.schoolNewPassword === req.body.schoolRetypePassword)) {
-          const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
-          var newPass = `UPDATE school_add_School SET school_secrete = '${newHash}' WHERE id='${session.schoolId}'`
-          dbcon.query(newPass, (err, response) => {
-            if(err) throw err;
-            // req.session.destroy();
-            req.flash('success', "Your Password has been changed.");
-            return res.redirect('/');
-          })
-        } else {
-          req.flash('err_msg', 'Please make sure to enter the correct passsword.');
-          return res.redirect('/school/dashboard/change-password');
-        }
+        return res.redirect("/school/dashboard/change-password");
+      }
     }
-  } catch(err){
-    console.log(err);
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
   }
-}
+};
 
-// DUE COLLECTION - 
+// DUE COLLECTION -
 exports.allDueCollection = (req, res) => {
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
-    if(req.method == 'GET'){
+    if (req.method == "GET") {
       // view fee collection records
       var feeCollected = `SELECT * FROM school_student_admission WHERE school_id='${session.schoolId}'`;
       dbcon.query(feeCollected, (err, feeData) => {
-        if(err) throw err;
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.data = feeData;
-        return res.render('schoolLevel/school-collect-due', {title: 'Due Collection'});      
-      })
-      // display student data using jQ
-      // if(req.query.status == 'success'){
-      //   req.flash('success', "Fee updated.");
-      // }
-      
+        return res.render("schoolLevel/school-collect-due", {
+          title: "Due Collection",
+        });
+      });
     } else {
-      let due_amount = req.body.course_fee - req.body.paid_fee_hide - req.body.paying_fee;
-      let due_status = (due_amount == 0) ? "No Due" : "Due";
+      let due_amount =
+        req.body.course_fee - req.body.paid_fee_hide - req.body.paying_fee;
+      let due_status = due_amount == 0 ? "No Due" : "Due";
 
       var dueColl = `INSERT INTO school_student_feedue(school_id, student_id, admission_id, actual_fee, currently_paying, payment_mode, due_status) VALUES ('${session.schoolId}', '${req.body.stuId_due}', '${req.body.admission_id}', '${req.body.course_fee}', '${req.body.paying_fee}', '${req.body.payment_mode}', '${due_status}')`;
       dbcon.query(dueColl, (err, result) => {
-        if(err) throw err;
-        
+        if (err) return res.render("server-error", { title: "Server Error" });
+
         var updateAdmisFee = `UPDATE school_student_admission SET paying_amount = paying_amount+'${req.body.paying_fee}', payment_status ='${due_status}' WHERE id='${req.body.admission_id}'`;
         dbcon.query(updateAdmisFee, (err, updated) => {
-          if(err) throw err;
+          if (err) return res.render("server-error", { title: "Server Error" });
           else {
-            req.flash('success', "Fee updated successfully.");
-            return res.redirect('/school/dashboard/fee-due-collection?_method=GET&status=success');
+            req.flash("success", "Fee updated successfully.");
+            return res.redirect(
+              "/school/dashboard/fee-due-collection?_method=GET&status=success"
+            );
           }
-        })
-      })
+        });
+      });
     }
-  } catch(err){
-    console.log(err);
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
   }
-}
+};

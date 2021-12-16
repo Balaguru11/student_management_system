@@ -4,12 +4,6 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 const methodOverride = require("method-override");
-const payUMoney = require("payumoney_nodejs");
-// const nodemailer = require("nodemailer");
-
-// const { sequelize } = require('./DB/database');
-// models import
-// const Schools = sequelize.import(__dirname + '/model/school.model.js');
 
 const app = express();
 
@@ -17,9 +11,7 @@ const app = express();
 require("dotenv").config();
 
 // //database
-const dbcon = require("./DB/database");
-
-const PORT = process.env.PORT || 8000;
+const dbcon = require("./config/database");
 
 //set Cookie Parser, session and flash
 app.use(methodOverride("_method"));
@@ -35,29 +27,9 @@ app.use(
 );
 app.use(flash());
 
-payUMoney.setSandboxKeys(
-  (MERCHANT_KEY = process.env.MERCHANT_KEY),
-  (MERCHANT_SALT = process.env.MERCHANT_SALT),
-  (PAYUMONEY_AUTHORIZATION_HEADER = process.env.AUTHORIZATION_HEADER)
-);
-// sandbox mode ON
-
 //body-parser deprecated
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-//email transporter
-// let transporter = nodemailer.createTransport({
-//   service: "gmail",
-//   auth: {
-//     type: "OAuth2",
-//     user: process.env.MAIL_USERNAME,
-//     pass: process.env.MAIL_PASSWORD,
-//     clientId: process.env.OAUTH_CLIENTID,
-//     clientSecret: process.env.OAUTH_CLIENT_SECRET,
-//     refreshToken: process.env.OAUTH_REFRESH_TOKEN,
-//   },
-// });
 
 //layouts
 app.use(expressLayouts);
@@ -89,12 +61,10 @@ app.use("/api", apiRoutes);
 //routes
 app.get("/", (req, res) => {
   //flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing success_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   try {
     let session = req.session;
@@ -114,7 +84,7 @@ app.get("/", (req, res) => {
       return res.redirect("/staff/dashboard");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 });
 
@@ -128,31 +98,19 @@ app.get("/logout", (req, res) => {
     if (session.id) {
       req.session.destroy();
       res.clearCookie("account");
-      console.log("logged out");
       return res.redirect("/");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 });
 
-// app.use ((req, res) => {
-//   return res.send('loading...');
-// })
-
-// //errorhandling
-// app.use((err, req, res, next) => {
-//   if (err) {
-//     return res.redirect("/error");
-//   } else {
-//     next();
-//   }
-// });
-
 //404
 app.use((req, res) => {
-  res.status(404).render("404", { title: "404 Page" });
+  return res.status(404).render("404", { title: "404 Page" });
 });
+
+const PORT = process.env.PORT || 8000;
 
 //listner
 app.listen(PORT, () => {

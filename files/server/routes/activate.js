@@ -1,6 +1,6 @@
 const express = require("express");
 const schoolActivate = express.Router();
-const dbcon = require("../DB/database");
+const dbcon = require("../config/database");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
@@ -22,13 +22,9 @@ schoolActivate.get("/school", (req, res) => {
 });
 
 schoolActivate.post("/school", (req, res) => {
-  // let active_msg = "";
-  // let inactive_msg = "";
   try {
     let session = req.session;
-    console.log(session);
     const code = req.body.activation;
-
     if (session.schoolStatus == "Inactive") {
       var checkActive = `SELECT * FROM school_activate WHERE school_id='${session.schoolId}'`;
 
@@ -42,7 +38,7 @@ schoolActivate.post("/school", (req, res) => {
           var changeStatus = `UPDATE school_add_school SET status='Active' WHERE id='${schoolId}'`;
           dbcon.query(changeStatus, function (err, result) {
             if (err) {
-              console.log(err);
+              return res.render("server-error", { title: "Server Error" });
             } else {
               req.flash("success", "Activation Success. Please Login again.");
               return res.status(200).redirect("/school/login");
@@ -60,8 +56,8 @@ schoolActivate.post("/school", (req, res) => {
       );
       return res.status(200).redirect("/school/dashboard");
     }
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
   }
 });
 
@@ -133,7 +129,7 @@ schoolActivate.post("/school-activation-request", (req, res) => {
       return res.redirect("/school/login");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 });
 

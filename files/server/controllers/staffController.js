@@ -1,23 +1,21 @@
 const session = require("express-session");
-const dbcon = require("../DB/database");
+const dbcon = require("../config/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 
 exports.postStaffLogin = (req, res) => {
   // flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing sucecss_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   try {
     var staffLoginQuery = `SELECT * FROM school_main_login WHERE role_id_fk='${req.body.role}' AND username='${req.body.username}'`;
 
     dbcon.query(staffLoginQuery, function (err, result) {
       if (err) {
-        console.log(err);
+        return res.render("server-error", { title: "Server Error" });
       } else if (result.length == 1) {
         // password verification
         const passwordEntered = req.body.password;
@@ -47,19 +45,16 @@ exports.postStaffLogin = (req, res) => {
       }
     });
   } catch (err) {
-    console.log(err);
-    return res.status(500).send(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 exports.getStaffDashboard = (req, res) => {
   // flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing sucecss_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   try {
     let session = req.session;
@@ -100,19 +95,17 @@ exports.getStaffDashboard = (req, res) => {
       return res.status(401).redirect("/");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // displays Staff Profile Form
 exports.getStaffProfileForm = (req, res) => {
   // flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing sucecss_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   try {
     let session = req.session;
@@ -127,15 +120,12 @@ exports.getStaffProfileForm = (req, res) => {
       return res.status(401).redirect("/");
     } else if (session.logged_in && session.staffStatus == "Active") {
       // getting data from session
-      const role_id = session.roleId;
-      const school_id = session.school_id;
-      const staff_email = session.email;
 
-      var checkStaffTable = `SELECT EXISTS (SELECT * FROM school_staff WHERE role_id='${role_id}' AND email='${staff_email}' AND school_id='${school_id}') AS count`;
+      var checkStaffTable = `SELECT EXISTS (SELECT * FROM school_staff WHERE role_id='${session.roleId}' AND email='${session.email}' AND school_id='${session.school_id}') AS count`;
 
       dbcon.query(checkStaffTable, (err, staff) => {
         if (err) {
-          console.log(err);
+          return res.render("server-error", { title: "Server Error" });
         } else if (staff[0].count == 1) {
           // //get all the data here and pass it to the redirect
           let name = staff[0].name;
@@ -146,8 +136,6 @@ exports.getStaffProfileForm = (req, res) => {
           res.locals.mobile_number = mobile_number;
           let email = staff[0].email;
           res.locals.email = email;
-          // let qualification = staff[0].qualification;
-          // res.lcoals.qualification = qualification;
           let city = staff[0].city;
           res.locals.city = city;
           let state = staff[0].state;
@@ -155,7 +143,6 @@ exports.getStaffProfileForm = (req, res) => {
           return res.redirect("/staff/profile");
         } else {
           res.locals.staff_email = staff_email;
-          // req.flash("err_msg", "Please create your Profile first.");
           return res.render("staffLevel/staff-profile", {
             title: "Create Profile",
           });
@@ -166,27 +153,24 @@ exports.getStaffProfileForm = (req, res) => {
       return res.redirect("/");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // Staff fills their Profile n sent to DB
 exports.postStaffProfile = async (req, res) => {
   // flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing sucecss_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  let staff_email = "";
+
   try {
     let session = req.session;
-    const username = session.username;
 
     if (session.logged_in) {
-      var checkStatus = `SELECT * FROM school_main_login WHERE username='${username}'`;
+      var checkStatus = `SELECT * FROM school_main_login WHERE username='${session.username}'`;
       dbcon.query(checkStatus, (err, result) => {
         if (err) {
           req.flash(
@@ -198,13 +182,13 @@ exports.postStaffProfile = async (req, res) => {
           const role_id = result[0].role_id_fk;
           const staff_id = result[0].id;
           const school_id = result[0].school_id;
-          staff_email = result[0].email;
+          const staff_email = result[0].email;
 
           var profileQuery = `INSERT INTO school_staff(role_id, staff_id, school_id, name, date_of_birth, mobile_number, email, qualification, city, state) VALUES ('${role_id}', '${staff_id}','${school_id}', '${req.body.staffName}', '${req.body.staff_dob}', '${req.body.staff_mobile}', '${staff_email}', '${req.body.staff_qualification}', '${req.body.staff_city}', '${req.body.staff_state}' ) `;
 
           dbcon.query(profileQuery, function (err) {
             if (err) {
-              console.log(err);
+              return res.render("server-error", { title: "Server Error" });
             } else {
               req.flash("success", "Profile saved successfully");
               return res.redirect("/staff/profile");
@@ -220,26 +204,24 @@ exports.postStaffProfile = async (req, res) => {
       return res.redirect("/");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // show profile after creating it.
 exports.showStaffProfile = async (req, res) => {
   // flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing sucecss_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   if (session.logged_in) {
     // include all the profile data here
     var getStaffProfile = `SELECT * FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
     dbcon.query(getStaffProfile, (err, data) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       res.locals.name = data[0].name;
       res.locals.date_of_birth = data[0].date_of_birth;
       res.locals.mobile_number = data[0].mobile_number;
@@ -259,19 +241,17 @@ exports.showStaffProfile = async (req, res) => {
 
 exports.getStaffProfileEdit = (req, res) => {
   // flashing err_msg
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   // flashing sucecss_msg
-  let success_msg = "";
-  success_msg = req.flash("success");
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
     if (session.logged_in) {
       var fetchStaffProfile = `SELECT *, DATE_FORMAT(date_of_birth, '%Y-%c-%d') AS dob FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
       dbcon.query(fetchStaffProfile, (err, data) => {
-        if (err) throw err;
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.name = data[0].name;
         res.locals.date_of_birth = data[0].dob;
         res.locals.mobile_number = data[0].mobile_number;
@@ -288,7 +268,7 @@ exports.getStaffProfileEdit = (req, res) => {
       return res.redirect("/");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -301,20 +281,14 @@ exports.postEditStaffProfile = (req, res) => {
   // flashing sucecss_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  let staff_email = "";
-  try {
-    const username = session.username;
-    const role_id = session.roleId;
-    const staff_id = session.staff_id;
-    const school_id = session.school_id;
-    staff_email = session.email;
 
+  try {
     if (session.logged_in && session.staffStatus == "Active") {
-      var profileQuery = `UPDATE school_staff SET name = '${req.body.staffName}', date_of_birth = '${req.body.staff_dob}', mobile_number = '${req.body.staff_mobile}', qualification = '${req.body.staff_qualification}', city = '${req.body.staff_city}', state = '${req.body.staff_state}' WHERE role_id='${role_id}' AND staff_id='${staff_id}' AND  school_id='${school_id}' AND email='${staff_email}'`;
+      var profileQuery = `UPDATE school_staff SET name = '${req.body.staffName}', date_of_birth = '${req.body.staff_dob}', mobile_number = '${req.body.staff_mobile}', qualification = '${req.body.staff_qualification}', city = '${req.body.staff_city}', state = '${req.body.staff_state}' WHERE role_id='${session.roleId}' AND staff_id='${session.staff_id}' AND  school_id='${session.school_id}' AND email='${session.email}'`;
 
       dbcon.query(profileQuery, function (err, result) {
         if (err) {
-          console.log(err);
+          return res.render("server-error", { title: "Server Error" });
         } else {
           req.flash("success", "Profile saves successfully");
           return res.redirect("/staff/profile");
@@ -325,7 +299,7 @@ exports.postEditStaffProfile = (req, res) => {
       return res.redirect("/staff/dashboard");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -347,8 +321,7 @@ exports.getStudentsList = (req, res) => {
       INNER JOIN school_classroom AS clr ON clr.id=adm.class_section
       INNER JOIN school_main_login AS sml ON sml.id=adm.student_id WHERE scs.staff_id_assigned = '${session.staff_id}'`;
       dbcon.query(studentList, (err, list) => {
-        if (err) throw err;
-        console.log(list);
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.list = list;
         return res.render("staffLevel/view-students-list", {
           title: "Students List",
@@ -359,7 +332,7 @@ exports.getStudentsList = (req, res) => {
       return res.redirect("/staff/dashboard");
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -377,12 +350,12 @@ exports.getOneStudentProfile = (req, res) => {
     var student_id = req.params.student_id;
     var stuProfile = `SELECT * FROM school_student WHERE student_id='${student_id}'`;
     dbcon.query(stuProfile, (err, stuProfile) => {
-      if (err) throw err;
+      if (err) return res.render("server-error", { title: "Server Error" });
       res.locals.stuProfile = stuProfile;
       return res.redirect("/dashboard/students-list");
     });
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
@@ -403,8 +376,7 @@ exports.getClassAssigned = (req, res) => {
       INNER JOIN school_subjects AS sub ON scs.subject_id=sub.id
       WHERE scs.school_id='${session.school_id}'`;
       dbcon.query(classAssigned, (err, assignedClasses) => {
-        if (err) throw err;
-        console.log(assignedClasses);
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.assignedClasses = assignedClasses;
         return res.render("staffLevel/view-classes-assigned", {
           title: "Classes Assigned",
@@ -412,45 +384,49 @@ exports.getClassAssigned = (req, res) => {
       });
     }
   } catch (err) {
-    console.log(err);
+    return res.render("server-error", { title: "Server Error" });
   }
 };
 
 // change passsword
-exports.allChangePwd = (req, res)=> {
-  let success_msg = "";
-  success_msg = req.flash("success");
+exports.allChangePwd = (req, res) => {
+  let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
-  let err_msg = "";
-  err_msg = req.flash("err_msg");
+  let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
-    if(req.method == 'GET'){
-      return res.render('changepassword', {title: 'Change Password', layout: "./layouts/home_layout",})
+    if (req.method == "GET") {
+      return res.render("changepassword", {
+        title: "Change Password",
+        layout: "./layouts/home_layout",
+      });
     } else {
       const currentPwd = req.body.schoolCurPassword;
-        const saved_pass = session.staffPwd;
-        const verified = bcrypt.compareSync(
-          `${currentPwd}`,
-          `${saved_pass}`
-        );
+      const saved_pass = session.staffPwd;
+      const verified = bcrypt.compareSync(`${currentPwd}`, `${saved_pass}`);
 
-        if (verified && (req.body.schoolNewPassword === req.body.schoolRetypePassword)) {
-          const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
-          var newPass = `UPDATE school_main_login SET password = '${newHash}' WHERE id='${session.staff_id}'`
-          dbcon.query(newPass, (err, response) => {
-            if(err) throw err;
-            // req.session.destroy();
-            req.flash('success', "Your Password has been changed.");
-            return res.redirect('/');
-          })
-        } else {
-          req.flash('err_msg', 'Please make sure to enter the correct passsword.');
-          return res.redirect('/staff/dashboard/change-password');
-        }
+      if (
+        verified &&
+        req.body.schoolNewPassword === req.body.schoolRetypePassword
+      ) {
+        const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
+        var newPass = `UPDATE school_main_login SET password = '${newHash}' WHERE id='${session.staff_id}'`;
+        dbcon.query(newPass, (err, response) => {
+          if (err) return res.render("server-error", { title: "Server Error" });
+          // req.session.destroy();
+          req.flash("success", "Your Password has been changed.");
+          return res.redirect("/");
+        });
+      } else {
+        req.flash(
+          "err_msg",
+          "Please make sure to enter the correct passsword."
+        );
+        return res.redirect("/staff/dashboard/change-password");
+      }
     }
-  } catch(err){
-    console.log(err);
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
   }
-}
+};
