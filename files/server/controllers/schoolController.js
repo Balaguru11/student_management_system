@@ -55,8 +55,7 @@ exports.postCreateSchool = async (req, res) => {
                     to: req.body.email,
                     subject: "School Created.",
                     html: `<p>School Username: ${req.body.schoolName}</p>`,
-                  });
-                  mail
+                  })
                     .then((result) => {
                       console.log("Mail has been sent");
                     })

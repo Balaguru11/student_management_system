@@ -77,7 +77,6 @@ apiRouter.post("/get-student-data", (req, res) => {
 });
 
 apiRouter.post("/get-student-enrollment-data", (req, res) => {
-  const student = req.body.stuId;
   var getStudent = `SELECT ssa.student_id, stu.name, stu.email, stu.mobile_number, ssa.id, ssa.academic_year, ssa.paying_amount, sfs.actual_fee, sfs.class_std, sfs.medium, clr.class_section FROM school_student_admission AS ssa INNER JOIN school_feestructure AS sfs ON sfs.id = ssa.class_medium INNER JOIN school_classroom AS clr ON clr.id = ssa.class_section INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.student_id='${req.body.stuId}'`;
   dbcon.query(getStudent, (err, data) => {
     if (err) {
@@ -101,5 +100,20 @@ apiRouter.post("/get-student-enrollment-data", (req, res) => {
     }
   });
 });
+
+// // student getting his admission details from admission & feedue tables
+// apiRouter.post("/get-stu-own-admission-records", (req, res) => {
+//   // checking student_admission table
+//   var stuAdmiData = `SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}'`;
+//   dbcon.query(stuAdmiData, (err, admisRow) => {
+//     if (err) {
+//       res.json({ msg: "error", err });
+//     } else if (admisRow.length != 0) {
+//       console.log(admisRow);
+//     } else {
+//       console.log(admisRow);
+//     }
+//   });
+// });
 
 module.exports = apiRouter;

@@ -32,7 +32,7 @@
                 </div></div>
                 <div class="mb-3">
                     <label for="student_Name">Name:</label>
-                    <input type="text" class="form-control" name="studentName" id="studentName" value="<%= name %>">
+                    <input type="text" class="form-control" name="studentName" id="studentName" value="<%= name %>" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="student_mobile">Mobile Number:</label>
@@ -44,11 +44,19 @@
                 </div>
                 <div class="mb-3">
                     <label for="father_name">Father's Name:</label>
-                    <input type="text" class="form-control" name="father_name" id="father_name" value="<%= father_name %>">
+                    <input type="text" class="form-control" name="father_name" id="father_name" value="<%= father_name %>" disabled>
+                </div>
+                <div class="mb-3">
+                    <label for="parent_mobile">Father / Mother's Mobile Number:</label>
+                    <input type="tel" class="form-control" name="parent_mobile" id="parent_mobile" value="<%= parent_mobile %>" disabled>
+                </div>
+                <div class="mb-3">
+                    <label for="parent_email">Father / Mother's Email:</label>
+                    <input type="email" class="form-control" name="parent_email" id="parent_email" value="<%= parent_email %>" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="student_dob">Date of Birth:</label>
-                    <input type="date" class="form-control" name="student_dob" id="student_dob" value="<%= date_of_birth %>">
+                    <input type="date" class="form-control" name="student_dob" id="student_dob" value="<%= date_of_birth %>" disabled>
                 </div>
                 <div class="mb-3">
                     <label for="student_city">City:</label>
