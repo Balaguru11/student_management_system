@@ -135,32 +135,63 @@ exports.postStuProfile = (req, res) => {
       req.flash("err_msg", "Please login to continue.");
       return res.redirect("/student/dashboard");
     } else {
-      var newStudent = `INSERT INTO school_student(school_id, student_id, name, mobile_number, email, father_name, parent_email, parent_mobile, date_of_birth, city, state) VALUES ('${session.school_id}', '${session.student_id}', '${req.body.studentName}', '${req.body.student_mobile}', '${session.email}', '${req.body.father_name}', '${req.body.parent_email}', '${req.body.parent_mobile}', '${req.body.student_dob}', '${req.body.student_city}', '${req.body.student_state}')`;
+      // inserting student Profile
+      var newStudent = `INSERT INTO school_student(school_id, student_id, name, mobile_number, email, father_name, parent_email, parent_mobile, date_of_birth, city, state) VALUES ('${session.school_id}', '${session.student_id}', '${req.body.studentName}', '${req.body.student_mobile}', '${session.email}', '${req.body.parent_name}', '${req.body.parent_email}', '${req.body.parent_mobile}', '${req.body.student_dob}', '${req.body.student_city}', '${req.body.student_state}')`;
+
       dbcon.query(newStudent, (err, profileSaved) => {
         if (err) return res.render("server-error", { title: "Server Error" });
-        // student age
-        var today = new Date();
-        var dob = new Date(req.body.student_dob);
-        var age = today.getFullYear() - dob.getFullYear();
-        var m = today.getMonth() - dob.getMonth();
-        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
-          age--;
-        }
-        session.age = age;
-        // creating Parent Login credentials
-        const parent_username = req.body.father_name.trim();
-        const parent_pass = parent_username.substring(0, 4) + '@' + req.body.parent_mobile.substring(0, 4);
-        console.log(parent_pass, parent_username);
-        const hashedParentPass = bcrypt.hashSync(`${parent_pass}`, 10);
+        // if parent already having account
+        const parent_user = `${req.body.parent_name}`.toString();
+        const parent_username = parent_user.replaceAll(" ", "");
+        var checkParent = `SELECT * FROM school_main_login WHERE role_id_fk = '5' AND username='${parent_username}'`;
+        dbcon.query(checkParent, (err, ifParentAcc) => {
+          if (err) throw err;
+          else if(ifParentAcc.length == 1){
+          // mapping student with parent here
+            var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${ifParentAcc[0].id}', '${session.student_id}')`;
+            dbcon.query(stuParMap, (err, map) => {
+              if(err) return res.render('server-error', {title: 'Server Error'});
+              // sending emails - parent email - parent student linked.
+          const parent = sendMail({
+            from: process.env.MAIL_USERNAME,
+            to: ifParentAcc[0].email,
+            subject: "New Child added to your account.",
+            html: `<h2>Holla..! Your child ${req.body.studentName} has created his / her Profile.</h2><p>Hi, ${ifParentAcc[0].username}, We have added your child, to your circle. You can now TRACK your child's activities by loging into YOUR PARENT ACCOUNT.</p><br><p>- Thank you.</p>`,
+          })
+            .then((result) => {
+              console.log("Mail has been sent");
+            })
+            .catch((err) => {
+              return res.render("server-error", {
+                title: "Server Error",
+              });
+            });
+            })
+            //flashing message - no mail to student.
+            req.flash('success', "Your Profile has been created successfully.");
+            return res.redirect('/student/profile');
+        } else {
+          // create a parent account and map with student
+            // creating Parent Login credentials
+          const parent_mob = req.body.parent_mobile;
+          const parent_pass =
+            parent_username.substring(0, 4) + "@" + parent_mob.substring(0, 4);
+          const hashedParentPass = bcrypt.hashSync(`${parent_pass}`, 10);
 
         var parentLogin = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${session.school_id}', '5', '${parent_username}', '${hashedParentPass}', '${req.body.parent_email}', 'Active');`;
+        // student mapping with parent login
         dbcon.query(parentLogin, (err, parentLog) => {
-          if(err) console.log(err);
-          // sending emails - parent email
+          if (err) console.log(err);
+          console.log(parentLog);
+          var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${parentLog[0].insertId}', '${session.student_id}')`;
+          dbcon.query(stuParMap, (err) => {
+            if(err) throw err;
+            
+            // sending emails - parent email - parent login created.
           const parent = sendMail({
             from: process.env.MAIL_USERNAME,
             to: req.body.parent_email,
-            subject: "You can manage your child's Login.",
+            subject: "PARENT LOGIN for You. You can Track your child's Activities.",
             html: `<h2>Holla..! Your child ${req.body.studentName} has created his / her Profile.</h2><p>Hi, ${req.body.father_name}, You can now login to YOUR PARENT ACCOUNT to TRACK your child's activities.</p><br><p>Please use followingh credentials to login.</p><br><h4>Username: ${parent_username}<br>Password: ${parent_pass}<br>Url: http://localhost:8005/ </h4><p>- Thank you.</p>`,
           })
             .then((result) => {
@@ -171,25 +202,13 @@ exports.postStuProfile = (req, res) => {
                 title: "Server Error",
               });
             });
-            // student email
-            const student = sendMail({
-              from: process.env.MAIL_USERNAME,
-              to: req.body.email,
-              subject: "Your Profile has been created.",
-              html: `<h2>Holla..! Your Profile created..</h2><p>Hi, ${session.username}, your profile has been created successfully.</p><br> <p>You are all good to make admission in the school. Thank you.</p>`,
-            })
-              .then((result) => {
-                console.log("Mail has been sent");
-              })
-              .catch((err) => {
-                return res.render("server-error", {
-                  title: "Server Error",
-                });
-              });
-
-          req.flash("success", "Your Profile has been created successfully.");
-          return res.redirect("/student/profile");
+            //flashing message - no mail to student.
+            req.flash('success', "Your Profile has been created successfully.");
+            return res.redirect('/student/profile');
+          })
         })
+        }
+        });
       });
     }
   } catch (err) {
@@ -210,6 +229,15 @@ exports.showStuProfile = async (req, res) => {
     var getStuProfile = `SELECT * FROM school_student WHERE student_id='${session.student_id}'`;
     dbcon.query(getStuProfile, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
+      // student age
+      // var today = new Date();
+      // var dob = new Date(req.body.student_dob);
+      // var age = today.getFullYear() - dob.getFullYear();
+      // var m = today.getMonth() - dob.getMonth();
+      // if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      //   age--;
+      // }
+      // session.age = age;
       res.locals.name = data[0].name;
       res.locals.mobile_number = data[0].mobile_number;
       res.locals.email = data[0].email;

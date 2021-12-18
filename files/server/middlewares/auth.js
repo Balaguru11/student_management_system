@@ -40,3 +40,18 @@ exports.isStudent = async (req, res, next) => {
     return res.redirect("/");
   }
 };
+
+exports.isParent = async (req, res, next) => {
+  let session = re.session;
+  res.locals.school_id = session.school_id;
+  res.role_id_fk = session.role_id_fk;
+  res.locals.parentName = session.username;
+  res.locals.email = session.email;
+  res.locals.logged_in = session.logged_in;
+  if (session.logged_in) {
+    next();
+  } else {
+    req.flash("err_msg", "It seems you are not logged in.");
+    return res.redirect("/");
+  }
+};

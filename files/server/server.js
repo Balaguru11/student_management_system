@@ -50,6 +50,7 @@ const staffRoutes = require("./routes/staffRoutes");
 const schoolActivate = require("./routes/activate");
 const apiRoutes = require("./routes/apiRoute");
 const studentRouter = require("./routes/studentRoute");
+const parentRouter = require('./routes/parentRoute.js');
 
 //using imported routes
 app.use("/school", schoolRoutes);
@@ -57,6 +58,7 @@ app.use("/staff", staffRoutes);
 app.use("/student", studentRouter);
 app.use("/activate", schoolActivate);
 app.use("/api", apiRoutes);
+app.use('/parent', parentRouter);
 
 //routes
 app.get("/", (req, res) => {
