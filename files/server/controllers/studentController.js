@@ -175,7 +175,7 @@ exports.postStuProfile = (req, res) => {
             // creating Parent Login credentials
           const parent_mob = req.body.parent_mobile;
           const parent_pass =
-            parent_username.substring(0, 4) + "@" + parent_mob.substring(0, 4);
+            parent_username.substring(0, 4) + "@" + parent_mob.substring(0, 4); //Ravi@8124
           const hashedParentPass = bcrypt.hashSync(`${parent_pass}`, 10);
 
         var parentLogin = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${session.school_id}', '5', '${parent_username}', '${hashedParentPass}', '${req.body.parent_email}', 'Active');`;

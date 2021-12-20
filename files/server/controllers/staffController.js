@@ -59,7 +59,8 @@ exports.getStaffDashboard = (req, res) => {
   try {
     let session = req.session;
     if (session.logged_in) {
-      staff_role = session.roleId;
+      let staff_role = session.roleId;
+      res.locals.staff_role = staff_role;
       res.locals.staff_status = session.staffStatus;
       res.locals.username = session.username;
       switch (staff_role) {
@@ -142,7 +143,7 @@ exports.getStaffProfileForm = (req, res) => {
           res.locals.state = state;
           return res.redirect("/staff/profile");
         } else {
-          res.locals.staff_email = staff_email;
+          res.locals.staff_email = session.email;
           return res.render("staffLevel/staff-profile", {
             title: "Create Profile",
           });
@@ -313,8 +314,10 @@ exports.getStudentsList = (req, res) => {
   // flashing sucecss_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
+  let staff_role = session.roleId;
+  res.locals.staff_role = staff_role;
   try {
-    if (session.roleId == "8") {
+    if (staff_role == "8") {
       var studentList = `SELECT DISTINCT adm.student_id, adm.mobile_number, adm.email, clr.class_id, clr.class_section, sml.username, sfs.class_std, sfs.medium FROM school_student_admission AS adm 
       INNER JOIN school_class_subjects AS scs ON scs.classroom_id=adm.class_section AND scs.staff_id_assigned = '${session.staff_id}'
       INNER JOIN school_feestructure AS sfs ON sfs.id = adm.class_medium
@@ -368,8 +371,10 @@ exports.getClassAssigned = (req, res) => {
   // flashing sucecss_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
+  let staff_role = session.roleId;
+  res.locals.staff_role = staff_role;
   try {
-    if (session.roleId == "8") {
+    if (staff_role == "8") {
       var classAssigned = `SELECT DISTINCT scs.subject_id, scs.classroom_id, clr.class_id, clr.class_section, clr.students_filled, sfs.class_std, sfs.medium, sub.subject_name FROM school_class_subjects AS scs
       INNER JOIN school_classroom AS clr ON scs.classroom_id = clr.id
       INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id
@@ -430,3 +435,301 @@ exports.allChangePwd = (req, res) => {
     return res.render("server-error", { title: "Server Error" });
   }
 };
+
+// view fee structure - class-medium (ADMIN)
+exports.viweFeeStructure = (req, res) => {
+  try {
+    //flashing err_msg
+    let err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+    let session = req.session;
+    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.school_id}' ORDER BY ABS(class_std)`;
+
+    dbcon.query(feeStrucData, (err, data) => {
+      if (err) {
+        return res.render("server-error", { title: "Server Error" });
+      } else {
+        res.locals.data = data;
+        return res.render("schoolLevel/school-feeStructure", {
+          title: "Fee Structure",
+          data,
+        });
+      }
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// view User Accounts (ADMIN)
+exports.viewUserAccounts = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.school_id}' AND NOT(role_id_fk='1') AND NOT(role_id_fk='5')`;
+
+    dbcon.query(userAccData, (err, data) => {
+      if (err) {
+        return res.render("server-error", { title: "Server Error" });
+      } else {
+        for (let i = 0; i < data.length; i++) {
+          switch (data[i].role_id_fk) {
+            case 2:
+              data[i].role_id_fk = "Non-teaching Faculty";
+              break;
+            case 4:
+              data[i].role_id_fk = "Head Master";
+              break;
+            case 8:
+              data[i].role_id_fk = "Teaching Faculty";
+              break;
+            case 9:
+              data[i].role_id_fk = "Admin";
+              break;
+            default:
+              data[i].role_id_fk = "Student";
+          }
+        }
+        res.locals.data = data;
+        return res.render("schoolLevel/school-users", {
+          title: "User Accounts",
+          data,
+        });
+      }
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// Add User Accounts (ADMIN)
+exports.postAddUser = async (req, res) => {
+  try {
+    //flashing err_msg
+    let err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+    let session = req.session;
+
+    if (session.logged_in && session.staffStatus == "Active") {
+      const schoolId = session.school_id;
+
+      var userCheck = `SELECT EXISTS (SELECT * FROM school_main_login WHERE username='${req.body.username}' OR email='${req.body.email}' AND school_id='${schoolId}' ) AS count`;
+
+      dbcon.query(userCheck, (err, data) => {
+        if (err) {
+          req.flash("err_msg", "We could not add new user at the moment.");
+          return res.redirect("/staff/dashboard/users");
+        } else {
+          if (data[0].count == 0) {
+            // password hashing
+            const userPassword = req.body.password;
+            const hashedPass = bcrypt.hashSync(`${userPassword}`, 10);
+
+            const addClass = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${schoolId}', '${req.body.role}', '${req.body.username}', '${hashedPass}', '${req.body.email}', 'Inactive');`;
+
+            dbcon.query(addClass, function (err) {
+              if (err) {
+                req.flash(
+                  "err_msg",
+                  "There is an error when adding an user. Please try again later."
+                );
+                return res.redirect("/staff/dashboard/users");
+              } else {
+                req.flash("success", "A New User account has been added.");
+                return res.redirect("/staff/dashboard/users");
+              }
+            });
+          } else {
+            req.flash(
+              "err_msg",
+              "This Username / email is already registered with this School."
+            );
+            return res.redirect("/staff/dashboard/users");
+          }
+        }
+      });
+    } else if (session.logged_in && session.staffStatus == "Inactive") {
+      req.flash(
+        "err_msg",
+        "The school is unauthorized to do this action. Please Activate the school by submitting purchase details to support@sms.com"
+      );
+      return res.status(401).redirect("/school/dashboard");
+    } else {
+      req.flash("err_msg", "Please Login to continue.");
+      return res.status(401).redirect("/");
+    }
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// Add fee Struture by School
+exports.postAddFeeStructure = (req, res) => {
+  try {
+    //flashing err_msg
+    let err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+    let session = req.session;
+    if (session.logged_in) {
+      const school_id = session.school_id;
+      const class_std = req.body.class_std;
+      const medium = req.body.medium;
+      const actual_fee = req.body.fee;
+
+      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class_std='${class_std}' AND medium='${medium}') AS count`;
+
+      dbcon.query(feeQuery, (err, data) => {
+        if (err) { throw err;
+          // return res.render("server-error", { title: "Server Error" });
+        } else if (data[0].count == 0) {
+          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}')`;
+          dbcon.query(addFeeQuery, (err, response) => {
+            if (err) {
+              throw err;
+              // return res.render("server-error", { title: "Server Error" });
+            } else {
+              req.flash(
+                "success",
+                `Fee structure for ${class_std} STD - ${medium} Medium is added successfully.`
+              );
+              return res.redirect("/staff/dashboard/fee-structure");
+            }
+          });
+        } else {
+          req.flash(
+            "err_msg",
+            `Fee structure for ${class_std} STD - ${medium} Medium is already added.`
+          );
+          return res.redirect("/staff/dashboard/subjects");
+        }
+      });
+    } else {
+      req.flash("err_msg", "Please login to continue.");
+      return res.redirect("/");
+    }
+  } catch (err) {
+    throw err;
+    // return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+
+
+
+
+
+
+// staff_role HM
+
+// Post Subjects for the school (HM)
+exports.postAddSubject = (req, res) => {
+  try {
+    //flashing err_msg
+    let err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    // flashing success_msg
+    let success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+    let session = req.session;
+
+    // checing the school_subject table for duplicate entry
+    var checkSubject = `SELECT EXISTS (SELECT * FROM school_subjects WHERE subject_name='${req.body.subject}' AND school_id='${session.schoolId}') AS count`;
+
+    dbcon.query(checkSubject, (err, result) => {
+      if (err) {
+        return res.render("server-error", { title: "Server Error" });
+      } else if (result[0].count == 0) {
+        // result = 0, adding new subject
+        var addSubject = `INSERT INTO school_subjects(subject_name, school_id) VALUES ('${req.body.subject}', '${session.schoolId}') `;
+
+        dbcon.query(addSubject, (err, subject) => {
+          if (err) {
+            return res.render("server-error", { title: "Server Error" });
+          } else {
+            req.flash("success", "The Subject has been added successfully.");
+            return res.redirect("/school/dashboard/subjects");
+          }
+        });
+      } else {
+        req.flash("err_msg", "The Subject is already created.");
+        return res.redirect("/school/dashboard/subjects");
+      }
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// view Subjects from School dashboard
+exports.viewSubjects = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var subjectsData = `SELECT * FROM school_subjects WHERE school_id='${session.school_id}'`;
+
+    dbcon.query(subjectsData, (err, data) => {
+      if (err) {
+        return res.render("server-error", { title: "Server Error" });
+      } else {
+        res.locals.data = data;
+        return res.render("schoolLevel/school-subjects", {
+          title: "School Subjects",
+          data,
+        });
+      }
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// view Class Sections from school dashboard
+exports.viewClassSections = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // var classSecData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'`;
+    var classSecData = `SELECT clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.school_id}'`;
+
+    dbcon.query(classSecData, (err, data) => {
+      if (err) return res.render("server-error", { title: "Server Error" });
+
+      var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std);`;
+      dbcon.query(classDrop, (err, classOptions) => {
+        if (err) return res.render("server-error", { title: "Server Error" });
+        res.locals.classOptions = classOptions;
+        res.locals.data = data;
+        return res.render("schoolLevel/school-classSections", {
+          title: "Classes & Sections",
+        });
+      });
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+

@@ -36,6 +36,8 @@
           "
           id="menu"
         >
+        <!-- Default UL for all roles -->
+
           <li>
             <a href="/staff/dashboard" class="nav-link align-middle px-0">
               <i class="fas fa-home"></i>
@@ -48,6 +50,122 @@
               <span class="ms-1 d-none d-sm-inline">Profile</span></a
             >
           </li>
+        <!-- Default UL for all roles -->
+        <!-- staff_role = ADMIN 9 -->
+        <% if(staff_role == 9) { %>
+          <!-- create class_medium -->
+          <li>
+            <a
+              href="/staff/dashboard/fee-structure"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-puzzle-piece"></i>
+              <span class="ms-1 d-none d-sm-inline">Add Class Medium</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/staff/dashboard/users"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-puzzle-piece"></i>
+              <span class="ms-1 d-none d-sm-inline">Manage Staff Login</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/staff/dashboard/staff-salary-info"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-puzzle-piece"></i>
+              <span class="ms-1 d-none d-sm-inline">Staff Salary Details</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/staff/dashboard/schedule-plan"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-puzzle-piece"></i>
+              <span class="ms-1 d-none d-sm-inline">Schedule Plan</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/staff/dashboard/emp-report"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-puzzle-piece"></i>
+              <span class="ms-1 d-none d-sm-inline">Employee Performance</span>
+            </a>
+          </li>
+       <% } %>
+       <% if(staff_role == 2) { %>
+        <li>
+          <a
+            href="/staff/dashboard/view-staff-profile"
+            class="nav-link px-0 align-middle"
+          >
+            <i class="fas fa-puzzle-piece"></i>
+            <span class="ms-1 d-none d-sm-inline">View Staff Profile</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/staff/dashboard/view-student-profile"
+            class="nav-link px-0 align-middle"
+          >
+            <i class="fas fa-puzzle-piece"></i>
+            <span class="ms-1 d-none d-sm-inline">View Student Profile</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/staff/dashboard/fee-collection"
+            class="nav-link px-0 align-middle"
+          >
+            <i class="fas fa-puzzle-piece"></i>
+            <span class="ms-1 d-none d-sm-inline">New Admission</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/staff/dashboard/fee-due-collection"
+            class="nav-link px-0 align-middle"
+          >
+            <i class="fas fa-puzzle-piece"></i>
+            <span class="ms-1 d-none d-sm-inline">Fee Due Collection</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/staff/dashboard/staff-attendance"
+            class="nav-link px-0 align-middle"
+          >
+            <i class="fas fa-puzzle-piece"></i>
+            <span class="ms-1 d-none d-sm-inline">Staff Attendance</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/staff/dashboard/staff-salary-credit"
+            class="nav-link px-0 align-middle"
+          >
+            <i class="fas fa-puzzle-piece"></i>
+            <span class="ms-1 d-none d-sm-inline">Credit Staff Salary</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href="/staff/dashboard/admission-report"
+            class="nav-link px-0 align-middle"
+          >
+            <i class="fas fa-puzzle-piece"></i>
+            <span class="ms-1 d-none d-sm-inline">Enrollment Report</span>
+          </a>
+        </li>
+        <!-- need to add some more here -->
+        <% } %>
           <li>
             <a
               href="/staff/dashboard/class-assigned"

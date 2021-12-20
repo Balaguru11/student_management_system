@@ -116,8 +116,9 @@
                                 <select id="role" name="role" class="form-control">
                                     <% if(locals.data.length > 0) {                    
                                         for(var i = 1; i < locals.data.length; i++) { %>
-                                            <option value="<%= locals.data[i].id %>"><%= locals.data[i].role_name %></option>
-                                    <%  } }%>
+                                            <% if(i != 3){ %>
+                                                <option value="<%= locals.data[i].id %>"><%= locals.data[i].role_name %></option>
+                                    <%  } } }%>
                                     </select>
                                 <span class="error" id="role-error">You have chosen a wrong role.</span>
                             </div>

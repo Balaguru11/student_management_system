@@ -454,7 +454,7 @@ exports.viewUserAccounts = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND NOT(role_id_fk='1')`;
+    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND NOT(role_id_fk='1' AND role_id_fk='5')`;
 
     dbcon.query(userAccData, (err, data) => {
       if (err) {

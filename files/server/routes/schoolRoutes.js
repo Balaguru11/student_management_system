@@ -11,7 +11,7 @@ const {
   postSchoolLogin,
   getSchoolDashBoard,
   postAddClassroom,
-  postAddUser,
+  postAddUser, putAddUser, 
   postAddSubject,
   postAddFeeStructure,
   viweFeeStructure,
@@ -50,7 +50,7 @@ schoolRouter.get("/dashboard", isSchool, getSchoolDashBoard);
 // School change Password
 schoolRouter.all("/dashboard/change-password", isSchool, allChangePwd);
 
-// Fee Structure CRUD
+// Fee Structure CRUD (assigned to staff_role = 9 Admin)
 schoolRouter.get("/dashboard/fee-structure", isSchool, viweFeeStructure);
 schoolRouter.post("/dashboard/fee-structure", isSchool, postAddFeeStructure);
 schoolRouter.get(
@@ -67,7 +67,7 @@ schoolRouter.put(
 // USERS CRUD
 schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
 schoolRouter.post("/dashboard/add-user", isSchool, postAddUser);
-schoolRouter.put("/dashboard/user", isSchool, postAddUser);
+// schoolRouter.put("/dashboard/user", isSchool, putAddUser);
 
 // Subjects CRUD
 schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
