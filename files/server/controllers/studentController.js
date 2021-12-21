@@ -106,9 +106,9 @@ exports.getStuProfileForm = (req, res) => {
       dbcon.query(checkStuTable, (err, activeStud) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         else if (activeStud[0].count == 1) {
-          return res.redirect("/student/profile");
+          return res.redirect("/student/profile"); // display
         } else {
-          // show
+          // create profile
           res.locals.email = session.email;
           return res.render("studentLevel/create-student-profile", {
             title: "Create Student Profile",

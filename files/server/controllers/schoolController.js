@@ -194,6 +194,7 @@ exports.getSchoolDashBoard = (req, res) => {
   }
 };
 
+// school adds class section
 exports.postAddClassroom = async (req, res) => {
   try {
     //flashing err_msg
@@ -509,7 +510,6 @@ exports.viewSubjects = (req, res) => {
         res.locals.data = data;
         return res.render("schoolLevel/school-subjects", {
           title: "School Subjects",
-          data,
         });
       }
     });
