@@ -3,6 +3,7 @@ const dbcon = require("../config/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 
+// Staff Logs IN - POST staff login
 exports.postStaffLogin = (req, res) => {
   // flashing err_msg
   let err_msg = req.flash("err_msg");
@@ -34,7 +35,6 @@ exports.postStaffLogin = (req, res) => {
           session.staffStatus = result[0].status;
           session.staffPwd = result[0].password;
           session.logged_in = true;
-          console.log(session);
           return res.status(200).redirect("/staff/dashboard");
         } else {
           req.flash("err_msg", "Credentials doesnot match.");
@@ -50,6 +50,7 @@ exports.postStaffLogin = (req, res) => {
   }
 };
 
+// getting Staff Dashboard
 exports.getStaffDashboard = (req, res) => {
   // flashing err_msg
   let err_msg = req.flash("err_msg");
@@ -160,7 +161,7 @@ exports.getStaffProfileForm = (req, res) => {
   }
 };
 
-// Staff fills their Profile n sent to DB
+// Staff fills their Profile for the first time
 exports.postStaffProfile = async (req, res) => {
   // flashing err_msg
   let err_msg = req.flash("err_msg");
@@ -243,6 +244,7 @@ exports.showStaffProfile = async (req, res) => {
   }
 };
 
+// staff editing his own profile
 exports.getStaffProfileEdit = (req, res) => {
   // flashing err_msg
   let err_msg = req.flash("err_msg");
@@ -277,7 +279,7 @@ exports.getStaffProfileEdit = (req, res) => {
   }
 };
 
-// Staff edits profile and updates - need to update this.
+// Staff edits profile and updates to the DB
 exports.postEditStaffProfile = (req, res) => {
   let session = req.session;
   // flashing err_msg
@@ -308,8 +310,7 @@ exports.postEditStaffProfile = (req, res) => {
   }
 };
 
-// view students assigned to the staff
-//there is an issue with this controller. Want to display only the students assigned to this staff but getting all.
+// view students assigned to the staff - TEACHING STAFF
 exports.getStudentsList = (req, res) => {
   let session = req.session;
   // flashing err_msg
@@ -332,6 +333,17 @@ exports.getStudentsList = (req, res) => {
         res.locals.list = list;
         return res.render("staffLevel/view-students-list", {
           title: "Students List",
+        });
+      });
+    } else if (staff_role == "4") {
+      // head master view all students here..
+      var stuProfile = `SELECT stu.student_id, sml.username, stu.name, sml.email, stu.mobile_number, sfs.class_std, sfs.medium, clr.class_section FROM school_main_login AS sml INNER JOIN school_student AS stu ON stu.student_id = sml.id
+      INNER JOIN school_student_admission AS stad ON stad.student_id = stu.student_id INNER JOIN school_feestructure AS sfs ON sfs.id = stad.class_medium INNER JOIN school_classroom AS clr ON clr.id = stad.class_section WHERE sml.school_id='${session.school_id}' AND sml.role_id_fk='1'`;
+      dbcon.query(stuProfile, (err, stuProfiles) => {
+        if (err) throw err;
+        res.locals.stuProfiles = stuProfiles;
+        return res.render("staffLevel/view-student-profile-hm", {
+          title: "HM View Student profile",
         });
       });
     } else {
@@ -358,6 +370,7 @@ exports.getOneStudentProfile = (req, res) => {
     var stuProfile = `SELECT * FROM school_student WHERE student_id='${student_id}'`;
     dbcon.query(stuProfile, (err, stuProfile) => {
       if (err) return res.render("server-error", { title: "Server Error" });
+      console.log(stuProfile);
       res.locals.stuProfile = stuProfile;
       return res.redirect("/dashboard/students-list");
     });
@@ -599,7 +612,8 @@ exports.postAddFeeStructure = (req, res) => {
       var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class_std='${class_std}' AND medium='${medium}') AS count`;
 
       dbcon.query(feeQuery, (err, data) => {
-        if (err) { throw err;
+        if (err) {
+          throw err;
           // return res.render("server-error", { title: "Server Error" });
         } else if (data[0].count == 0) {
           var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}')`;
@@ -660,9 +674,56 @@ exports.getSchedulePlanForm = async (req, res) => {
   }
 };
 
-
-
 // staff_role HM
+// view all student Profile is moved to getStudentsList (Teaching staff routes)
+
+// get Staff Profile list - route used for HM
+exports.getAllStaffList = (req, res) => {
+  let session = req.session;
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  res.locals.staff_role = session.roleId;
+  let staff_role = session.roleId;
+  try {
+    if (staff_role == 4) {
+      var staffProfileList = `SELECT * FROM school_staff WHERE school_id='${session.school_id}' AND NOT staff_id='${session.staff_id}'`;
+      dbcon.query(staffProfileList, (err, staffList) => {
+        if (err) throw err;
+        for (let i = 0; i < staffList.length; i++) {
+          switch (staffList[i].role_id) {
+            case 2:
+              staffList[i].role_id = "Non-teaching Faculty";
+              break;
+            case 4:
+              staffList[i].role_id = "Head Master";
+              break;
+            case 8:
+              staffList[i].role_id = "Teaching Faculty";
+              break;
+            case 9:
+              staffList[i].role_id = "Admin";
+              break;
+            default:
+              staffList[i].role_id = "Student";
+          }
+        }
+        res.locals.staffList = staffList;
+        return res.render("staffLevel/hm-view-all-staff-profile", {
+          title: "HM View Staff Profile",
+        });
+      });
+    } else {
+      req.flash("err_msg", "You are not authorized to access this page.");
+      return res.redirect("/staff/login");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 // Post Subjects for the school (HM)
 exports.postAddSubject = (req, res) => {
@@ -731,7 +792,6 @@ exports.viewSubjects = (req, res) => {
     return res.render("server-error", { title: "Server Error" });
   }
 };
-
 
 // subject Staff Section mapping by HM
 exports.getMapSubStaff = (req, res) => {

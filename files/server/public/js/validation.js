@@ -344,3 +344,59 @@ $(document).ready(function () {
 //     });
 //   });
 // });
+
+
+// Open Modal to view Student Profile
+$(document).ready(function () {
+  $(".viewbutton").on("click", function () {
+    var student_id = $(this).attr('data-id');
+    $.ajax({
+      url: "/api/get-one-student-profile",
+      type: "POST",
+      data: {
+        student_id: student_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $('.modal-body').html(function(){
+          return (
+            "<div class='row px-3'><div class='col-6'><b>Name</b></div><div class='col-6'><p>" + data.student[0].name + "</p></div><div class='col-6'><b>Mobile Number</b></div><div class='col-6'><p>" + data.student[0].mobile_number + "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" + data.student[0].email + "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" + data.student[0].date_of_birth + "</p></div><div class='col-6'><b>Father's Name: </b></div><div class='col-6'><p>" + data.student[0].father_name + "</p></div><div class='col-6'><b>Parent Mobile Number</b></div><div class='col-6'><p>" + data.student[0].parent_mobile + "</p></div><div class='col-6'><b>Parent Email ID: </b></div><div class='col-6'><p>" + data.student[0].parent_email + "</p></div><div class='col-6'><b>City: </b></div><div class='col-6'><p>" + data.student[0].city + "</p></div><div class='col-6'><b>State: </b></div><div class='col-6'><p>" + data.student[0].state + "</p></div></div>"
+          );
+        });
+        // show data in the element.
+        $("#viewStuProfModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+}); // last close
+
+
+// Open Modal to view STAFF Profile
+$(document).ready(function () {
+  $(".viewstaffprofile").on("click", function () {
+    var staff_id = $(this).attr('data-id');
+    $.ajax({
+      url: "/api/get-one-staff-profile",
+      type: "POST",
+      data: {
+        staff_id: staff_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $('.modal-body').html(function(){
+          return (
+            "<div class='row px-3'><div class='col-6'><b>Name</b></div><div class='col-6'><p>" + data.staff[0].name + "</p></div><div class='col-6'><b>Mobile Number</b></div><div class='col-6'><p>" + data.staff[0].mobile_number + "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" + data.staff[0].email + "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" + data.staff[0].date_of_birth + "</p></div><div class='col-6'><b>Qualification: </b></div><div class='col-6'><p>" + data.staff[0].qualification + "</p></div><div class='col-6'><b>City: </b></div><div class='col-6'><p>" + data.staff[0].city + "</p></div><div class='col-6'><b>State: </b></div><div class='col-6'><p>" + data.staff[0].state + "</p></div></div>"
+          );
+        });
+        // show data in the element.
+        $("#viewStaffProfModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+}); // last close

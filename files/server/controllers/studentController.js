@@ -141,9 +141,10 @@ exports.postStuProfile = (req, res) => {
       dbcon.query(newStudent, (err, profileSaved) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         // if parent already having account
+        const parent_email = req.body.parent_email;
         const parent_user = `${req.body.parent_name}`.toString();
         const parent_username = parent_user.replaceAll(" ", "");
-        var checkParent = `SELECT * FROM school_main_login WHERE role_id_fk = '5' AND username='${parent_username}'`;
+        var checkParent = `SELECT * FROM school_main_login WHERE role_id_fk = '5' AND email='${parent_email}'`;
         dbcon.query(checkParent, (err, ifParentAcc) => {
           if (err) throw err;
           else if(ifParentAcc.length == 1){

@@ -101,6 +101,44 @@ apiRouter.post("/get-student-enrollment-data", (req, res) => {
   });
 });
 
+// get One student Profile data
+apiRouter.post("/get-one-student-profile", (req, res) => {
+  var getStudent = `SELECT * FROM school_student WHERE student_id='${req.body.student_id}'`;
+  dbcon.query(getStudent, (err, data) => {
+    if (err) {
+      res.json({ msg: "error" });
+    } else if (data.length == 1) {
+      console.log(data);
+      res.json({
+        msg: "success",
+        student: data,
+      });
+    } else {
+      res.json({ msg: "error" });
+    }
+  });
+});
+
+
+// get One Staff Profile data
+apiRouter.post("/get-one-staff-profile", (req, res) => {
+  var getStaff = `SELECT * FROM school_staff WHERE staff_id='${req.body.staff_id}'`;
+  dbcon.query(getStaff, (err, data) => {
+    if (err) {
+      res.json({ msg: "error" });
+    } else if (data.length == 1) {
+      console.log(data);
+      res.json({
+        msg: "success",
+        staff: data,
+      });
+    } else {
+      res.json({ msg: "error" });
+    }
+  });
+});
+
+
 // // student getting his admission details from admission & feedue tables
 // apiRouter.post("/get-stu-own-admission-records", (req, res) => {
 //   // checking student_admission table

@@ -1,0 +1,71 @@
+<div class="p-2">
+  <h4 class="text-center">View Staff Profile</h4>
+  <br />
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Role</th>
+        <th scope="col">Name</th>
+        <th scope="col">Email ID</th>
+        <th scope="col">Mobile No</th>
+        <th width="200px">Profile</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.staffList.length > 0) { for(var i = 0; i <
+      locals.staffList.length; i++) { %>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.staffList[i].role_id %></td>
+        <td><%= locals.staffList[i].name %></td>
+        <td><%= locals.staffList[i].email %></td>
+        <td><%= locals.staffList[i].mobile_number %></td>
+        <td>
+          <button
+            data-id="<%= locals.staffList[i].staff_id %>"
+            type="button"
+            class="viewstaffprofile btn btn-info View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-eye"></i>
+          </button>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center">No User accounts added.</td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="viewStaffProfModal"
+  tabindex="-1"
+  aria-labelledby="viewModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Student Profile</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

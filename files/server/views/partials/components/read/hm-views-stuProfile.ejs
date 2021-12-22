@@ -1,0 +1,59 @@
+<div class="pt-5">
+  <h4 class="text-center">View Students Profile</h4>
+  <br />
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Class & Section</th>
+        <th scope="col">Student Name</th>
+        <th scope="col">Email ID</th>
+        <th scope="col">Mobile No</th>
+        <th width="200px">Profile</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.stuProfiles.length > 0) { for(var i = 0; i < locals.stuProfiles.length;
+      i++) {%>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td>
+          <%= locals.stuProfiles[i].class_std %> std <%= locals.stuProfiles[i].medium %> - Sec
+          <%= locals.stuProfiles[i].class_section %>
+        </td>
+        <td><%= locals.stuProfiles[i].name %></td>
+        <td><%= locals.stuProfiles[i].email %></td>
+        <td><%= locals.stuProfiles[i].mobile_number %></td>
+        <td>
+          <button data-id="<%= locals.stuProfiles[i].student_id %>" type="button" class="viewbutton btn btn-info View" data-bs-toggle="modal">
+            <i class="far fa-eye"></i></button>
+        </td>
+        </tr>
+        <% } } else { %>
+        <tr>
+          <td colspan="6" class="text-center">
+            No Students added yet.
+          </td>
+        </tr>
+        <% } %>
+        </tbody>
+        </table>
+
+<!-- Modal -->
+<div class="modal fade" id="viewStuProfModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Student Profile</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
