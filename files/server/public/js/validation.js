@@ -326,30 +326,10 @@ $(document).ready(function () {
   });
 });
 
-// // student payment formalities
-// $(document).ready(function () {
-//   $("#class_medium_own").on("click", function () {
-//     var st_id = $("#stuId_own").value;
-//     var year = $('#academic_year').value;
-//     $.ajax({
-//       url: "/api/get-stu-own-admission-records",
-//       type: "POST",
-//       data: {
-//         stuId: st_id,
-//         academic = year,
-//       },
-//       dataType: "Json",
-//       success: function (result) {},
-//       error: function (err) {},
-//     });
-//   });
-// });
-
-
 // Open Modal to view Student Profile
 $(document).ready(function () {
   $(".viewbutton").on("click", function () {
-    var student_id = $(this).attr('data-id');
+    var student_id = $(this).attr("data-id");
     $.ajax({
       url: "/api/get-one-student-profile",
       type: "POST",
@@ -358,9 +338,27 @@ $(document).ready(function () {
       },
       dataType: "Json",
       success: function (data) {
-        $('.modal-body').html(function(){
+        $(".modal-body").html(function () {
           return (
-            "<div class='row px-3'><div class='col-6'><b>Name</b></div><div class='col-6'><p>" + data.student[0].name + "</p></div><div class='col-6'><b>Mobile Number</b></div><div class='col-6'><p>" + data.student[0].mobile_number + "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" + data.student[0].email + "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" + data.student[0].date_of_birth + "</p></div><div class='col-6'><b>Father's Name: </b></div><div class='col-6'><p>" + data.student[0].father_name + "</p></div><div class='col-6'><b>Parent Mobile Number</b></div><div class='col-6'><p>" + data.student[0].parent_mobile + "</p></div><div class='col-6'><b>Parent Email ID: </b></div><div class='col-6'><p>" + data.student[0].parent_email + "</p></div><div class='col-6'><b>City: </b></div><div class='col-6'><p>" + data.student[0].city + "</p></div><div class='col-6'><b>State: </b></div><div class='col-6'><p>" + data.student[0].state + "</p></div></div>"
+            "<div class='row px-3'><div class='col-6'><b>Name</b></div><div class='col-6'><p>" +
+            data.student[0].name +
+            "</p></div><div class='col-6'><b>Mobile Number</b></div><div class='col-6'><p>" +
+            data.student[0].mobile_number +
+            "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" +
+            data.student[0].email +
+            "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" +
+            data.student[0].date_of_birth +
+            "</p></div><div class='col-6'><b>Father's Name: </b></div><div class='col-6'><p>" +
+            data.student[0].father_name +
+            "</p></div><div class='col-6'><b>Parent Mobile Number</b></div><div class='col-6'><p>" +
+            data.student[0].parent_mobile +
+            "</p></div><div class='col-6'><b>Parent Email ID: </b></div><div class='col-6'><p>" +
+            data.student[0].parent_email +
+            "</p></div><div class='col-6'><b>City: </b></div><div class='col-6'><p>" +
+            data.student[0].city +
+            "</p></div><div class='col-6'><b>State: </b></div><div class='col-6'><p>" +
+            data.student[0].state +
+            "</p></div></div>"
           );
         });
         // show data in the element.
@@ -373,11 +371,10 @@ $(document).ready(function () {
   });
 }); // last close
 
-
 // Open Modal to view STAFF Profile
 $(document).ready(function () {
   $(".viewstaffprofile").on("click", function () {
-    var staff_id = $(this).attr('data-id');
+    var staff_id = $(this).attr("data-id");
     $.ajax({
       url: "/api/get-one-staff-profile",
       type: "POST",
@@ -386,9 +383,23 @@ $(document).ready(function () {
       },
       dataType: "Json",
       success: function (data) {
-        $('.modal-body').html(function(){
+        $(".modal-body").html(function () {
           return (
-            "<div class='row px-3'><div class='col-6'><b>Name</b></div><div class='col-6'><p>" + data.staff[0].name + "</p></div><div class='col-6'><b>Mobile Number</b></div><div class='col-6'><p>" + data.staff[0].mobile_number + "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" + data.staff[0].email + "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" + data.staff[0].date_of_birth + "</p></div><div class='col-6'><b>Qualification: </b></div><div class='col-6'><p>" + data.staff[0].qualification + "</p></div><div class='col-6'><b>City: </b></div><div class='col-6'><p>" + data.staff[0].city + "</p></div><div class='col-6'><b>State: </b></div><div class='col-6'><p>" + data.staff[0].state + "</p></div></div>"
+            "<div class='row px-3'><div class='col-6'><b>Name</b></div><div class='col-6'><p>" +
+            data.staff[0].name +
+            "</p></div><div class='col-6'><b>Mobile Number</b></div><div class='col-6'><p>" +
+            data.staff[0].mobile_number +
+            "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" +
+            data.staff[0].email +
+            "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" +
+            data.staff[0].date_of_birth +
+            "</p></div><div class='col-6'><b>Qualification: </b></div><div class='col-6'><p>" +
+            data.staff[0].qualification +
+            "</p></div><div class='col-6'><b>City: </b></div><div class='col-6'><p>" +
+            data.staff[0].city +
+            "</p></div><div class='col-6'><b>State: </b></div><div class='col-6'><p>" +
+            data.staff[0].state +
+            "</p></div></div>"
           );
         });
         // show data in the element.
@@ -399,4 +410,119 @@ $(document).ready(function () {
       },
     });
   });
-}); // last close
+});
+
+// fee-structure (class-medium) edit Modal
+$(document).ready(function () {
+  $(".editFeeStruct").on("click", function () {
+    var class_medium_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/edit-class-medium-fee",
+      type: "POST",
+      data: {
+        class_medium_id: class_medium_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          var fetched_medium = data.feeRow[0].medium;
+          $("#medium_edit").val(fetched_medium);
+          $(
+            "#medium_edit select > option[value='" + fetched_medium + "']"
+          ).attr("selected", true);
+
+          return (
+            "<form id='editclass-form' action='../dashboard/fee-structure/edit/" +
+            data.feeRow[0].id +
+            "?_method=PUT' method='POST'><input type='hidden' class='form-control' name='fee_id' id='fee_id' value='" +
+            data.feeRow[0].id +
+            "' /><div class='mb-3'><label for='class_std'>Class (Std):</label><input type='text' class='form-control' name='class_std_edit' id='class_std_edit' placeholder='6 / LKG / UKG etc' value='" +
+            data.feeRow[0].class_std +
+            "' /><span class='error' id='class_std_error' >Please enter the Class / Standarad.</span ></div><div class='mb-3'><label for='medium'>Medium of Language:</label><select id='medium_edit' class='form-control' name='medium_edit'><option value=''>Select One</option><option value='Tamil'>Tamil</option><option value='English'>English</option><option value='Hindi'>Hindi</option></select><span class='error' id='medium_error' >Please select the Medium.</span ></div><div class='mb-3'><label for='fee'>Fees: </label><input type='number' class='form-control' name='fee_edit' id='fee_edit' placeholder='Fee (in INR) per year.' value='" +
+            data.feeRow[0].actual_fee +
+            "' /><span class='error' id='fee_error' >Please enter the Fee amount.</span ></div><div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>"
+          );
+        });
+        // show data in the element.
+        $("#editFeeStructModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
+
+// fee structure GET DELETE Modal
+$(document).ready(function () {
+  $(".deleteFeeStruct").on("click", function () {
+    var class_medium_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/delete-class-medium-fee",
+      type: "POST",
+      data: {
+        class_medium_id: class_medium_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          return (
+            "<div class='container'><div class='row'><input type='hidden' class='form-control' name='classmed_id_hidden' id='classmed_id_hidden' value='" +
+            data.sections[0].id +
+            "' /><p><b>Do you want to delete '" +
+            data.sections[0].class_std +
+            " Std - " +
+            data.sections[0].medium +
+            " Medium'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/fee-structure/delete/" +
+            data.sections[0].id +
+            "?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>"
+          );
+        });
+        // show data in the element.
+        $("#deleteFeeStructModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
+
+// get EDIT Modal for USER ACCOUNTS by ADMIN & SCHOOL
+$(document).ready(function () {
+  $(".editUserAcc").on("click", function () {
+    var staff_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/get-edit-user-account",
+      type: "POST",
+      data: {
+        staff_id: staff_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          var role = data.userData[0].role_id_fk;
+          $("#role_update").val(role);
+          var status = data.userData[0].status;
+          $("#status_edit").val(status);
+          return (
+            "<form id='edituseracc-form' action='../dashboard/users/edit/" +
+            data.userData[0].id +
+            "?_method=PUT' method='POST'><input type='hidden' class='form-control' name='staff_edit_id' id='staff_edit_id' value='" +
+            data.userData[0].id +
+            "' /><div class='mb-3'> <label for='select'>Role:</label> <select id='role_update' name='role_update' class='form-control'> <option value='9'>Admin</option> <option value='4'>Head Master</option> <option value='8'>Teaching Faculty</option> <option value='2'>Non-teaching Faculty</option> </select> </div> <div class='mb-3'> <label for='username'>Username:</label> <input type='text' class='form-control' name='username' placeholder='Username' id='username' value='" +
+            data.userData[0].username +
+            "' disabled/> <span class='error' id='username-error' >Username should be at least 3 characters long.</span > </div><div class='mb-3'> <label for='email'>Email:</label> <input type='email' class='form-control' name='email' placeholder='Type your email here' id='email' value='" +
+            data.userData[0].email +
+            "' disabled /> <span class='error' id='email-error'>Email is invalid.</span> </div> <div class='mb-3'> <label for='status_edit'>Account Status:</label> <select id='status_edit' name='status_edit' class='form-control'> <option value='Active'>Active</option><option value='Inactive'>Inactive</option></select> </div><div class='login'> <button class='btn btn-secondary' type='submit'>Update User</button> </div></form>"
+          );
+        });
+        // show data in the element.
+        $("#editUserAccModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});

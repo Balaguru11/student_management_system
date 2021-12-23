@@ -4,6 +4,7 @@ const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 const methodOverride = require("method-override");
+const morgan = require("morgan");
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(
   })
 );
 app.use(flash());
+app.use(morgan("tiny"));
 
 //body-parser deprecated
 app.use(express.urlencoded({ extended: true }));
@@ -50,7 +52,7 @@ const staffRoutes = require("./routes/staffRoutes");
 const schoolActivate = require("./routes/activate");
 const apiRoutes = require("./routes/apiRoute");
 const studentRouter = require("./routes/studentRoute");
-const parentRouter = require('./routes/parentRoute.js');
+const parentRouter = require("./routes/parentRoute.js");
 
 //using imported routes
 app.use("/school", schoolRoutes);
@@ -58,7 +60,7 @@ app.use("/staff", staffRoutes);
 app.use("/student", studentRouter);
 app.use("/activate", schoolActivate);
 app.use("/api", apiRoutes);
-app.use('/parent', parentRouter);
+app.use("/parent", parentRouter);
 
 //routes
 app.get("/", (req, res) => {

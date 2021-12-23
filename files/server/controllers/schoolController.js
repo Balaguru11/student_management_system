@@ -427,7 +427,7 @@ exports.viweFeeStructure = (req, res) => {
     let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     let session = req.session;
-    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std)`;
+    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' AND deleted_at IS NULL ORDER BY ABS(class_std)`;
 
     dbcon.query(feeStrucData, (err, data) => {
       if (err) {
@@ -454,8 +454,9 @@ exports.viewUserAccounts = (req, res) => {
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
+  res.locals.schoolId = session.schoolId;
   try {
-    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND NOT(role_id_fk='1' AND role_id_fk='5')`;
+    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND deleted_at IS NULL AND NOT(role_id_fk='1')  AND NOT(role_id_fk='5')`;
 
     dbcon.query(userAccData, (err, data) => {
       if (err) {

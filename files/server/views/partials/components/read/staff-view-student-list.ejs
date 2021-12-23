@@ -9,7 +9,7 @@
         <th scope="col">Student UserName</th>
         <th scope="col">Email ID</th>
         <th scope="col">Mobile No</th>
-        <th width="200px">Actions</th>
+        <th width="200px">Profile</th>
       </tr>
     </thead>
     <tbody>
@@ -25,13 +25,14 @@
         <td><%= locals.list[i].email %></td>
         <td><%= locals.list[i].mobile_number %></td>
         <td>
-          <a
-            class="btn btn-info View"
-            data-toggle="modal"
-            data-target="#viewStuProf"
-            href="../dashboard/students-list/profile/<%= locals.list[i].student_id %>"
-            ><i class="far fa-eye"></i
-          ></a>
+          <button
+            data-id="<%= locals.list[i].student_id %>"
+            type="button"
+            class="viewbutton btn btn-info View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-eye"></i>
+          </button>
         </td>
       </tr>
       <% } } else { %>
@@ -43,48 +44,32 @@
       <% } %>
     </tbody>
   </table>
+</div>
 
-  <!-- modal code -->
-  <div
-    class="modal fade"
-    id="viewStuProf"
-    tabindex="-1"
-    aria-labelledby="exampleModalLabel"
-    aria-hidden="true"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h4 class="modal-title" id="exampleModalLabel">Student Profile</h4>
-          <button
-            type="button"
-            class="close"
-            data-dismiss="modal"
-            aria-label="Close"
-          >
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form>
-            <div class="form-group">
-              <label>uname</label>
-              <input type="text" class="form-control" placeholder="User Name" />
-              <label>upwd</label>
-              <input
-                type="password"
-                class="form-control"
-                placeholder="password"
-              />
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-success">Login</button>
-          <button type="button" class="btn btn-danger" data-dismiss="modal">
-            Close
-          </button>
-        </div>
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="viewStuProfModal"
+  tabindex="-1"
+  aria-labelledby="viewModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Student Profile</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Close
+        </button>
       </div>
     </div>
   </div>

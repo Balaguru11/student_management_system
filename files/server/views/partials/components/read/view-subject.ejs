@@ -1,27 +1,38 @@
 <div class="pt-5">
-    <h4 class="text-center">View Subjects</h4><br>
-    <table class="table table-light text-center">
-      <thead>
-        <tr>
+  <h4 class="text-center">View Subjects</h4>
+  <br />
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
         <th scope="col">S.No</th>
         <th scope="col">Subject Title</th>
         <th width="200px">Actions</th>
       </tr>
-      </thead>
-      <tbody>
-        <% if(locals.data.length > 0) {                    
-          for(var i = 0; i < locals.data.length; i++) {%>
-            <tr>
-              <th scope="row"><%= (i+1) %></th>
-              <td><%= locals.data[i].subject_name %></td>
-              <td><a class="btn btn-warning edit" href="../dashboard/subjects/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../dashboard/subjects/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
-            </tr>
-      <%  }
-          } else { %>
-                <tr>
-                  <td colspan="5" class="text-center"><mark>No Subjects found.</mark></td>
-                </tr>
-          <% } %>
-      </tbody>
-    </table>
-  </div>
+    </thead>
+    <tbody>
+      <% if(locals.data.length > 0) { for(var i = 0; i < locals.data.length;
+      i++) {%>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.data[i].subject_name %></td>
+        <td>
+          <a
+            class="btn btn-warning edit"
+            href="../dashboard/subjects/edit/<%= locals.data[i].id %>"
+            ><i class="far fa-edit" aria-hidden="true"></i
+          ></a>
+          <a
+            class="btn btn-danger delete"
+            href="../dashboard/subjects/delete/<%= locals.data[i].id %>"
+            ><i class="far fa-trash-alt" aria-hidden="true"></i
+          ></a>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center"><mark>No Subjects found.</mark></td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>

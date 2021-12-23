@@ -76,6 +76,7 @@ apiRouter.post("/get-student-data", (req, res) => {
   });
 });
 
+// student enrolled data
 apiRouter.post("/get-student-enrollment-data", (req, res) => {
   var getStudent = `SELECT ssa.student_id, stu.name, stu.email, stu.mobile_number, ssa.id, ssa.academic_year, ssa.paying_amount, sfs.actual_fee, sfs.class_std, sfs.medium, clr.class_section FROM school_student_admission AS ssa INNER JOIN school_feestructure AS sfs ON sfs.id = ssa.class_medium INNER JOIN school_classroom AS clr ON clr.id = ssa.class_section INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.student_id='${req.body.stuId}'`;
   dbcon.query(getStudent, (err, data) => {
@@ -119,7 +120,6 @@ apiRouter.post("/get-one-student-profile", (req, res) => {
   });
 });
 
-
 // get One Staff Profile data
 apiRouter.post("/get-one-staff-profile", (req, res) => {
   var getStaff = `SELECT * FROM school_staff WHERE staff_id='${req.body.staff_id}'`;
@@ -127,7 +127,6 @@ apiRouter.post("/get-one-staff-profile", (req, res) => {
     if (err) {
       res.json({ msg: "error" });
     } else if (data.length == 1) {
-      console.log(data);
       res.json({
         msg: "success",
         staff: data,
@@ -138,6 +137,53 @@ apiRouter.post("/get-one-staff-profile", (req, res) => {
   });
 });
 
+// edit fee structure class-medium (GET)
+apiRouter.post("/edit-class-medium-fee", (req, res) => {
+  var getFeeData = `SELECT * FROM school_feestructure WHERE id='${req.body.class_medium_id}'`;
+
+  dbcon.query(getFeeData, (err, data) => {
+    if (err) {
+      res.json({ msg: "error" });
+    } else if (data.length == 1) {
+      res.json({
+        msg: "success",
+        feeRow: data,
+      });
+    } else {
+      res.json({ msg: "No Data found." });
+    }
+  });
+});
+
+// delete fee structure class-medium (GET)
+apiRouter.post("/delete-class-medium-fee", (req, res) => {
+  var classMedium = `SELECT * FROM school_feestructure WHERE id='${req.body.class_medium_id}'`;
+  dbcon.query(classMedium, (err, sections) => {
+    if (err) res.json({ msg: "error", err });
+    else if (sections[0].count != 0) {
+      console.log(sections);
+      res.json({
+        msg: "success",
+        sections: sections,
+      });
+    } else {
+      res.json({ msg: "NO Data found", err });
+    }
+  });
+});
+
+// get EDIT USER ACCOUNT Modal for Admin and School
+apiRouter.post("/get-edit-user-account", (req, res) => {
+  var UserAccData = `SELECT * FROM school_main_login WHERE id='${req.body.staff_id}'`;
+  dbcon.query(UserAccData, (err, userData) => {
+    if (err) res.json({ msg: "error", err });
+    else if (userData[0].length != 0) {
+      res.json({ msg: "success", userData: userData });
+    } else {
+      res.json({ msg: "No user found" });
+    }
+  });
+});
 
 // // student getting his admission details from admission & feedue tables
 // apiRouter.post("/get-stu-own-admission-records", (req, res) => {

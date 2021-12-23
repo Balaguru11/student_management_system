@@ -2,6 +2,7 @@ const session = require("express-session");
 const dbcon = require("../config/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
+const staffRouter = require("../routes/staffRoutes");
 
 // Staff Logs IN - POST staff login
 exports.postStaffLogin = (req, res) => {
@@ -310,6 +311,51 @@ exports.postEditStaffProfile = (req, res) => {
   }
 };
 
+// change passsword route for all roles
+exports.allChangePwd = (req, res) => {
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    if (req.method == "GET") {
+      return res.render("changepassword", {
+        title: "Change Password",
+        layout: "./layouts/home_layout",
+      });
+    } else {
+      const currentPwd = req.body.schoolCurPassword;
+      const saved_pass = session.staffPwd;
+      const verified = bcrypt.compareSync(`${currentPwd}`, `${saved_pass}`);
+
+      if (
+        verified &&
+        req.body.schoolNewPassword === req.body.schoolRetypePassword
+      ) {
+        const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
+        var newPass = `UPDATE school_main_login SET password = '${newHash}' WHERE id='${session.staff_id}'`;
+        dbcon.query(newPass, (err, response) => {
+          if (err) return res.render("server-error", { title: "Server Error" });
+          // req.session.destroy();
+          req.flash("success", "Your Password has been changed.");
+          return res.redirect("/");
+        });
+      } else {
+        req.flash(
+          "err_msg",
+          "Please make sure to enter the correct passsword."
+        );
+        return res.redirect("/staff/dashboard/change-password");
+      }
+    }
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// ******** STAFF_ROLE = TEACHING STAFF ********
+
 // view students assigned to the staff - TEACHING STAFF
 exports.getStudentsList = (req, res) => {
   let session = req.session;
@@ -355,30 +401,6 @@ exports.getStudentsList = (req, res) => {
   }
 };
 
-// get One Student profile from the Student list
-exports.getOneStudentProfile = (req, res) => {
-  let session = req.session;
-  // flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing sucecss_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
-  try {
-    // See Profile of a student
-    var student_id = req.params.student_id;
-    var stuProfile = `SELECT * FROM school_student WHERE student_id='${student_id}'`;
-    dbcon.query(stuProfile, (err, stuProfile) => {
-      if (err) return res.render("server-error", { title: "Server Error" });
-      console.log(stuProfile);
-      res.locals.stuProfile = stuProfile;
-      return res.redirect("/dashboard/students-list");
-    });
-  } catch (err) {
-    return res.render("server-error", { title: "Server Error" });
-  }
-};
-
 // view the list of classes assigned to the teaching staff
 exports.getClassAssigned = (req, res) => {
   let session = req.session;
@@ -410,49 +432,9 @@ exports.getClassAssigned = (req, res) => {
   }
 };
 
-// change passsword
-exports.allChangePwd = (req, res) => {
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  let session = req.session;
-  try {
-    if (req.method == "GET") {
-      return res.render("changepassword", {
-        title: "Change Password",
-        layout: "./layouts/home_layout",
-      });
-    } else {
-      const currentPwd = req.body.schoolCurPassword;
-      const saved_pass = session.staffPwd;
-      const verified = bcrypt.compareSync(`${currentPwd}`, `${saved_pass}`);
+// ******** STAFF_ROLE = TEACHING STAFF ********
 
-      if (
-        verified &&
-        req.body.schoolNewPassword === req.body.schoolRetypePassword
-      ) {
-        const newHash = bcrypt.hashSync(`${req.body.schoolNewPassword}`, 10);
-        var newPass = `UPDATE school_main_login SET password = '${newHash}' WHERE id='${session.staff_id}'`;
-        dbcon.query(newPass, (err, response) => {
-          if (err) return res.render("server-error", { title: "Server Error" });
-          // req.session.destroy();
-          req.flash("success", "Your Password has been changed.");
-          return res.redirect("/");
-        });
-      } else {
-        req.flash(
-          "err_msg",
-          "Please make sure to enter the correct passsword."
-        );
-        return res.redirect("/staff/dashboard/change-password");
-      }
-    }
-  } catch (err) {
-    return res.render("server-error", { title: "Server Error" });
-  }
-};
-
+// ******** STAFF_ROLE = ADMIN ********
 // view fee structure - class-medium (ADMIN)
 exports.viweFeeStructure = (req, res) => {
   try {
@@ -463,7 +445,7 @@ exports.viweFeeStructure = (req, res) => {
     let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     let session = req.session;
-    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.school_id}' ORDER BY ABS(class_std)`;
+    var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.school_id}' AND deleted_at IS NULL ORDER BY ABS(class_std)`;
 
     dbcon.query(feeStrucData, (err, data) => {
       if (err) {
@@ -477,117 +459,6 @@ exports.viweFeeStructure = (req, res) => {
         });
       }
     });
-  } catch (err) {
-    return res.render("server-error", { title: "Server Error" });
-  }
-};
-
-// view User Accounts (ADMIN)
-exports.viewUserAccounts = (req, res) => {
-  //flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing success_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
-  let session = req.session;
-  try {
-    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.school_id}' AND NOT(role_id_fk='1') AND NOT(role_id_fk='5')`;
-
-    dbcon.query(userAccData, (err, data) => {
-      if (err) {
-        return res.render("server-error", { title: "Server Error" });
-      } else {
-        res.locals.staff_role = session.roleId;
-        for (let i = 0; i < data.length; i++) {
-          switch (data[i].role_id_fk) {
-            case 2:
-              data[i].role_id_fk = "Non-teaching Faculty";
-              break;
-            case 4:
-              data[i].role_id_fk = "Head Master";
-              break;
-            case 8:
-              data[i].role_id_fk = "Teaching Faculty";
-              break;
-            case 9:
-              data[i].role_id_fk = "Admin";
-              break;
-            default:
-              data[i].role_id_fk = "Student";
-          }
-        }
-        res.locals.data = data;
-        return res.render("staffLevel/sc-create-users-admin", {
-          title: "User Accounts",
-          data,
-        });
-      }
-    });
-  } catch (err) {
-    return res.render("server-error", { title: "Server Error" });
-  }
-};
-
-// Add User Accounts (ADMIN)
-exports.postAddUser = async (req, res) => {
-  try {
-    //flashing err_msg
-    let err_msg = req.flash("err_msg");
-    res.locals.err_msg = err_msg;
-    // flashing success_msg
-    let success_msg = req.flash("success");
-    res.locals.success_msg = success_msg;
-    let session = req.session;
-
-    if (session.logged_in && session.staffStatus == "Active") {
-      const schoolId = session.school_id;
-
-      var userCheck = `SELECT EXISTS (SELECT * FROM school_main_login WHERE username='${req.body.username}' OR email='${req.body.email}' AND school_id='${schoolId}' ) AS count`;
-
-      dbcon.query(userCheck, (err, data) => {
-        if (err) {
-          req.flash("err_msg", "We could not add new user at the moment.");
-          return res.redirect("/staff/dashboard/users");
-        } else {
-          if (data[0].count == 0) {
-            // password hashing
-            const userPassword = req.body.password;
-            const hashedPass = bcrypt.hashSync(`${userPassword}`, 10);
-
-            const addClass = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${schoolId}', '${req.body.role}', '${req.body.username}', '${hashedPass}', '${req.body.email}', 'Inactive');`;
-
-            dbcon.query(addClass, function (err) {
-              if (err) {
-                req.flash(
-                  "err_msg",
-                  "There is an error when adding an user. Please try again later."
-                );
-                return res.redirect("/staff/dashboard/users");
-              } else {
-                req.flash("success", "A New User account has been added.");
-                return res.redirect("/staff/dashboard/users");
-              }
-            });
-          } else {
-            req.flash(
-              "err_msg",
-              "This Username / email is already registered with this School."
-            );
-            return res.redirect("/staff/dashboard/users");
-          }
-        }
-      });
-    } else if (session.logged_in && session.staffStatus == "Inactive") {
-      req.flash(
-        "err_msg",
-        "The school is unauthorized to do this action. Please Activate the school by submitting purchase details to support@sms.com"
-      );
-      return res.status(401).redirect("/school/dashboard");
-    } else {
-      req.flash("err_msg", "Please Login to continue.");
-      return res.status(401).redirect("/");
-    }
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
   }
@@ -647,6 +518,174 @@ exports.postAddFeeStructure = (req, res) => {
   }
 };
 
+// PUT / EDIT Fee stcuture by ADMIN
+exports.putFeeStructure = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // getting data from url
+    let id = req.params.id;
+    var ifDuplicate = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${session.school_id}' AND class_std='${req.body.class_std_edit}' AND medium='${req.body.medium_edit}') AS count`;
+    dbcon.query(ifDuplicate, (err, result) => {
+      if (err) throw err;
+      else if (result[0].count == 1) {
+        console.log(result);
+        req.flash("err_msg", "The Class Medium combination is already exist.");
+        return res.redirect("/staff/dashboard/fee-structure");
+      } else {
+        console.log(result);
+        var insertFee = `UPDATE school_feestructure SET class_std='${req.body.class_std_edit}', medium='${req.body.medium_edit}', actual_fee='${req.body.fee_edit}' where id='${req.body.fee_id}'`;
+        dbcon.query(insertFee, (err, response) => {
+          if (err) throw err;
+          console.log(response);
+          req.flash("success", "Updated successfully.");
+          return res.redirect("/staff/dashboard/fee-structure");
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// view User Accounts (ADMIN)
+exports.viewUserAccounts = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.school_id}' AND NOT(role_id_fk='1') AND NOT(role_id_fk='5') AND NOT(id='${session.staff_id}')`;
+
+    dbcon.query(userAccData, (err, data) => {
+      if (err) {
+        return res.render("server-error", { title: "Server Error" });
+      } else {
+        res.locals.staff_role = session.roleId;
+        for (let i = 0; i < data.length; i++) {
+          switch (data[i].role_id_fk) {
+            case 2:
+              data[i].role_id_fk = "Non-teaching Faculty";
+              break;
+            case 4:
+              data[i].role_id_fk = "Head Master";
+              break;
+            case 8:
+              data[i].role_id_fk = "Teaching Faculty";
+              break;
+            case 9:
+              data[i].role_id_fk = "Admin";
+              break;
+            default:
+              data[i].role_id_fk = "Student";
+          }
+        }
+        res.locals.data = data;
+        return res.render("staffLevel/sc-create-users-admin", {
+          title: "User Accounts",
+          data,
+        });
+      }
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// Add User Accounts (ADMIN)
+exports.postAddUser = async (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    if (session.logged_in && session.staffStatus == "Active") {
+      const schoolId = session.school_id;
+
+      var userCheck = `SELECT EXISTS (SELECT * FROM school_main_login WHERE username='${req.body.username}' OR email='${req.body.email}' AND school_id='${schoolId}' ) AS count`;
+
+      dbcon.query(userCheck, (err, data) => {
+        if (err) {
+          req.flash("err_msg", "We could not add new user at the moment.");
+          return res.redirect("/staff/dashboard/users");
+        } else {
+          if (data[0].count == 0) {
+            // password hashing
+            const userPassword = req.body.password;
+            const hashedPass = bcrypt.hashSync(`${userPassword}`, 10);
+
+            const addClass = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${schoolId}', '${req.body.role}', '${req.body.username}', '${hashedPass}', '${req.body.email}', 'Inactive');`;
+
+            dbcon.query(addClass, function (err) {
+              if (err) {
+                req.flash(
+                  "err_msg",
+                  "There is an error when adding an user. Please try again later."
+                );
+                return res.redirect("/staff/dashboard/users");
+              } else {
+                req.flash("success", "A New User account has been added.");
+                return res.redirect("/staff/dashboard/users");
+              }
+            });
+          } else {
+            req.flash(
+              "err_msg",
+              "This Username / email is already registered with this School."
+            );
+            return res.redirect("/staff/dashboard/users");
+          }
+        }
+      });
+    } else if (session.logged_in && session.staffStatus == "Inactive") {
+      req.flash(
+        "err_msg",
+        "The school is unauthorized to do this action. Please Activate the school by submitting purchase details to support@sms.com"
+      );
+      return res.status(401).redirect("/school/dashboard");
+    } else {
+      req.flash("err_msg", "Please Login to continue.");
+      return res.status(401).redirect("/");
+    }
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// editimng USER acounts - Edit only role and status of the user
+exports.putUserAccount = async (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var userAccEdit = `UPDATE school_main_login SET role_id_fk='${req.body.role_update}', status='${req.body.status_edit}' WHERE id='${req.body.staff_edit_id}'`;
+    dbcon.query(userAccEdit, (err, userEdited) => {
+      if (err) throw err;
+      console.log(userEdited);
+      req.flash("success", "User Account edited successfully.");
+      return res.redirect("/staff/dashboard/users");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 // showing schedule plan form for ADMIN
 exports.getSchedulePlanForm = async (req, res) => {
   //flashing err_msg
@@ -671,6 +710,42 @@ exports.getSchedulePlanForm = async (req, res) => {
   } catch (err) {
     throw err;
     // return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// delete fee structure class-medium by ADMIN
+exports.deleteFeeStructure = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let id = req.params.id;
+  console.log(id);
+  try {
+    var checkSection = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${id}') AS count`;
+    dbcon.query(checkSection, (err, sections) => {
+      if (err) throw err;
+      else if (sections[0].count != 0) {
+        req.flash(
+          "err_msg",
+          "There are Sections assigned to this Class Standard. There might be students enrolled to these sections. Please make sure to move them to different Class standard, and try again."
+        );
+        return res.redirect("/staff/dashboard/fee-structure");
+      } else {
+        var deleteClassStd = `UPDATE school_feestructure SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+        dbcon.query(deleteClassStd, (err, response) => {
+          if (err) throw err;
+          console.log(response);
+          req.flash("success", "Deleted successfully.");
+          return res.redirect("/staff/dashboard/fee-structure");
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -724,6 +799,10 @@ exports.getAllStaffList = (req, res) => {
     console.log(err);
   }
 };
+
+// ******** STAFF_ROLE = ADMIN ********
+
+// ******** STAFF_ROLE = HEAD MASTER ********
 
 // Post Subjects for the school (HM)
 exports.postAddSubject = (req, res) => {
@@ -964,3 +1043,9 @@ exports.postAddClassroom = async (req, res) => {
     return res.status(500).send(err);
   }
 };
+
+// ******** STAFF_ROLE = HEAD MASTER ********
+
+// ******** STAFF_ROLE = NON TEACHING FACULTY ********
+
+// ******** STAFF_ROLE = NON TEACHING FACULTY ********

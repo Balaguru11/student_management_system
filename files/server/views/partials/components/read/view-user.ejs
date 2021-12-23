@@ -1,8 +1,11 @@
 <div class="p-2">
-    <h4 class="text-center">View User Accounts</h4><br>
-    <table class="table table-light text-center">
-      <thead>
-        <tr>
+  <h4 class="text-center">View User Accounts</h4>
+  <br />
+  <% if(locals.staff_role == 9 ){ %>
+  <!-- Admin view -->
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
         <th scope="col">S.No</th>
         <th scope="col">Role</th>
         <th scope="col">Username</th>
@@ -10,24 +13,134 @@
         <th scope="col">Status</th>
         <th width="200px">Actions</th>
       </tr>
-      </thead>
-      <tbody>
-        <% if(locals.data.length > 0) {                    
-          for(var i = 0; i < locals.data.length; i++) {%>
-            <tr>
-              <th scope="row"><%= (i+1) %></th>
-              <td><%= locals.data[i].role_id_fk %></td>
-              <td><%= locals.data[i].username %></td>
-              <td><%= locals.data[i].email %></td>
-              <td><%= locals.data[i].status %></td>
-              <td><a class="btn btn-warning edit" href="../dashboard/users/edit/<%= locals.data[i].id %>">Edit</a> <a class="btn btn-danger delete" href="../dashboard/users/delete/<%= locals.data[i].id %>">Delete</a></td>                                            
-            </tr>
-      <%  }
-          } else { %>
-                <tr>
-                  <td colspan="5" class="text-center">No User accounts added.</td>
-                </tr>
-          <% } %>
-      </tbody>
-    </table>
+    </thead>
+    <tbody>
+      <% if(locals.data.length > 0) { for(var i = 0; i < locals.data.length;
+      i++) {%>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.data[i].role_id_fk %></td>
+        <td><%= locals.data[i].username %></td>
+        <td><%= locals.data[i].email %></td>
+        <td><%= locals.data[i].status %></td>
+        <td>
+          <button
+            data-id="<%= locals.data[i].id %>"
+            type="button"
+            class="editUserAcc btn btn-warning View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-edit"></i>
+          </button>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center">No User accounts added.</td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+  <% } %> <% if(locals.schoolId){ %>
+  <!-- School view -->
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Role</th>
+        <th scope="col">Username</th>
+        <th scope="col">Email ID</th>
+        <th scope="col">Status</th>
+        <th width="200px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.data.length > 0) { for(var i = 0; i < locals.data.length;
+      i++) {%>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.data[i].role_id_fk %></td>
+        <td><%= locals.data[i].username %></td>
+        <td><%= locals.data[i].email %></td>
+        <td><%= locals.data[i].status %></td>
+        <td>
+          <button
+            data-id="<%= locals.data[i].id %>"
+            type="button"
+            class="editUserAcc btn btn-warning View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-edit"></i>
+          </button>
+          <button
+            data-id="<%= locals.data[i].id %>"
+            type="button"
+            class="deleteUserAcc btn btn-danger View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-trash-alt" aria-hidden="true"></i>
+          </button>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center">No User accounts added.</td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <% } %>
+</div>
+
+<% if(locals.schoolId) { %>
+<!-- delete modal -->
+<div
+  class="modal fade"
+  id="deleteUserAccModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          Deleting Class - Medium
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
   </div>
+</div>
+<% } %> <% if(locals.staff_role == 9 || locals.schoolId) { %>
+<!-- edit modal -->
+<div
+  class="modal fade"
+  id="editUserAccModal"
+  tabindex="-1"
+  aria-labelledby="editModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit Class - Medium</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+  </div>
+</div>
+<% } %>

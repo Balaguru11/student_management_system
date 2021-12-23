@@ -34,6 +34,9 @@ const {
   viewClassSections,
   postAddClassroom,
   getAllStaffList,
+  putFeeStructure,
+  deleteFeeStructure,
+  putUserAccount,
 } = require("../controllers/staffController");
 
 staffRouter.post("/login", postStaffLogin);
@@ -48,7 +51,7 @@ staffRouter.get("/profile", isStaff, showStaffProfile);
 staffRouter.get("/profile-edit", isStaff, getStaffProfileEdit);
 staffRouter.put("/profile-edit", isStaff, postEditStaffProfile);
 
-// START ************ Staff_role == 8 teaching staff ******************
+// START ******** Staff_role == 8 teaching staff ***********
 // view Students asigned to the staff
 staffRouter.get(
   "/dashboard/students-list",
@@ -56,11 +59,6 @@ staffRouter.get(
   isTeacher,
   getStudentsList
 );
-staffRouter.get(
-  "/dashboard/students-list/profile/:student_id",
-  isStaff,
-  getOneStudentProfile
-); // this can be done using ajax
 
 // view classes handled by this staff
 staffRouter.get("/dashboard/class-assigned", isStaff, getClassAssigned); // Not working
@@ -78,29 +76,44 @@ staffRouter.get("/dashboard/class-assigned", isStaff, getClassAssigned); // Not 
 
 // staff_role = 9 ADMIN
 //create class-medium
-staffRouter.get("/dashboard/fee-structure", isStaff, viweFeeStructure);
-staffRouter.post("/dashboard/fee-structure", isStaff, postAddFeeStructure);
-// staffRouter.get(
-//   "/dashboard/fee-structure/edit/:id",
-//   isStaff,
-//   getEditFeeStructure
-// );
-// staffRouter.put(
-//   "/dashboard/fee-structure/edit/:id",
-//   isStaff,
-//   putFeeStructure
-// );
+staffRouter.get("/dashboard/fee-structure", isStaff, isAdmin, viweFeeStructure);
+staffRouter.post(
+  "/dashboard/fee-structure",
+  isStaff,
+  isAdmin,
+  postAddFeeStructure
+);
+// showing edit and showing delete fee structure in ajax call.
+//edit Fee Struture POST
+staffRouter.put(
+  "/dashboard/fee-structure/edit/:id",
+  isStaff,
+  isAdmin,
+  putFeeStructure
+);
+// delete fee structure
+staffRouter.get(
+  "/dashboard/fee-structure/delete/:id",
+  isStaff,
+  isAdmin,
+  deleteFeeStructure
+);
 
 // create STAFF Logins
-staffRouter.get("/dashboard/users", isStaff, viewUserAccounts);
-staffRouter.post("/dashboard/add-user", isStaff, postAddUser);
-// staffRouter.put("/dashboard/user", isStaff, putAddUser);
+staffRouter.get("/dashboard/users", isStaff, isAdmin, viewUserAccounts);
+staffRouter.post("/dashboard/add-user", isStaff, isAdmin, postAddUser);
+staffRouter.put("/dashboard/users/edit/:id", isStaff, isAdmin, putUserAccount);
 
 // STAFF Salary Info
 // staffRouter.get("/dashboard/staff-salary-info", isStaff, viewStaffSalInfo);
 
 // Schedule Template Planning
-staffRouter.get("/dashboard/schedule-plan", isStaff, getSchedulePlanForm);
+staffRouter.get(
+  "/dashboard/schedule-plan",
+  isStaff,
+  isAdmin,
+  getSchedulePlanForm
+);
 // staffRouter.post("/dashboard/schedule-plan", isStaff, postSchedulePlanForm);
 
 // employee report
@@ -156,12 +169,12 @@ staffRouter.post(
   postMapSubStaff
 );
 
-// message to staff by HM
-// staffRouter.get('/dashboard/message-staff', isStaff, getStaffMsgForm);
-
 // Class Section CRUD by HM
 staffRouter.get("/dashboard/sections", isStaff, isHM, viewClassSections);
 staffRouter.post("/dashboard/sections", isStaff, isHM, postAddClassroom);
+
+// message to staff by HM
+// staffRouter.get('/dashboard/message-staff', isStaff, getStaffMsgForm);
 
 // get Performance report by HM
 // staffRouter.get("/dashboard/student-performance", isStaff, getAllStuPerform);
