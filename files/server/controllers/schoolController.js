@@ -937,6 +937,33 @@ exports.postSchedulePlanForm = async (req, res) => {
   }
 };
 
+// make weekly schedule
+exports.viewWeekSchedule = (req, res) => {
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    // viewing schedule created
+    var schedules = `SELECT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'; SELECT * FROM school_week_schedule WHERE school_id='${session.schoolId}'`;
+    dbcon.query(schedules, (err, data) => {
+        if (err) throw err;
+        console.log(data);
+        res.locals.data = data;
+        return res.render("schoolLevel/school-week-schedule", {
+          title: "Week Schedules",
+        });
+      });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// POST Week Schedule form
+exports.addWeekScheduleForm = (req, res) => {
+  console.log("Something added to schedule week");
+};
 // change password
 exports.allChangePwd = (req, res) => {
   let success_msg = req.flash("success");
@@ -1020,5 +1047,27 @@ exports.allDueCollection = (req, res) => {
     }
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// editing USER acounts - Edit only role and status of the user
+exports.putUserAccount = async (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var userAccEdit = `UPDATE school_main_login SET role_id_fk='${req.body.role_update}', status='${req.body.status_edit}' WHERE id='${req.body.staff_edit_id}'`;
+    dbcon.query(userAccEdit, (err, userEdited) => {
+      if (err) throw err;
+      console.log(userEdited);
+      req.flash("success", "User Account edited successfully.");
+      return res.redirect("/school/dashboard/users");
+    });
+  } catch (err) {
+    console.log(err);
   }
 };

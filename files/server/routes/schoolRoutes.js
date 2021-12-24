@@ -11,7 +11,8 @@ const {
   postSchoolLogin,
   getSchoolDashBoard,
   postAddClassroom,
-  postAddUser, putAddUser, 
+  postAddUser,
+  putUserAccount,
   postAddSubject,
   postAddFeeStructure,
   viweFeeStructure,
@@ -32,6 +33,8 @@ const {
   postAddStudent,
   getSchedulePlanForm,
   postSchedulePlanForm,
+  viewWeekSchedule,
+  addWeekScheduleForm,
   allChangePwd,
   allDueCollection,
 } = require("../controllers/schoolController");
@@ -67,7 +70,8 @@ schoolRouter.put(
 // USERS CRUD
 schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
 schoolRouter.post("/dashboard/add-user", isSchool, postAddUser);
-// schoolRouter.put("/dashboard/user", isSchool, putAddUser);
+schoolRouter.put("/dashboard/users/edit/:id", isSchool, putUserAccount);
+// schoolRouter.delete("/dashboard/user", isSchool, deleteUserAccount);
 
 // Subjects CRUD
 schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
@@ -98,6 +102,10 @@ schoolRouter.all("/dashboard/fee-due-collection", isSchool, allDueCollection);
 // schedule template CRUD
 schoolRouter.get("/dashboard/schedule-plan", isSchool, getSchedulePlanForm);
 schoolRouter.post("/dashboard/schedule-plan", isSchool, postSchedulePlanForm);
+
+// Week Schedule for class sections with schedule plan integrated
+schoolRouter.get("/dashboard/week-schedule", isSchool, viewWeekSchedule);
+schoolRouter.post("/dashboard/week-schedule", isSchool, addWeekScheduleForm);
 
 // not completed yet
 // Announcements

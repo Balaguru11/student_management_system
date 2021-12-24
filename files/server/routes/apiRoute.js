@@ -174,15 +174,25 @@ apiRouter.post("/delete-class-medium-fee", (req, res) => {
 
 // get EDIT USER ACCOUNT Modal for Admin and School
 apiRouter.post("/get-edit-user-account", (req, res) => {
-  var UserAccData = `SELECT * FROM school_main_login WHERE id='${req.body.staff_id}'`;
+  var UserAccData = `SELECT sml.username, sml.email, sml.status, srol.role_name, sml.role_id_fk FROM school_main_login AS sml INNER JOIN school_role AS srol ON sml.role_id_fk = srol.role_name WHERE sml.id='${req.body.staff_id}'`;
   dbcon.query(UserAccData, (err, userData) => {
     if (err) res.json({ msg: "error", err });
-    else if (userData[0].length != 0) {
+    else {
       res.json({ msg: "success", userData: userData });
-    } else {
-      res.json({ msg: "No user found" });
     }
   });
+});
+
+// get Schedule Periods from schedule_template 
+apiRouter.post('/get-periods-from-schedule-template', (req, res) => {
+  var periods = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'`;
+  dbcon.query(periods, (err, periodNos) => {
+    if(err) res.json({msg: 'error', err});
+    else {
+      console.log(periodNos);
+      res.json({msg: 'success', periodNos: periodNos});
+    }
+  })
 });
 
 // // student getting his admission details from admission & feedue tables

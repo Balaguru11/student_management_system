@@ -147,68 +147,75 @@ exports.postStuProfile = (req, res) => {
         var checkParent = `SELECT * FROM school_main_login WHERE role_id_fk = '5' AND email='${parent_email}'`;
         dbcon.query(checkParent, (err, ifParentAcc) => {
           if (err) throw err;
-          else if(ifParentAcc.length == 1){
-          // mapping student with parent here
+          else if (ifParentAcc.length == 1) {
+            // mapping student with parent here
             var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${ifParentAcc[0].id}', '${session.student_id}')`;
             dbcon.query(stuParMap, (err, map) => {
-              if(err) return res.render('server-error', {title: 'Server Error'});
+              if (err)
+                return res.render("server-error", { title: "Server Error" });
               // sending emails - parent email - parent student linked.
-          const parent = sendMail({
-            from: process.env.MAIL_USERNAME,
-            to: ifParentAcc[0].email,
-            subject: "New Child added to your account.",
-            html: `<h2>Holla..! Your child ${req.body.studentName} has created his / her Profile.</h2><p>Hi, ${ifParentAcc[0].username}, We have added your child, to your circle. You can now TRACK your child's activities by loging into YOUR PARENT ACCOUNT.</p><br><p>- Thank you.</p>`,
-          })
-            .then((result) => {
-              console.log("Mail has been sent");
-            })
-            .catch((err) => {
-              return res.render("server-error", {
-                title: "Server Error",
-              });
+              const parent = sendMail({
+                from: process.env.MAIL_USERNAME,
+                to: ifParentAcc[0].email,
+                subject: "New Child added to your account.",
+                html: `<h2>Holla..! Your child ${req.body.studentName} has created his / her Profile.</h2><p>Hi, ${ifParentAcc[0].username}, We have added your child, to your circle. You can now TRACK your child's activities by loging into YOUR PARENT ACCOUNT.</p><br><p>- Thank you.</p>`,
+              })
+                .then((result) => {
+                  console.log("Mail has been sent");
+                })
+                .catch((err) => {
+                  return res.render("server-error", {
+                    title: "Server Error",
+                  });
+                });
             });
-            })
             //flashing message - no mail to student.
-            req.flash('success', "Your Profile has been created successfully.");
-            return res.redirect('/student/profile');
-        } else {
-          // create a parent account and map with student
+            req.flash("success", "Your Profile has been created successfully.");
+            return res.redirect("/student/profile");
+          } else {
+            // create a parent account and map with student
             // creating Parent Login credentials
-          const parent_mob = req.body.parent_mobile;
-          const parent_pass =
-            parent_username.substring(0, 4) + "@" + parent_mob.substring(0, 4); //Ravi@8124
-          const hashedParentPass = bcrypt.hashSync(`${parent_pass}`, 10);
+            const parent_mob = req.body.parent_mobile;
+            const parent_pass =
+              parent_username.substring(0, 4) +
+              "@" +
+              parent_mob.substring(0, 4); //Ravi@8124
+            const hashedParentPass = bcrypt.hashSync(`${parent_pass}`, 10);
 
-        var parentLogin = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${session.school_id}', '5', '${parent_username}', '${hashedParentPass}', '${req.body.parent_email}', 'Active');`;
-        // student mapping with parent login
-        dbcon.query(parentLogin, (err, parentLog) => {
-          if (err) console.log(err);
-          console.log(parentLog);
-          var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${parentLog[0].insertId}', '${session.student_id}')`;
-          dbcon.query(stuParMap, (err) => {
-            if(err) throw err;
-            
-            // sending emails - parent email - parent login created.
-          const parent = sendMail({
-            from: process.env.MAIL_USERNAME,
-            to: req.body.parent_email,
-            subject: "PARENT LOGIN for You. You can Track your child's Activities.",
-            html: `<h2>Holla..! Your child ${req.body.studentName} has created his / her Profile.</h2><p>Hi, ${req.body.father_name}, You can now login to YOUR PARENT ACCOUNT to TRACK your child's activities.</p><br><p>Please use followingh credentials to login.</p><br><h4>Username: ${parent_username}<br>Password: ${parent_pass}<br>Url: http://localhost:8005/ </h4><p>- Thank you.</p>`,
-          })
-            .then((result) => {
-              console.log("Mail has been sent");
-            })
-            .catch((err) => {
-              return res.render("server-error", {
-                title: "Server Error",
+            var parentLogin = `INSERT INTO school_main_login(school_id, role_id_fk, username, password, email, status) VALUES ('${session.school_id}', '5', '${parent_username}', '${hashedParentPass}', '${req.body.parent_email}', 'Active');`;
+            // student mapping with parent login
+            dbcon.query(parentLogin, (err, parentLog) => {
+              if (err) console.log(err);
+              console.log(parentLog);
+              var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${parentLog[0].insertId}', '${session.student_id}')`;
+              dbcon.query(stuParMap, (err) => {
+                if (err) throw err;
+
+                // sending emails - parent email - parent login created.
+                const parent = sendMail({
+                  from: process.env.MAIL_USERNAME,
+                  to: req.body.parent_email,
+                  subject:
+                    "PARENT LOGIN for You. You can Track your child's Activities.",
+                  html: `<h2>Holla..! Your child ${req.body.studentName} has created his / her Profile.</h2><p>Hi, ${req.body.father_name}, You can now login to YOUR PARENT ACCOUNT to TRACK your child's activities.</p><br><p>Please use followingh credentials to login.</p><br><h4>Username: ${parent_username}<br>Password: ${parent_pass}<br>Url: http://localhost:8005/ </h4><p>- Thank you.</p>`,
+                })
+                  .then((result) => {
+                    console.log("Mail has been sent");
+                  })
+                  .catch((err) => {
+                    return res.render("server-error", {
+                      title: "Server Error",
+                    });
+                  });
+                //flashing message - no mail to student.
+                req.flash(
+                  "success",
+                  "Your Profile has been created successfully."
+                );
+                return res.redirect("/student/profile");
               });
             });
-            //flashing message - no mail to student.
-            req.flash('success', "Your Profile has been created successfully.");
-            return res.redirect('/student/profile');
-          })
-        })
-        }
+          }
         });
       });
     }

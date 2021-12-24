@@ -427,9 +427,9 @@ $(document).ready(function () {
         $(".modal-body").html(function () {
           var fetched_medium = data.feeRow[0].medium;
           $("#medium_edit").val(fetched_medium);
-          $(
-            "#medium_edit select > option[value='" + fetched_medium + "']"
-          ).attr("selected", true);
+          // $(
+          //   "#medium_edit select > option[value='" + fetched_medium + "']"
+          // ).attr("selected", true);
 
           return (
             "<form id='editclass-form' action='../dashboard/fee-structure/edit/" +
@@ -501,8 +501,8 @@ $(document).ready(function () {
       dataType: "Json",
       success: function (data) {
         $(".modal-body").html(function () {
-          var role = data.userData[0].role_id_fk;
-          $("#role_update").val(role);
+          var role_fetched = data.userData[0].role_id_fk;
+          $("#role_update").val(role_fetched);
           var status = data.userData[0].status;
           $("#status_edit").val(status);
           return (
@@ -510,11 +510,11 @@ $(document).ready(function () {
             data.userData[0].id +
             "?_method=PUT' method='POST'><input type='hidden' class='form-control' name='staff_edit_id' id='staff_edit_id' value='" +
             data.userData[0].id +
-            "' /><div class='mb-3'> <label for='select'>Role:</label> <select id='role_update' name='role_update' class='form-control'> <option value='9'>Admin</option> <option value='4'>Head Master</option> <option value='8'>Teaching Faculty</option> <option value='2'>Non-teaching Faculty</option> </select> </div> <div class='mb-3'> <label for='username'>Username:</label> <input type='text' class='form-control' name='username' placeholder='Username' id='username' value='" +
+            "' /><div class='mb-3'><label for='select'>Role:</label><select id='role_update' name='role_update' class='form-control'><option value='9'>Admin</option> <option value='4'>Head Master</option><option value='8'>Teaching Faculty</option><option value='2'>Non-teaching Faculty</option></select></div><div class='mb-3'><label for='username'>Username:</label><input type='text' class='form-control' name='username' placeholder='Username' id='username' value='" +
             data.userData[0].username +
-            "' disabled/> <span class='error' id='username-error' >Username should be at least 3 characters long.</span > </div><div class='mb-3'> <label for='email'>Email:</label> <input type='email' class='form-control' name='email' placeholder='Type your email here' id='email' value='" +
+            "' disabled/><span class='error' id='username-error' >Username should be at least 3 characters long.</span ></div><div class='mb-3'><label for='email'>Email:</label><input type='email' class='form-control' name='email' placeholder='Type your email here' id='email' value='" +
             data.userData[0].email +
-            "' disabled /> <span class='error' id='email-error'>Email is invalid.</span> </div> <div class='mb-3'> <label for='status_edit'>Account Status:</label> <select id='status_edit' name='status_edit' class='form-control'> <option value='Active'>Active</option><option value='Inactive'>Inactive</option></select> </div><div class='login'> <button class='btn btn-secondary' type='submit'>Update User</button> </div></form>"
+            "' disabled /><span class='error' id='email-error'>Email is invalid.</span></div><div class='mb-3'> <label for='status_edit'>Account Status:</label> <select id='status_edit' name='status_edit' class='form-control'> <option value='Active'>Active</option><option value='Inactive'>Inactive</option></select> </div><div class='login'><button class='btn btn-secondary' type='submit'>Update User</button></div></form>"
           );
         });
         // show data in the element.
@@ -526,3 +526,60 @@ $(document).ready(function () {
     });
   });
 });
+
+
+// get No of periods from schedule_template
+$(document).ready(function(){
+  $('#schedule_name, #class').on('change', function(){
+    var schedule_temp_id = $('#schedule_name').val();
+    var class_sec_id =  $('#class').val();
+    $.ajax({
+      url: '/api/get-periods-from-schedule-template',
+      type: 'POST',
+      data: {
+        schedule_temp_id: schedule_temp_id,
+        class_sec_id: class_sec_id
+      },
+      dataType: "Json",
+      success: function (data) {
+          $("#schedule_name").after(function () {
+            var periods = data.periodNos[0][0].no_of_periods;
+            var foo = [];
+            for (var i = 1; i <= periods; i++) {
+              foo.push(i);
+            
+            $('#schedule_list').html(
+              '<p>Schedule Plan</p> <hr />'
+            );
+              $.each(foo, (key, value) => {
+                $('#schedule_list').append(
+                  "<div class='mt-3 row g-3'><div class='col'><label for='period_" + value + "_sub'>Period " + value + "- Subject</label><select id='subject_option period_" + value + "_sub' class='period_" + value + "_sub form-control subject_option' name='period_" + value + "_sub'><option value=''>test</option></select></div><div class='col'><label for='period_" + value + "_staff'>Period " + value + " - Staff</label><input id='period_" + value + "_staff' type='text' class='period_" + value + "_staff form-control' placeholder='Choose Staff' aria-label='Last name' disabled></div></div>"
+                )
+                
+              })
+            }
+          })
+
+          // not working here - 24-12-2021
+          $("#subject_option").append(function () {
+            var subjects = data.periodNos[1];
+            var sub_id = data.periodNos[1].subject_id;
+            var subjects = data.periodNos[1].subject_name;
+            var staff_id = data.periodNos[1].staff_id_assigned;
+            var staffs = data.periodNos[1].name;
+
+            for (let x = 0; x < subjects.length; x++){
+              $.each(subjects.subject_id, (key, value) => {
+                $('#subject_option').append(
+                  "<option value='"+ subjects[x].subject_id +"'>"+ subjects[x].subject_name +"</option>"
+                )
+            })
+          }
+        })
+      },
+      error: function(err){
+        console.log(err);
+      }
+    })
+  })
+})
