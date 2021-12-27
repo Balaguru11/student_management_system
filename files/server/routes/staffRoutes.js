@@ -19,14 +19,13 @@ const {
   getStaffProfileEdit,
   postEditStaffProfile,
   getStudentsList,
-  getOneStudentProfile,
   getClassAssigned,
   allChangePwd,
   viweFeeStructure,
   viewUserAccounts,
   postAddUser,
   postAddFeeStructure,
-  getSchedulePlanForm,
+  getSchedulePlanForm, postSchedulePlanForm, 
   viewSubjects,
   postAddSubject,
   getMapSubStaff,
@@ -36,7 +35,7 @@ const {
   getAllStaffList,
   putFeeStructure,
   deleteFeeStructure,
-  putUserAccount,
+  putUserAccount, getFeeCollection, postFeeCollection, allDueCollection
 } = require("../controllers/staffController");
 
 staffRouter.post("/login", postStaffLogin);
@@ -74,7 +73,9 @@ staffRouter.get("/dashboard/class-assigned", isStaff, getClassAssigned); // Not 
 //Teaching Staff sending message to Students (Also HM)
 // staffRouter.get('/dashboard/message-students', isStaff, getStuMsgForm);
 
-// staff_role = 9 ADMIN
+// START ******** Staff_role == 8 teaching staff ***********
+
+// START ******** Staff_role == 9 ADMIN ***********
 //create class-medium
 staffRouter.get("/dashboard/fee-structure", isStaff, isAdmin, viweFeeStructure);
 staffRouter.post(
@@ -114,24 +115,26 @@ staffRouter.get(
   isAdmin,
   getSchedulePlanForm
 );
-// staffRouter.post("/dashboard/schedule-plan", isStaff, postSchedulePlanForm);
+staffRouter.post("/dashboard/schedule-plan", isStaff, postSchedulePlanForm);
 
 // employee report
 // staffRouter.get("/dashboard/emp-report", isStaff, getEmpReport);
 
-// STAFF_ROLE = NON Teaching Faculty 2
+// START ******** Staff_role == 9 ADMIN ***********
+
+// START ******** Staff_role == 2 NON Teaching Faculty ***********
 
 // // View other staff profiles
-// staffRouter.get('/dashboard/view-staff-profile', isStaff, getOtherStaffProfile);
+staffRouter.get('/dashboard/view-staff-profile', isStaff, isNTF, getAllStaffList);
 
 // // view Student profile
-// staffRouter.get('/dashboard/view-student-profile', isStaff, getOtherStudProfile);
+staffRouter.get('/dashboard/view-student-profile', isStaff, isNTF, getStudentsList);
 
 // fee collection & admission
-// staffRouter.get("/dashboard/fee-collection", isStaff, getFeeCollection);
-// staffRouter.post("/dashboard/fee-collection", isStaff, postFeeCollection);
-// // Due collection
-// staffRouter.all("/dashboard/fee-due-collection", isStaff, allDueCollection);
+staffRouter.get("/dashboard/fee-collection", isStaff, isNTF, getFeeCollection);
+staffRouter.post("/dashboard/fee-collection", isStaff, isNTF, postFeeCollection);
+// Due collection
+staffRouter.all("/dashboard/fee-due-collection", isStaff, isNTF, allDueCollection);
 
 // Make Staff Attendance
 // staffRouter.all('/dashboard/staff-attendance', isStaff, getStaffAttendance);
@@ -142,7 +145,11 @@ staffRouter.get(
 // Admission REPORT
 // staffRouter.get('/dashboard/admission-report', isStaff, getEnrollReport);
 
-// staff_role = 4 Head master routes
+// START ******** Staff_role == 2 NON Teaching Faculty ***********
+
+// START ******** Staff_role == 4 Head Master ***********
+
+// view All Student Profile + used in NTF route
 staffRouter.get(
   "/dashboard/see-student-profile",
   isStaff,

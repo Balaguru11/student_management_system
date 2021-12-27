@@ -356,7 +356,7 @@ exports.allChangePwd = (req, res) => {
 
 // ******** STAFF_ROLE = TEACHING STAFF ********
 
-// view students assigned to the staff - TEACHING STAFF
+// view students assigned to the staff - TEACHING STAFF + used in NTF
 exports.getStudentsList = (req, res) => {
   let session = req.session;
   // flashing err_msg
@@ -381,7 +381,7 @@ exports.getStudentsList = (req, res) => {
           title: "Students List",
         });
       });
-    } else if (staff_role == "4") {
+    } else if (staff_role == 4 || 2) {
       // head master view all students here..
       var stuProfile = `SELECT stu.student_id, sml.username, stu.name, sml.email, stu.mobile_number, sfs.class_std, sfs.medium, clr.class_section FROM school_main_login AS sml INNER JOIN school_student AS stu ON stu.student_id = sml.id
       INNER JOIN school_student_admission AS stad ON stad.student_id = stu.student_id INNER JOIN school_feestructure AS sfs ON sfs.id = stad.class_medium INNER JOIN school_classroom AS clr ON clr.id = stad.class_section WHERE sml.school_id='${session.school_id}' AND sml.role_id_fk='1'`;
@@ -749,10 +749,29 @@ exports.deleteFeeStructure = (req, res) => {
   }
 };
 
+// Add Schedule Plan to the School (POST) - ADMIN
+exports.postSchedulePlanForm = async (req, res) => {
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    //
+    var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, school_timing_from, school_timing_to, period_time, lunch_time, no_of_intervals, interval_time, no_of_periods) VALUES ('${session.school_id}', '${req.body.school_schedule_name}', '${req.body.school_start}', '${req.body.school_end}', '${req.body.school_period_time}', '${req.body.school_lunch_time}', '${req.body.school_interval_count}', '${req.body.school_interval_time}', (('${req.body.school_end}' - '${req.body.school_start}') - ('${req.body.school_lunch_time}' / 60) - (('${req.body.school_interval_count}' * '${req.body.school_interval_time}') / 60))/ ('${req.body.school_period_time}' / 60))`;
+    dbcon.query(addScheduleTemps, (err, data) => {
+      if (err) return res.render("server-error", { title: "Server Error" });
+      return res.redirect("/staff/dashboard/schedule-plan");
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
 // staff_role HM
 // view all student Profile is moved to getStudentsList (Teaching staff routes)
 
-// get Staff Profile list - route used for HM
+// get Staff Profile list - route used for HM - route used for NTF 
 exports.getAllStaffList = (req, res) => {
   let session = req.session;
   // flashing err_msg
@@ -764,7 +783,7 @@ exports.getAllStaffList = (req, res) => {
   res.locals.staff_role = session.roleId;
   let staff_role = session.roleId;
   try {
-    if (staff_role == 4) {
+    if (staff_role == 4 || 2) {
       var staffProfileList = `SELECT * FROM school_staff WHERE school_id='${session.school_id}' AND NOT staff_id='${session.staff_id}'`;
       dbcon.query(staffProfileList, (err, staffList) => {
         if (err) throw err;
@@ -788,7 +807,7 @@ exports.getAllStaffList = (req, res) => {
         }
         res.locals.staffList = staffList;
         return res.render("staffLevel/hm-view-all-staff-profile", {
-          title: "HM View Staff Profile",
+          title: "View Staff Profile",
         });
       });
     } else {
@@ -1047,5 +1066,140 @@ exports.postAddClassroom = async (req, res) => {
 // ******** STAFF_ROLE = HEAD MASTER ********
 
 // ******** STAFF_ROLE = NON TEACHING FACULTY ********
+
+// * Gte staff Profile & Get student profiles linked with routes from other roles.
+
+// Collect Fee CRUD - by NTF
+exports.getFeeCollection = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    if (session.staffStatus == "Active") {
+      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_classroom AS clr
+      INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.school_id}' ORDER BY ABS(sfs.class_std);`;
+      dbcon.query(fee_data, (err, feeData) => {
+        if (err) return res.render("server-error", { title: "Server Error" });
+
+        // view fee records
+        var feeRecords = `SELECT * FROM school_student_admission WHERE school_id='${session.school_id}'`;
+        dbcon.query(feeRecords, (err, records) => {
+          if (err) return res.render("server-error", { title: "Server Error" });
+          res.locals.data = records;
+          res.locals.feeData = feeData;
+          return res.render("staffLevel/ntf-collect-fee", {
+            title: "Fee Collection",
+          });
+        });
+      });
+    } else {
+      req.flash("err_msg", "Your School is Inactive.");
+      return res.redirect("/staff/dashboard");
+    }
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// postFeeCollection - by NTF
+exports.postFeeCollection = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'; SELECT * FROM school_student WHERE student_id='${req.body.stuId}'`;
+    dbcon.query(selectStud, (err, student) => {
+      if (err) return res.render("server-error", { title: "Server Error" });
+      // admission table is for new enrollment only. So, checking if the data is already available
+      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}') AS count`;
+      dbcon.query(checkAdmission, (err, data) => {
+        if (err) return res.render("server-error", { title: "Server Error" });
+        else if (data[0].count == 0) {
+          // inserting record to school_student_admission if not available
+          const payment_pending =
+            req.body.actual_fee_hide - req.body.fee_paying;
+          let payment_status = payment_pending == 0 ? "No Due" : "Due";
+
+          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0][0].school_id}', '${student[0][0].id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.school_id}')`;
+          dbcon.query(admissionQuery, (err, respo) => {
+            if (err)
+              return res.render("server-error", { title: "Server Error" });
+            //updating student status in main_login
+            var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
+            dbcon.query(studUpdateLogin, (err, result) => {
+              if (err)
+                return res.render("server-error", { title: "Server Error" });
+              req.flash("success", "Payment record added.");
+              return res.redirect("/staff/dashboard/fee-collection");
+            });
+          });
+        } else {
+          req.flash(
+            "err_msg",
+            "This student already enrolled. Please use Due collection form instead."
+          );
+          return res.redirect("/staff/dashboard/fee-due-collection");
+        }
+      });
+    });
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// DUE COLLECTION - by NTF
+exports.allDueCollection = (req, res) => {
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    if (req.method == "GET") {
+      // view fee collection records
+      var feeCollected = `SELECT * FROM school_student_admission WHERE school_id='${session.school_id}'`;
+      dbcon.query(feeCollected, (err, feeData) => {
+        if (err) return res.render("server-error", { title: "Server Error" });
+        res.locals.data = feeData;
+        return res.render("staffLevel/sc-collect-due-ntf", {
+          title: "Due Collection",
+        });
+      });
+    } else {
+      let due_amount =
+        req.body.course_fee - req.body.paid_fee_hide - req.body.paying_fee;
+      let due_status = due_amount == 0 ? "No Due" : "Due";
+
+      var dueColl = `INSERT INTO school_student_feedue(school_id, student_id, admission_id, actual_fee, currently_paying, payment_mode, due_status) VALUES ('${session.school_id}', '${req.body.stuId_due}', '${req.body.admission_id}', '${req.body.course_fee}', '${req.body.paying_fee}', '${req.body.payment_mode}', '${due_status}')`;
+      dbcon.query(dueColl, (err, result) => {
+        if (err) return res.render("server-error", { title: "Server Error" });
+
+        var updateAdmisFee = `UPDATE school_student_admission SET paying_amount = paying_amount+'${req.body.paying_fee}', payment_status ='${due_status}' WHERE id='${req.body.admission_id}'`;
+        dbcon.query(updateAdmisFee, (err, updated) => {
+          if (err) return res.render("server-error", { title: "Server Error" });
+          else {
+            req.flash("success", "Fee updated successfully.");
+            return res.redirect(
+              "/staff/dashboard/fee-due-collection?_method=GET&status=success"
+            );
+          }
+        });
+      });
+    }
+  } catch (err) {
+    return res.render("server-error", { title: "Server Error" });
+  }
+};
 
 // ******** STAFF_ROLE = NON TEACHING FACULTY ********

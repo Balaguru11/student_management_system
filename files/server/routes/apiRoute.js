@@ -25,7 +25,7 @@ apiRouter.post("/get-class-sections", (req, res) => {
 
 apiRouter.post("/get-class-fee", (req, res) => {
   var getclassfee =
-    'SELECT actual_fee FROM school_feestructure WHERE id= "' +
+    'SELECT * FROM school_feestructure WHERE id= "' +
     req.body.class_id +
     '"';
   dbcon.query(getclassfee, (err, row) => {
