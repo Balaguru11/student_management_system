@@ -432,6 +432,63 @@ exports.getClassAssigned = (req, res) => {
   }
 };
 
+// get attendance page 
+exports.getStuAttendance = (req, res) => {
+  let session = req.session;
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let staff_role = session.roleId;
+  res.locals.staff_role = staff_role;
+  try {
+    let class_sec_id = req.params.class_sec_id;
+    let staff_id = req.params.staff_id;
+    if(staff_id == session.staff_id){
+      // get data from school_student_attendance table
+      var StuAttendance = `SELECT * FROM school_student_attendance WHERE school_id='${session.school_id}' AND class_sec = '${class_sec_id}'`;
+      dbcon.query(StuAttendance, (err, attendances) => {
+        if(err) throw err;
+        res.locals.attendances = attendances;
+        return res.render('staffLevel/teacher-add-attendance', {title: 'Student Attendance Records'});
+      })
+    } else {
+      req.flash('err_msg', 'You are not associated with this Period');
+      return res.redirect('/staff/dashboard');
+    }
+    
+  } catch (err){
+    console.log(err);
+  }
+}
+
+// post Class Attendance by Teaching staff
+exports.postStuAttendance = (req, res) => {
+  let session = req.session;
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let staff_role = session.roleId;
+  res.locals.staff_role = staff_role;
+  try {
+    // inserting attendance
+    var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, leave_intimated, absent, on_duty, entered_by) VALUES ('${req.body.attendance_date}', '${session.school_id}', '${req.body.class_sec_id}','${req.body.period_no}','${req.body.leave_informed_stu}','${req.body.absent_stu}', '${req.body.on_duty_stu}', '${session.staff_id}')`;
+    dbcon.query(attendanceData, (err, attendanceAdded) => {
+      if(err) throw err;
+      console.log(attendanceAdded);
+      req.flash('success', 'Attendance added successfully.');
+      return res.redirect('/staff/dashboard');
+    })
+  } catch(err){
+    console.log(err);
+  }
+}
+
 // ******** STAFF_ROLE = TEACHING STAFF ********
 
 // ******** STAFF_ROLE = ADMIN ********
@@ -1165,6 +1222,7 @@ exports.allDueCollection = (req, res) => {
   res.locals.err_msg = err_msg;
   let session = req.session;
   res.locals.staff_role = session.roleId;
+
   try {
     if (req.method == "GET") {
       // view fee collection records

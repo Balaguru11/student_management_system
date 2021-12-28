@@ -109,7 +109,6 @@ apiRouter.post("/get-one-student-profile", (req, res) => {
     if (err) {
       res.json({ msg: "error" });
     } else if (data.length == 1) {
-      console.log(data);
       res.json({
         msg: "success",
         student: data,
@@ -161,7 +160,6 @@ apiRouter.post("/delete-class-medium-fee", (req, res) => {
   dbcon.query(classMedium, (err, sections) => {
     if (err) res.json({ msg: "error", err });
     else if (sections[0].count != 0) {
-      console.log(sections);
       res.json({
         msg: "success",
         sections: sections,
@@ -185,15 +183,27 @@ apiRouter.post("/get-edit-user-account", (req, res) => {
 
 // get Schedule Periods from schedule_template 
 apiRouter.post('/get-periods-from-schedule-template', (req, res) => {
-  var periods = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'`;
+  var periods = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'`;
   dbcon.query(periods, (err, periodNos) => {
     if(err) res.json({msg: 'error', err});
     else {
-      console.log(periodNos);
       res.json({msg: 'success', periodNos: periodNos});
     }
   })
 });
+
+//get subjects associated with the class section to add schedule
+apiRouter.post('/get-subjects-from-class-section', (req, res) => {
+  var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'`;
+  dbcon.query(subjects, (err, subjects) => {
+    if(err) res.json({msg: "error", err})
+    else if(subjects.length > 0){
+      res.json({msg: "success", subjects: subjects});
+    }else {
+      res.json({msg: "No subjects found"})
+    }
+  })
+})
 
 // // student getting his admission details from admission & feedue tables
 // apiRouter.post("/get-stu-own-admission-records", (req, res) => {

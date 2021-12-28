@@ -9,6 +9,7 @@
   <div class="mb-3">
     <label for="class">Class & Medium:</label>
     <select id="class" class="form-control" name="class" required>
+      <option value="">Select Class & Section Here</option>
       <% if(locals.data[0]) { for (let i=0; i < locals.data[0].length;
       i++) { %>
       <option value="<%= locals.data[0][i].clr_id %>">

@@ -527,59 +527,62 @@ $(document).ready(function () {
   });
 });
 
-
 // get No of periods from schedule_template
 $(document).ready(function(){
-  $('#schedule_name, #class').on('change', function(){
+  $('#schedule_name').on('change', function(){
     var schedule_temp_id = $('#schedule_name').val();
-    var class_sec_id =  $('#class').val();
     $.ajax({
       url: '/api/get-periods-from-schedule-template',
       type: 'POST',
       data: {
         schedule_temp_id: schedule_temp_id,
-        class_sec_id: class_sec_id
       },
       dataType: "Json",
       success: function (data) {
           $("#schedule_name").after(function () {
-            var periods = data.periodNos[0][0].no_of_periods;
+            var periods = data.periodNos[0].no_of_periods;
             var foo = [];
             for (var i = 1; i <= periods; i++) {
               foo.push(i);
-            
-            $('#schedule_list').html(
-              '<p>Schedule Plan</p> <hr />'
-            );
+              $('#schedule_list').html(
+                '<p>Schedule Plan</p> <hr />'
+              );
               $.each(foo, (key, value) => {
                 $('#schedule_list').append(
-                  "<div class='mt-3 row g-3'><div class='col'><label for='period_" + value + "_sub'>Period " + value + "- Subject</label><select id='subject_option period_" + value + "_sub' class='period_" + value + "_sub form-control subject_option' name='period_" + value + "_sub'><option value=''>test</option></select></div><div class='col'><label for='period_" + value + "_staff'>Period " + value + " - Staff</label><input id='period_" + value + "_staff' type='text' class='period_" + value + "_staff form-control' placeholder='Choose Staff' aria-label='Last name' disabled></div></div>"
+                  "<div class='mt-3 row g-3'><div class='col'><label for='period_" + value + "_sub'>Period " + value + "- Subject</label><select id='subject_option period_" + value + "_sub' class='period_" + value + "_sub form-control subject_option' name='period_" + value + "_sub'></select></div><div class='col'><label for='period_" + value + "_staff'>Period " + value + " - Staff</label><input id='period_" + value + "_staff' type='text' class='period_" + value + "_staff form-control' placeholder='Choose Staff' aria-label='Last name' disabled></div></div>"
                 )
-                
               })
-            }
+            } // for loop closing
           })
-
-          // not working here - 24-12-2021
-          $("#subject_option").append(function () {
-            var subjects = data.periodNos[1];
-            var sub_id = data.periodNos[1].subject_id;
-            var subjects = data.periodNos[1].subject_name;
-            var staff_id = data.periodNos[1].staff_id_assigned;
-            var staffs = data.periodNos[1].name;
-
-            for (let x = 0; x < subjects.length; x++){
-              $.each(subjects.subject_id, (key, value) => {
-                $('#subject_option').append(
-                  "<option value='"+ subjects[x].subject_id +"'>"+ subjects[x].subject_name +"</option>"
-                )
-            })
-          }
-        })
       },
       error: function(err){
         console.log(err);
       }
+    })
+  })
+})
+
+
+// add ajax call here:
+$(document).ready(function(){
+$("#class").on('change', function(){
+  var class_sec_id =  $('#class').val();
+    $.ajax({
+      url: '/api/get-subjects-from-class-section',
+      type: 'POST',
+      data: {
+        class_sec_id: class_sec_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $("#schedule_name").after(function () {
+        //success call
+        $('#subject_option').html(
+          '<option>Select Class first </option>'
+        );
+        $.each()
+      })
+  }
     })
   })
 })

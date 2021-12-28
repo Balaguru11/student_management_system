@@ -48,10 +48,12 @@
           </form> -->
         </div>
       <% } else { %>
-        <p>Howdy,  <%= username %>, </p>
+
+        
         <%- include ('../partials/components/staff-sideMenu') %>
 
-        <div class="p-5">
+        <div class="mt-5 p-5">
+          <p>Howdy,  <%= username %>, </p><hr />
           <h3>STAFF DASHBOARD.. Your account is ACTIVE.</h3>
           <p>Being a Teaching Faculty you get access to the following:</p>
           <ul>
@@ -65,6 +67,8 @@
             <li>View Performance Records of each students assigned to the staff.</li>
           </ul>
         </div>
+        
+        <h2>Class Schedules for the Day</h2>
         
         <% } %>
     </div>

@@ -19,7 +19,7 @@ const {
   getStaffProfileEdit,
   postEditStaffProfile,
   getStudentsList,
-  getClassAssigned,
+  getClassAssigned, getStuAttendance, postStuAttendance, 
   allChangePwd,
   viweFeeStructure,
   viewUserAccounts,
@@ -63,9 +63,11 @@ staffRouter.get(
 staffRouter.get("/dashboard/class-assigned", isStaff, getClassAssigned); // Not working
 
 // Students Attendance by Teaching Staff
-// staffRouter.get('/dashboard/student-attendance', isStaff, getStuAttendance);
+staffRouter.get('/dashboard/student-attendance/:class_sec_id/:staff_id', isStaff, isTeacher, getStuAttendance);
 
-// exams conducted for Students by Teaching Staff
+staffRouter.post('/dashboard/student-attendance', isStaff, isTeacher, postStuAttendance);
+
+// exams conducted for Students by Teaching Staffs
 // staffRouter.get('/dashboard/exams', isStaff, getExams);
 // staffRouter.get('/dashboard/student-marks', isStaff, getStuExamMarks);
 // staffRouter.get('/dashboard/student-performance', isStaff, getStuPerformReport);
