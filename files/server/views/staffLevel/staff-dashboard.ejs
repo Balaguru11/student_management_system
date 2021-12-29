@@ -47,8 +47,9 @@
             </div>
           </form> -->
         </div>
-      <% } else { %>
+      <% } %>
 
+      <% if(locals.staff_status == "Active"){ %>
         
         <%- include ('../partials/components/staff-sideMenu') %>
 
@@ -68,7 +69,35 @@
           </ul>
         </div>
         
-        <h2>Class Schedules for the Day</h2>
+        <div class="row">
+          <h2>Class Schedules for the Day</h2>
+          <% if (locals.schedule) { %>
+            <p>Day: <%= locals.schedule[0].day %></p>
+
+            <table class="table text-center">
+              <thead class="table-dark">
+                <tr>
+                  <th width="200px">Period No</th>
+                  <th width="200px">Class - Medium - Sec</th>
+                  <th width="200px">Subject</th>
+                  <th width="200px">Staff Name</th>
+                  <th width="200px">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="table-light">
+                <% for (let i = 0; i < 10; i++) { %>
+                    <tr>
+                      <td><%= (i+1) %></td>
+                      <td><%= locals.schedule[i].class_sec_id %></td>
+                      <td><%= locals.schedule[i].p[i+1]_subject %></td>
+                      <td><%= locals.schedule[i].p[i+1]_staff %></td>
+                      <td>Action buttons</td>
+                    </tr>
+                <% } %>
+              </tbody>
+            </table>
+         <% } %>
+        </div>
         
         <% } %>
     </div>

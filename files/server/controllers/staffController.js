@@ -78,9 +78,17 @@ exports.getStaffDashboard = (req, res) => {
           });
           break;
         case 8:
-          res.render("staffLevel/staff-dashboard", {
-            title: "Staff Dashboard",
-          });
+          //run a query to fetch schedule data
+          var scheduleToday = `SELECT * FROM school_week_schedule WHERE p1_staff='${session.staff_id}' OR p1_staff='${session.staff_id}' OR p2_staff='${session.staff_id}' OR p3_staff='${session.staff_id}' OR p4_staff='${session.staff_id}' OR p5_staff='${session.staff_id}' OR p6_staff='${session.staff_id}' OR p7_staff='${session.staff_id}' OR p8_staff='${session.staff_id}' OR p9_staff='${session.staff_id}' OR p10_staff='${session.staff_id}' AND day = DAYOFWEEK(CURDATE())`;
+          dbcon.query(scheduleToday, (err, schedule) => {
+            if(err) throw err;
+            console.log(schedule);
+            res.locals.staff_id = session.staff_id;
+            res.locals.schedule = schedule;
+            return res.render("staffLevel/staff-dashboard", {
+              title: "Staff Dashboard",
+            });
+          })
           break;
         case 9:
           res.render("staffLevel/admin-dashboard", {
