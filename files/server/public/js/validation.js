@@ -531,28 +531,40 @@ $(document).ready(function () {
 $(document).ready(function(){
   $('#schedule_name').on('change', function(){
     var schedule_temp_id = $('#schedule_name').val();
+    var class_sec_id =  $('#class').val(); 
     $.ajax({
       url: '/api/get-periods-from-schedule-template',
       type: 'POST',
       data: {
         schedule_temp_id: schedule_temp_id,
+        class_sec_id: class_sec_id,
       },
       dataType: "Json",
       success: function (data) {
           $("#schedule_name").after(function () {
-            var periods = data.periodNos[0].no_of_periods;
+            // getting fields
+            var period = data.periods[0].no_of_periods;
             var foo = [];
-            for (var i = 1; i <= periods; i++) {
+            for (var i = 1; i <= period; i++) {
               foo.push(i);
               $('#schedule_list').html(
                 '<p>Schedule Plan</p> <hr />'
               );
               $.each(foo, (key, value) => {
                 $('#schedule_list').append(
-                  "<div class='mt-3 row g-3'><div class='col'><label for='period_" + value + "_sub'>Period " + value + "- Subject</label><select id='subject_option period_" + value + "_sub' class='period_" + value + "_sub form-control subject_option' name='period_" + value + "_sub'></select></div><div class='col'><label for='period_" + value + "_staff'>Period " + value + " - Staff</label><input id='period_" + value + "_staff' type='text' class='period_" + value + "_staff form-control' placeholder='Choose Staff' aria-label='Last name' disabled></div></div>"
+                  "<div id='schedule_main' class='mt-3 row g-3'><div class='col'><label for='period_" + value + "_sub'>Period " + value + "- Subject</label><select id='subject_option period_" + value + "_sub' class='period_" + value + "_sub form-control subject_option' name='period_" + value + "_sub'><option>Choose a Subject</option></select></div><div class='col'><label for='period_" + value + "_staff'>Period " + value + " - Staff</label><input id='period_" + value + "_staff subject_staff' type='text' class='subject_staff period_" + value + "_staff form-control' placeholder='Choose Staff' name='period_" + value + "_staff'></div></div>"
                 )
               })
-            } // for loop closing
+            } // for loop closing. getting subjects dropdown below
+            var subject_name = [];
+            for (var i = 0; i < data.subjects.length; i++) {
+              subject_name.push(data.subjects[i].subject_name);
+            }
+            $.each(subject_name, (key, value) => {
+              $('.subject_option').append(
+                "<option value='"+ data.subjects[key].subject_id +"'>"+ data.subjects[key].subject_name +"</option>"
+                );
+            })
           })
       },
       error: function(err){
@@ -562,27 +574,76 @@ $(document).ready(function(){
   })
 })
 
-
-// add ajax call here:
-$(document).ready(function(){
-$("#class").on('change', function(){
-  var class_sec_id =  $('#class').val();
+// fetching staff_id_assigned for schedule creation
+$(document).on("change", ".subject_option", function() {
+    var subject_id = $('.subject_option').val();
+    var class_sec_id = $('#class').val();
     $.ajax({
-      url: '/api/get-subjects-from-class-section',
+      url: '/api/get-staff-assigned-to-subject',
       type: 'POST',
       data: {
+        subject_id: subject_id,
         class_sec_id: class_sec_id,
       },
-      dataType: "Json",
+      dataType: "JSON", 
       success: function (data) {
-        $("#schedule_name").after(function () {
-        //success call
-        $('#subject_option').html(
-          '<option>Select Class first </option>'
-        );
-        $.each()
-      })
-  }
+        $('.subject_staff').val(data.staff[0].staff_id_assigned).text(data.staff[0].name);
+        data.staff[0]
+      },
+      error: function(err){
+        console.log(err);
+      }
     })
   })
-})
+
+// add ajax call for Subjects to week schedule
+// $(document).ready(function(){
+// $("#class").on('change', function(){
+//   var class_sec_id =  $('#class').val();
+//     $.ajax({
+//       url: '/api/get-subjects-from-class-section',
+//       type: 'POST',
+//       data: {
+//         class_sec_id: class_sec_id,
+//       },
+//       dataType: "Json",
+//       success: function (data) {
+//         var subject_name = [];
+//         var subject_id = [];
+//         var staff_id = [];
+//         var staff_name = [];
+//         // var class_sec = data.subjects[0].classroom_id;
+
+//         for (var i = 0; i <= data.subjects.length; i++) {
+//           subject_name.push(data.subjects[i].subject_name);
+//           subject_id.push(data.subjects[i].subject_id);
+//           staff_id.push(data.subjects[i].staff_id_assigned);
+//           staff_name.push(data.subjects[i].name);
+//         }
+//         console.log(subject_name);
+
+//         var select = $('#subject_option');
+//         $(subject_name).each(function(){
+//           select.append($('<option>').prop('value', this).text(this.charAt(0).toUpperCase() + this.slice(1)));
+//         })
+
+//         // var label = $('<label>').prop('for', 'subject').text('Choose Subject:');
+
+//         // var br = $('<br>');
+
+//         $('#schedule_name').append(select);
+
+//       //   $("#schedule_name").after(function () {
+//       //   //success call
+//       //   $('#subject_option').append(
+//       //     '<option>Select Class first </option>'
+//       //   );
+//       //   $.each()
+//       // })
+//   },
+//   error: function(err){
+//     console.log(err);
+//   }
+//     })
+//   })
+// })

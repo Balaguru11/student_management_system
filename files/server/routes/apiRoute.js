@@ -183,22 +183,23 @@ apiRouter.post("/get-edit-user-account", (req, res) => {
 
 // get Schedule Periods from schedule_template 
 apiRouter.post('/get-periods-from-schedule-template', (req, res) => {
-  var periods = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'`;
+  var periods = `SELECT * FROM schedule_temp_2 WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'`;
   dbcon.query(periods, (err, periodNos) => {
     if(err) res.json({msg: 'error', err});
     else {
-      res.json({msg: 'success', periodNos: periodNos});
+      res.json({msg: 'success', periods: periodNos[0], subjects: periodNos[1]});
     }
   })
 });
 
 //get subjects associated with the class section to add schedule
-apiRouter.post('/get-subjects-from-class-section', (req, res) => {
-  var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'`;
-  dbcon.query(subjects, (err, subjects) => {
+apiRouter.post('/get-staff-assigned-to-subject', (req, res) => {
+  var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.subject_id = '${req.body.subject_id}'`;
+  dbcon.query(subjects, (err, staffNames) => {
     if(err) res.json({msg: "error", err})
     else if(subjects.length > 0){
-      res.json({msg: "success", subjects: subjects});
+      console.log(staffNames);
+      res.json({msg: "success", staff: staffNames});
     }else {
       res.json({msg: "No subjects found"})
     }

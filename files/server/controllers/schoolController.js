@@ -926,8 +926,8 @@ exports.postSchedulePlanForm = async (req, res) => {
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
-    //
-    var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, school_timing_from, school_timing_to, period_time, lunch_time, no_of_intervals, interval_time, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.school_start}', '${req.body.school_end}', '${req.body.school_period_time}', '${req.body.school_lunch_time}', '${req.body.school_interval_count}', '${req.body.school_interval_time}', (('${req.body.school_end}' - '${req.body.school_start}') - ('${req.body.school_lunch_time}' / 60) - (('${req.body.school_interval_count}' * '${req.body.school_interval_time}') / 60))/ ('${req.body.school_period_time}' / 60))`;
+    var addScheduleTemps = `INSERT INTO schedule_temp_2(school_id, schedule_name, day_control, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.day_control}', '${req.body.school_period_count}')`;
+    // var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, school_timing_from, school_timing_to, period_time, lunch_time, no_of_intervals, interval_time, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.school_start}', '${req.body.school_end}', '${req.body.school_period_time}', '${req.body.school_lunch_time}', '${req.body.school_interval_count}', '${req.body.school_interval_time}', (('${req.body.school_end}' - '${req.body.school_start}') - ('${req.body.school_lunch_time}' / 60) - (('${req.body.school_interval_count}' * '${req.body.school_interval_time}') / 60))/ ('${req.body.school_period_time}' / 60))`;
     dbcon.query(addScheduleTemps, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
       return res.redirect("/school/dashboard/schedule-plan");
@@ -946,7 +946,7 @@ exports.viewWeekSchedule = (req, res) => {
   let session = req.session;
   try {
     // viewing schedule created
-    var schedules = `SELECT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'; SELECT * FROM school_week_schedule WHERE school_id='${session.schoolId}'`;
+    var schedules = `SELECT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM schedule_temp_2 WHERE school_id='${session.schoolId}'; SELECT * FROM school_week_schedule WHERE school_id='${session.schoolId}'`;
     dbcon.query(schedules, (err, data) => {
         if (err) throw err;
         console.log(data);
@@ -962,7 +962,24 @@ exports.viewWeekSchedule = (req, res) => {
 
 // POST Week Schedule form
 exports.addWeekScheduleForm = (req, res) => {
-  console.log("Something added to schedule week");
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  try {
+    let p9_sub = req.body.period_9_sub || 'NULL';
+    let p9_staff = req.body.period_9_staff || 'NULL';
+
+    var classScheduleAdd = `INSERT INTO school_week_schedule (day, school_id, class_sec_id, schedule_temp_id, p1_subject, p1_staff, p2_subject, p2_staff, p3_subject, p3_staff, p4_subject, p4_staff, p5_subject, p5_staff, p6_subject, p6_staff, p7_subject, p7_staff, p8_subject, p8_staff, p9_subject, p9_staff, p10_subject, p10_staff, created_by) VALUES ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${req.body.period_1_sub}', '${req.body.period_1_staff}', '${req.body.period_2_sub}', '${req.body.period_2_staff}', '${req.body.period_3_sub}', '${req.body.period_3_staff}', '${req.body.period_4_sub}', '${req.body.period_4_staff}', '${req.body.period_5_sub}', '${req.body.period_5_staff}', '${req.body.period_6_sub}', '${req.body.period_6_staff}', '${req.body.period_7_sub}', '${req.body.period_7_staff}', '${req.body.period_8_sub}', '${req.body.period_8_staff}', '${p9_sub}', '${p9_staff}', '${req.body.period_10_sub}', '${req.body.period_10_staff}', '${session.schoolId}')`;
+    dbcon.query(classScheduleAdd, (err, result) => {
+      if(err) throw err;
+      console.log(result);
+      req.flash('success', 'Day Schedule added successfully.')
+    })
+  } catch(err){
+    console.log(err);
+  }
 };
 // change password
 exports.allChangePwd = (req, res) => {
