@@ -57,7 +57,8 @@ exports.postCreateSchool = async (req, res) => {
                     html: `<p>School Username: ${req.body.schoolName}</p>`,
                   })
                     .then((result) => {
-                      console.log("Mail has been sent");
+                      req.flash("success", "Mail has been sent");
+                      return res.redirect("/");
                     })
                     .catch((err) => {
                       return res.render("server-error", {
@@ -419,14 +420,14 @@ exports.postAddFeeStructure = (req, res) => {
 
 // view Fee-structure data
 exports.viweFeeStructure = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
   try {
-    //flashing err_msg
-    let err_msg = req.flash("err_msg");
-    res.locals.err_msg = err_msg;
-    // flashing success_msg
-    let success_msg = req.flash("success");
-    res.locals.success_msg = success_msg;
-    let session = req.session;
     var feeStrucData = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' AND deleted_at IS NULL ORDER BY ABS(class_std)`;
 
     dbcon.query(feeStrucData, (err, data) => {
@@ -445,6 +446,28 @@ exports.viweFeeStructure = (req, res) => {
   }
 };
 
+// deleting fee structure
+exports.deleteFeeStructure = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let id = req.params.id;
+  try {
+    // deleting a fee structure
+    var deleteFee = `UPDATE school_feestructure SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+    dbcon.query(deleteFee, (err, deletedFee) => {
+      if (err) throw err;
+      req.flash("err_msg", "Class standard deleted successfully.");
+      return res.redirect("/school/dashboard/fee-structure");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
 // view User Accounts
 exports.viewUserAccounts = (req, res) => {
   //flashing err_msg
@@ -589,7 +612,7 @@ exports.putFeeStructure = (req, res, next) => {
   let session = req.session;
   try {
     const check = req.params.id;
-    console.log(check);
+    // console.log(check);
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
   }
@@ -617,7 +640,6 @@ exports.getMapSubStaff = (req, res) => {
       INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}'`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) return res.render("server-error", { title: "Server Error" });
-        console.log(result);
         res.locals.tableData = tableData;
         res.locals.result = result;
         return res.render("schoolLevel/school-map-subject-staff", {
@@ -646,7 +668,6 @@ exports.postMapSubStaff = async (req, res) => {
       if (err) {
         return res.render("server-error", { title: "Server Error" });
       } else if (isMapped[0].count == 0) {
-        console.log(isMapped);
         var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
 
         dbcon.query(MapSubStaffSec, (err, bridgeData) => {
@@ -778,7 +799,6 @@ exports.postFeeCollection = (req, res) => {
     var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'; SELECT * FROM school_student WHERE student_id='${req.body.stuId}'`;
     dbcon.query(selectStud, (err, student) => {
       if (err) return res.render("server-error", { title: "Server Error" });
-      console.log(student);
       // admission table is for new enrollment only. So, checking if the data is already available
       var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}') AS count`;
       dbcon.query(checkAdmission, (err, data) => {
@@ -948,13 +968,12 @@ exports.viewWeekSchedule = (req, res) => {
     // viewing schedule created
     var schedules = `SELECT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM schedule_temp_2 WHERE school_id='${session.schoolId}'; SELECT * FROM school_week_schedule WHERE school_id='${session.schoolId}'`;
     dbcon.query(schedules, (err, data) => {
-        if (err) throw err;
-        console.log(data);
-        res.locals.data = data;
-        return res.render("schoolLevel/school-week-schedule", {
-          title: "Week Schedules",
-        });
+      if (err) throw err;
+      res.locals.data = data;
+      return res.render("schoolLevel/school-week-schedule", {
+        title: "Week Schedules",
       });
+    });
   } catch (err) {
     console.log(err);
   }
@@ -968,16 +987,15 @@ exports.addWeekScheduleForm = (req, res) => {
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
-    let p9_sub = req.body.period_9_sub || 'NULL';
-    let p9_staff = req.body.period_9_staff || 'NULL';
+    let p9_sub = req.body.period_9_sub || "NULL";
+    let p9_staff = req.body.period_9_staff || "NULL";
 
     var classScheduleAdd = `INSERT INTO school_week_schedule (day, school_id, class_sec_id, schedule_temp_id, p1_subject, p1_staff, p2_subject, p2_staff, p3_subject, p3_staff, p4_subject, p4_staff, p5_subject, p5_staff, p6_subject, p6_staff, p7_subject, p7_staff, p8_subject, p8_staff, p9_subject, p9_staff, p10_subject, p10_staff, created_by) VALUES ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${req.body.period_1_sub}', '${req.body.period_1_staff}', '${req.body.period_2_sub}', '${req.body.period_2_staff}', '${req.body.period_3_sub}', '${req.body.period_3_staff}', '${req.body.period_4_sub}', '${req.body.period_4_staff}', '${req.body.period_5_sub}', '${req.body.period_5_staff}', '${req.body.period_6_sub}', '${req.body.period_6_staff}', '${req.body.period_7_sub}', '${req.body.period_7_staff}', '${req.body.period_8_sub}', '${req.body.period_8_staff}', '${p9_sub}', '${p9_staff}', '${req.body.period_10_sub}', '${req.body.period_10_staff}', '${session.schoolId}')`;
     dbcon.query(classScheduleAdd, (err, result) => {
-      if(err) throw err;
-      console.log(result);
-      req.flash('success', 'Day Schedule added successfully.')
-    })
-  } catch(err){
+      if (err) throw err;
+      req.flash("success", "Day Schedule added successfully.");
+    });
+  } catch (err) {
     console.log(err);
   }
 };
@@ -1068,7 +1086,7 @@ exports.allDueCollection = (req, res) => {
 };
 
 // editing USER acounts - Edit only role and status of the user
-exports.putUserAccount = async (req, res) => {
+exports.putUserAccount = (req, res) => {
   //flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
@@ -1080,9 +1098,64 @@ exports.putUserAccount = async (req, res) => {
     var userAccEdit = `UPDATE school_main_login SET role_id_fk='${req.body.role_update}', status='${req.body.status_edit}' WHERE id='${req.body.staff_edit_id}'`;
     dbcon.query(userAccEdit, (err, userEdited) => {
       if (err) throw err;
-      console.log(userEdited);
       req.flash("success", "User Account edited successfully.");
       return res.redirect("/school/dashboard/users");
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// // delete user accounts
+exports.deleteUserAccount = async (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let id = req.params.id;
+  try {
+    // get user role and do the prior check
+    var userRole = `SELECT role_id_fk FROM school_main_login WHERE id='${id}'`;
+    dbcon.query(userRole, (err, role) => {
+      if (err) throw err;
+      switch (role[0].role_id_fk) {
+        case 8:
+          // make sure the staff is not assigned to any subject
+          var checkAssign = `SELECT EXISTS(SELECT * FROM school_class_subjects WHERE staff_id_assigned = '${id}') AS count`;
+          dbcon.query(checkAssign, (err, mappedStaff) => {
+            if (err) throw err;
+            else if (mappedStaff[0].count == 0) {
+              var deleteUser = `UPDATE school_main_login SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+              dbcon.query(deleteUser, (err, deletedUser) => {
+                if (err) throw err;
+                req.flash(
+                  "success",
+                  "User Account has been deleted successfully."
+                );
+                return res.redirect("/school/dashboard/users");
+              });
+            } else {
+              req.flash(
+                "err_msg",
+                "The Teaching faculty is still assigned to handle some subjects. Make sure to update the subjects before deleting the Teacher."
+              );
+              return res.redirect("/school/dashboard/users");
+            }
+          });
+          break;
+        default:
+          var deleteUser = `UPDATE school_main_login SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+          dbcon.query(deleteUser, (err, deletedUser) => {
+            if (err) throw err;
+            req.flash("success", "User Account has been deleted successfully.");
+            return res.redirect("/school/dashboard/users");
+            // req.flash("err_msg", "Only Teaching Faculty can be deleted for now.");
+            // return res.redirect("/school/dashboard/users");
+          });
+      }
     });
   } catch (err) {
     console.log(err);

@@ -13,9 +13,11 @@ const {
   postAddClassroom,
   postAddUser,
   putUserAccount,
+  deleteUserAccount,
   postAddSubject,
   postAddFeeStructure,
   viweFeeStructure,
+  deleteFeeStructure,
   viewUserAccounts,
   viewSubjects,
   viewClassSections,
@@ -66,12 +68,17 @@ schoolRouter.put(
   isSchool,
   putFeeStructure
 );
+schoolRouter.get(
+  "/dashboard/fee-structure/delete/:id",
+  isSchool,
+  deleteFeeStructure
+);
 
 // USERS CRUD
 schoolRouter.get("/dashboard/users", isSchool, viewUserAccounts);
 schoolRouter.post("/dashboard/add-user", isSchool, postAddUser);
 schoolRouter.put("/dashboard/users/edit/:id", isSchool, putUserAccount);
-// schoolRouter.delete("/dashboard/user", isSchool, deleteUserAccount);
+schoolRouter.get("/dashboard/users/delete/:id", isSchool, deleteUserAccount);
 
 // Subjects CRUD
 schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);

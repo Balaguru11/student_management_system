@@ -25,9 +25,7 @@ apiRouter.post("/get-class-sections", (req, res) => {
 
 apiRouter.post("/get-class-fee", (req, res) => {
   var getclassfee =
-    'SELECT * FROM school_feestructure WHERE id= "' +
-    req.body.class_id +
-    '"';
+    'SELECT * FROM school_feestructure WHERE id= "' + req.body.class_id + '"';
   dbcon.query(getclassfee, (err, row) => {
     if (err) {
       res.json({ msg: "error", err });
@@ -172,39 +170,57 @@ apiRouter.post("/delete-class-medium-fee", (req, res) => {
 
 // get EDIT USER ACCOUNT Modal for Admin and School
 apiRouter.post("/get-edit-user-account", (req, res) => {
-  var UserAccData = `SELECT sml.username, sml.email, sml.status, srol.role_name, sml.role_id_fk FROM school_main_login AS sml INNER JOIN school_role AS srol ON sml.role_id_fk = srol.role_name WHERE sml.id='${req.body.staff_id}'`;
+  var UserAccData = `SELECT sml.username, sml.email, sml.status, srol.role_name, sml.role_id_fk FROM school_main_login AS sml INNER JOIN school_role AS srol ON sml.role_id_fk = srol.id WHERE sml.id='${req.body.staff_id}'`;
   dbcon.query(UserAccData, (err, userData) => {
     if (err) res.json({ msg: "error", err });
-    else {
+    else if (userData.length >= 0) {
       res.json({ msg: "success", userData: userData });
+    } else {
+      res.json({ msg: "Profile not created yet." });
     }
   });
 });
 
-// get Schedule Periods from schedule_template 
-apiRouter.post('/get-periods-from-schedule-template', (req, res) => {
+// GET Delete user account modal for school alone
+apiRouter.post("/delete-user-account", (req, res) => {
+  var userLoginData = `SELECT * FROM school_main_login WHERE id='${req.body.user_id}'`;
+  dbcon.query(userLoginData, (err, userLogin) => {
+    if (err) res.json({ msg: "error", err });
+    else {
+      res.json({ msg: "success", userLogin: userLogin });
+    }
+  });
+});
+
+// get Schedule Periods from schedule_template
+apiRouter.post("/get-periods-from-schedule-template", (req, res) => {
   var periods = `SELECT * FROM schedule_temp_2 WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'`;
   dbcon.query(periods, (err, periodNos) => {
-    if(err) res.json({msg: 'error', err});
+    if (err) res.json({ msg: "error", err });
     else {
-      res.json({msg: 'success', periods: periodNos[0], subjects: periodNos[1]});
+      res.json({
+        msg: "success",
+        periods: periodNos[0],
+        subjects: periodNos[1],
+      });
     }
-  })
+  });
 });
 
 //get subjects associated with the class section to add schedule
-apiRouter.post('/get-staff-assigned-to-subject', (req, res) => {
-  var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.subject_id = '${req.body.subject_id}'`;
+apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
+  var subjects = `SELECT scs.subject_id, subj.subject_name, scs.staff_id_assigned, scs.classroom_id, sst.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id=scs.subject_id INNER JOIN school_staff AS sst ON sst.staff_id = scs.staff_id_assigned WHERE scs.classroom_id='${req.body.class_sec_id}' AND subj.id='${req.body.subject_id}'`;
+  // var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.subject_id = '${req.body.subject_id}'`;
   dbcon.query(subjects, (err, staffNames) => {
-    if(err) res.json({msg: "error", err})
-    else if(subjects.length > 0){
+    if (err) res.json({ msg: "error", err });
+    else if (subjects.length > 0) {
       console.log(staffNames);
-      res.json({msg: "success", staff: staffNames});
-    }else {
-      res.json({msg: "No subjects found"})
+      res.json({ msg: "success", staff: staffNames });
+    } else {
+      res.json({ msg: "No subjects found" });
     }
-  })
-})
+  });
+});
 
 // // student getting his admission details from admission & feedue tables
 // apiRouter.post("/get-stu-own-admission-records", (req, res) => {
