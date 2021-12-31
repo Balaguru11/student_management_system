@@ -5,37 +5,29 @@
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th width="200px">Plan Name</th>
-        <th width="200px">School Timing</th>
-        <th width="150px">Period Mins</th>
-        <th width="150px">Lunch Time</th>
-        <th width="200px">Intervals & Time</th>
-        <th width="100px">Periods</th>
+        <th width="200px">Template Name</th>
+        <th width="200px">Periods</th>
         <th width="200px">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <% if(locals.templates.length > 0) { for(var i = 0; i < locals.templates.length;
-      i++) {%>
+      <% if(locals.templates.length > 0) { for(var i = 0; i <
+      locals.templates.length; i++) {%>
       <tr>
         <th scope="row"><%= (i+1) %></th>
         <td><%= locals.templates[i].schedule_name %></td>
-        <td><%= locals.templates[i].school_timing_from %> - <%= locals.templates[i].school_timing_to %></td>
-        <td><%= locals.templates[i].period_time %> Mins</td>
-        <td><%= locals.templates[i].lunch_time %> Mins</td>
-        <td><%= locals.templates[i].no_of_intervals %> / <%= locals.templates[i].interval_time %> Mins</td>
         <td><%= locals.templates[i].no_of_periods %></td>
         <td>
           <a
             class="btn btn-warning edit"
             href="../dashboard/schedule-plan/edit/<%= locals.templates[i].id %>"
-            ><i class="far fa-edit" aria-hidden="true"></i></a
-          >
+            ><i class="far fa-edit" aria-hidden="true"></i
+          ></a>
           <a
             class="btn btn-danger delete"
             href="../dashboard/schedule-plan/delete/<%= locals.templates[i].id %>"
-            ><i class="far fa-trash-alt" aria-hidden="true"></i></a
-          >
+            ><i class="far fa-trash-alt" aria-hidden="true"></i
+          ></a>
         </td>
       </tr>
       <% } } else { %>

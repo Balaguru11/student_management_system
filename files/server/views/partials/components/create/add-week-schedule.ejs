@@ -10,12 +10,10 @@
     <label for="class">Class & Medium:</label>
     <select id="class" class="form-control" name="class" required>
       <option value="">Select Class & Section Here</option>
-      <% if(locals.data[0]) { for (let i=0; i < locals.data[0].length;
-      i++) { %>
+      <% if(locals.data[0]) { for (let i=0; i < locals.data[0].length; i++) { %>
       <option value="<%= locals.data[0][i].clr_id %>">
-        <%= locals.data[0][i].class_std %> std - <%=
-        locals.data[0][i].medium %> Medium - <%=
-        locals.data[0][i].class_section %> Section
+        <%= locals.data[0][i].class_std %> std - <%= locals.data[0][i].medium %>
+        Medium - <%= locals.data[0][i].class_section %> Section
       </option>
       <% } } %>
     </select>
@@ -24,24 +22,32 @@
   <div class="mb-3">
     <label for="day">Choose a Day </label>
     <select id="day" class="form-control" name="day" required>
-      <option value="1">Monday</option>
-      <option value="2">Tuesday</option>
-      <option value="3">Wednesday</option>
-      <option value="4">Thursday</option>
-      <option value="5">Friday</option>
-      <option value="6" class="text-danger">Saturday</option>
-      <option value="7" class="text-danger">Sunday</option>
+      <option value="Mondays">All Mondays</option>
+      <option value="Tuesdays">All Tuesdays</option>
+      <option value="Wednesdays">All Wednesdays</option>
+      <option value="Thursdays">All Thursdays</option>
+      <option value="Fridays">All Fridays</option>
+      <option value="Odd_Saturdays" class="text-danger">
+        on Odd Saturdays
+      </option>
+      <option value="Odd_Sundays" class="text-danger">on Odd Sundays</option>
+      <option value="Even_Saturdays" class="text-danger">
+        on Even Saturdays
+      </option>
+      <option value="Even_Sundays" class="text-danger">on Even Sundays</option>
     </select>
-    <span class="error" id="day_error"
-      >Please Select a Day.</span
-    >
+    <span class="error" id="day_error">Please Select a Day.</span>
   </div>
   <div class="mb-3">
     <label for="schedule_name">Choose Schedule Template: </label>
-    <select id="schedule_name" class="form-control" name="schedule_name" required>
+    <select
+      id="schedule_name"
+      class="form-control"
+      name="schedule_name"
+      required
+    >
       <option value="">Select One</option>
-      <% if(locals.data[1]) { for (let i=0; i < locals.data[1].length;
-      i++) { %>
+      <% if(locals.data[1]) { for (let i=0; i < locals.data[1].length; i++) { %>
       <option value="<%= locals.data[1][i].id %>">
         <%= locals.data[1][i].schedule_name %>
       </option>
@@ -51,11 +57,9 @@
       >Please Select a Schedule Template.</span
     >
   </div>
-  <div class="mb-3" id='schedule_list'>
-   
-  </div>
-    <input id='period_nos' type="hidden">
-    <%= locals.periods %>
+  <div class="mb-3" id="schedule_list"></div>
+  <input id="period_nos" type="hidden" />
+  <%= locals.periods %>
   <div class="mb-3">
     <button class="btn btn-secondary" type="submit" value="submit">
       Add Day Schedule

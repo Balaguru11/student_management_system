@@ -1049,7 +1049,7 @@ exports.postSchedulePlanForm = async (req, res) => {
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
-    var addScheduleTemps = `INSERT INTO schedule_temp_2(school_id, schedule_name, day_control, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.day_control}', '${req.body.school_period_count}')`;
+    var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, day_control, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.day_control}', '${req.body.school_period_count}')`;
     // var addScheduleTemps = `INSERT INTO school_schedule_template(school_id, schedule_name, school_timing_from, school_timing_to, period_time, lunch_time, no_of_intervals, interval_time, no_of_periods) VALUES ('${session.schoolId}', '${req.body.school_schedule_name}', '${req.body.school_start}', '${req.body.school_end}', '${req.body.school_period_time}', '${req.body.school_lunch_time}', '${req.body.school_interval_count}', '${req.body.school_interval_time}', (('${req.body.school_end}' - '${req.body.school_start}') - ('${req.body.school_lunch_time}' / 60) - (('${req.body.school_interval_count}' * '${req.body.school_interval_time}') / 60))/ ('${req.body.school_period_time}' / 60))`;
     dbcon.query(addScheduleTemps, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
@@ -1069,7 +1069,7 @@ exports.viewWeekSchedule = (req, res) => {
   let session = req.session;
   try {
     // viewing schedule created
-    var schedules = `SELECT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM schedule_temp_2 WHERE school_id='${session.schoolId}'; SELECT * FROM school_week_schedule WHERE school_id='${session.schoolId}'`;
+    var schedules = `SELECT DISTINCT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_class_subjects AS scs ON scs.classroom_id=clr.id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'; SELECT week.id, sfs.class_std, sfs.medium, clr.class_section, week.day, temp.schedule_name FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_schedule_template AS temp ON temp.id = week.schedule_tempid WHERE week.school_id='${session.schoolId}'`;
     dbcon.query(schedules, (err, data) => {
       if (err) throw err;
       res.locals.data = data;
@@ -1090,13 +1090,66 @@ exports.addWeekScheduleForm = (req, res) => {
   res.locals.err_msg = err_msg;
   let session = req.session;
   try {
-    let p9_sub = req.body.period_9_sub || "NULL";
-    let p9_staff = req.body.period_9_staff || "NULL";
-
-    var classScheduleAdd = `INSERT INTO school_week_schedule (day, school_id, class_sec_id, schedule_temp_id, p1_subject, p1_staff, p2_subject, p2_staff, p3_subject, p3_staff, p4_subject, p4_staff, p5_subject, p5_staff, p6_subject, p6_staff, p7_subject, p7_staff, p8_subject, p8_staff, p9_subject, p9_staff, p10_subject, p10_staff, created_by) VALUES ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${req.body.period_1_sub}', '${req.body.period_1_staff}', '${req.body.period_2_sub}', '${req.body.period_2_staff}', '${req.body.period_3_sub}', '${req.body.period_3_staff}', '${req.body.period_4_sub}', '${req.body.period_4_staff}', '${req.body.period_5_sub}', '${req.body.period_5_staff}', '${req.body.period_6_sub}', '${req.body.period_6_staff}', '${req.body.period_7_sub}', '${req.body.period_7_staff}', '${req.body.period_8_sub}', '${req.body.period_8_staff}', '${p9_sub}', '${p9_staff}', '${req.body.period_10_sub}', '${req.body.period_10_staff}', '${session.schoolId}')`;
-    dbcon.query(classScheduleAdd, (err, result) => {
+    // check if the schedule is already available or not
+    var dupeWeekSched = `SELECT EXISTS (SELECT * FROM school_week_schedule WHERE day='${req.body.day}' AND class_sec_id = '${req.body.class}') AS count`;
+    dbcon.query(dupeWeekSched, (err, dupeSchedule) => {
       if (err) throw err;
-      req.flash("success", "Day Schedule added successfully.");
+      else if (dupeSchedule[0].count == 1) {
+        req.flash(
+          "err_msg",
+          "Schedule of this Class Section for the day is exist."
+        );
+        return res.redirect("/school/dashboard/week-schedule");
+      } else {
+        // working here. need to add null to period_nos
+        let p1_no = req.body.period_no_1 || "NULL";
+        let p2_no = req.body.period_no_2 || "NULL";
+        let p3_no = req.body.period_no_3 || "NULL";
+        let p4_no = req.body.period_no_4 || "NULL";
+        let p5_no = req.body.period_no_5 || "NULL";
+        let p6_no = req.body.period_no_6 || "NULL";
+        let p7_no = req.body.period_no_7 || "NULL";
+        let p8_no = req.body.period_no_8 || "NULL";
+        let p9_no = req.body.period_no_9 || "NULL";
+        let p10_no = req.body.period_no_10 || "NULL";
+        let p1_sub = req.body.period_1_sub || "NULL";
+        let p1_staff = req.body.period_1_staff_hidden || "NULL";
+        let p2_sub = req.body.period_2_sub || "NULL";
+        let p2_staff = req.body.period_2_staff_hidden || "NULL";
+        let p3_sub = req.body.period_3_sub || "NULL";
+        let p3_staff = req.body.period_3_staff_hidden || "NULL";
+        let p4_sub = req.body.period_4_sub || "NULL";
+        let p4_staff = req.body.period_4_staff_hidden || "NULL";
+        let p5_sub = req.body.period_5_sub || "NULL";
+        let p5_staff = req.body.period_5_staff_hidden || "NULL";
+        let p6_sub = req.body.period_6_sub || "NULL";
+        let p6_staff = req.body.period_6_staff_hidden || "NULL";
+        let p7_sub = req.body.period_7_sub || "NULL";
+        let p7_staff = req.body.period_7_staff_hidden || "NULL";
+        let p8_sub = req.body.period_8_sub || "NULL";
+        let p8_staff = req.body.period_8_staff_hidden || "NULL";
+        let p9_sub = req.body.period_9_sub || "NULL";
+        let p9_staff = req.body.period_9_staff_hidden || "NULL";
+        let p10_sub = req.body.period_10_sub || "NULL";
+        let p10_staff = req.body.period_10_staff_hidden || "NULL";
+
+        var classScheduleAdd = `INSERT INTO school_week_schedule (day, school_id, class_sec_id, schedule_tempid, period_no, period_subject_id, period_staff_id, created_by) VALUES 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p1_no}', '${p1_sub}', '${p1_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p2_no}', '${p2_sub}', '${p2_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p3_no}', '${p3_sub}', '${p3_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p4_no}', '${p4_sub}', '${p4_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p5_no}', '${p5_sub}', '${p5_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p6_no}', '${p6_sub}', '${p6_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p7_no}', '${p7_sub}', '${p7_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p8_no}', '${p8_sub}', '${p8_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p9_no}', '${p9_sub}', '${p9_staff}'), 
+        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p10_no}', '${p10_sub}', '${p10_staff}')`;
+        dbcon.query(classScheduleAdd, (err, result) => {
+          if (err) throw err;
+          req.flash("success", "Day Schedule added successfully.");
+          return res.redirect("/school/dashboard/week-schedule");
+        });
+      }
     });
   } catch (err) {
     console.log(err);

@@ -587,7 +587,7 @@ $(document).ready(function () {
             $("#schedule_list").html("<p>Schedule Plan</p> <hr />");
             $.each(foo, (key, value) => {
               $("#schedule_list").append(
-                "<div id='schedule_main' class='mt-3 row g-3'><div class='col'><label for='period_" +
+                "<input type='hidden' name='period_no_"+ value +"' value='"+ value +"'></input><div id='schedule_main' class='mt-3 row g-3'><div class='col'><label for='period_" +
                   value +
                   "_sub'>Period " +
                   value +
@@ -611,7 +611,15 @@ $(document).ready(function () {
                   value +
                   "_staff form-control' placeholder='Choose Staff' name='period_" +
                   value +
-                  "_staff'></div></div>"
+                  "_staff'><input id='period_" +
+                  value +
+                  "_staff_hidden subject_staff_hidden' type='hidden' class='" +
+                  counter +
+                  "_hidden subject_staff_hidden period_" +
+                  value +
+                  "_staff form-control' name='period_" +
+                  value +
+                  "_staff_hidden'></div></div>"
               );
               counter++;
             });
@@ -639,30 +647,32 @@ $(document).ready(function () {
 });
 
 // fetching staff_id_assigned for schedule creation
-$(document).on("change", ".subject_option", function () {
-  var counter_id = $(this).attr("data-id");
-  var subject_id = $(".subject_option").val();
-  var class_sec_id = $("#class").val();
+$(document).on(
+  "change",
+  ".period_1_sub, .period_2_sub, .period_3_sub, .period_4_sub,.period_5_sub, .period_6_sub, .period_7_sub, .period_8_sub, .period_9_sub, .period_10_sub",
+  function () {
+    var counter_id = $(this).attr("data-id");
+    var subject_id = $(this).val();
+    var class_sec_id = $("#class").val();
 
-  $.ajax({
-    url: "/api/get-staff-assigned-to-subject",
-    type: "POST",
-    data: {
-      subject_id: subject_id,
-      class_sec_id: class_sec_id,
-    },
-    dataType: "JSON",
-    success: function (data) {
-      $("." + counter_id)
-        .val(data.staff[0].name)
-        .text(data.staff[0].name);
-      data.staff[0];
-    },
-    error: function (err) {
-      console.log(err);
-    },
-  });
-});
+    $.ajax({
+      url: "/api/get-staff-assigned-to-subject",
+      type: "POST",
+      data: {
+        subject_id: subject_id,
+        class_sec_id: class_sec_id,
+      },
+      dataType: "JSON",
+      success: function (data) {
+        $("." + counter_id).val(data.staff[0].name);
+        $("." + counter_id + "_hidden").val(data.staff[0].staff_id_assigned);
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  }
+);
 
 // OPEN edit Class section Modal
 $(document).ready(function () {

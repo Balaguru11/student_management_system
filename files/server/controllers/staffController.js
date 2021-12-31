@@ -440,6 +440,30 @@ exports.getClassAssigned = (req, res) => {
   }
 };
 
+// get my schedule for teaching staff
+exports.getMyScheduleStaff = (req, res) => {
+  let session = req.session;
+  // flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing sucecss_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let staff_role = session.roleId;
+  res.locals.staff_role = staff_role;
+  try {
+    // do something
+    var getStaffSchedule = `SELECT * FROM school_week_schedule WHERE school_id='${session.school_id}'`
+    dbcon.query(getStaffSchedule, (err, staffSchedule) => {
+      if(err) throw err;
+      res.locals.staffSchedule = staffSchedule;
+      return res.render('staffLevel/teacher-view-class-schedule', {title: 'Teacher View Class Schedule'});
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // get attendance page
 exports.getStuAttendance = (req, res) => {
   let session = req.session;
