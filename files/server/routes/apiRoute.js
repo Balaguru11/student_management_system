@@ -222,6 +222,33 @@ apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
   });
 });
 
+// OPEN EDIT MODAL for class section
+apiRouter.post("/edit-class-section", (req, res) => {
+  var classSec = `SELECT clr.id AS classsec_id, clr.class_id AS std_id, sfs.class_std, sfs.medium, clr.class_section, clr.students_strength FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE clr.id='${req.body.section_id}'`;
+  dbcon.query(classSec, (err, sectionData) => {
+    if (err) res.json({ msg: "error", err });
+    else if (sectionData.length > 0) {
+      res.json({ msg: "success", sectionData: sectionData });
+    } else {
+      console.log(sectionData);
+      res.json({ msg: "error", err });
+    }
+  });
+});
+
+// open Delete modal for class section
+apiRouter.post("/delete-class-section", (req, res) => {
+  var deleteModalData = `SELECT clr.id, sfs.class_std, sfs.medium, clr.class_section FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE clr.id='${req.body.section_id}'`;
+  dbcon.query(deleteModalData, (err, secData) => {
+    if (err) res.json({ msg: "error", err });
+    else if (secData.length > 0) {
+      console.log(secData);
+      res.json({ msg: "success", secData: secData });
+    } else {
+      res.json({ msg: "error", err });
+    }
+  });
+});
 // // student getting his admission details from admission & feedue tables
 // apiRouter.post("/get-stu-own-admission-records", (req, res) => {
 //   // checking student_admission table

@@ -664,6 +664,68 @@ $(document).on("change", ".subject_option", function () {
   });
 });
 
+// OPEN edit Class section Modal
+$(document).ready(function () {
+  $(".editClassSec").on("click", function () {
+    var section_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/edit-class-section",
+      type: "POST",
+      data: {
+        section_id: section_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          return `<form id='editclass-form' action='../dashboard/sections/edit/${data.sectionData[0].classsec_id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='std_id' id='std_id' value='${data.sectionData[0].std_id}' /><input type='hidden' class='form-control' name='classsec_id' id='classsec_id' value='${data.sectionData[0].classsec_id}' /><div class='mb-3'><label for='class_std'>Class Std & Medium :</label><input type='text' class='form-control' name='class_std_edit' id='class_std_edit' placeholder='6 / LKG / UKG etc' value='${data.sectionData[0].class_std} std - ${data.sectionData[0].medium} medium' disabled /></div><div class='mb-3'><label for='section'>Class Section:</label><input id='section_edit' class='form-control' name='section_edit' value='${data.sectionData[0].class_section}'/><span class='error' id='section_edit_error' >Please Enter a section name.</span ></div><div class='mb-3'><label for='class_strength'>Class Strength: </label><input type='number' class='form-control' name='strength_edit' id='strength_edit' placeholder='Class strength in Nos.' value='${data.sectionData[0].students_strength}' /><span class='error' id='strength_edit_error' >Please enter the Class Strength.</span ></div><div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>`;
+        });
+        // show data in the element.
+        $("#editClassSecModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
+
+// fee structure GET DELETE Modal
+$(document).ready(function () {
+  $(".deleteClassSec").on("click", function () {
+    var section_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/delete-class-section",
+      type: "POST",
+      data: {
+        section_id: section_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          return (
+            "<div class='container'><div class='row'><input type='hidden' class='form-control' name='sec_id_hidden' id='sec_id_hidden' value='" +
+            data.secData[0].id +
+            "' /><p><b>Do you want to delete '" +
+            data.secData[0].class_std +
+            " Std - " +
+            data.secData[0].medium +
+            " Medium " +
+            data.secData[0].class_section +
+            " section'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/sections/delete/" +
+            data.secData[0].id +
+            "?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>"
+          );
+        });
+        // show data in the element.
+        $("#deleteClassSecModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
+
 // add ajax call for Subjects to week schedule
 // $(document).ready(function(){
 // $("#class").on('change', function(){

@@ -15,12 +15,15 @@ const {
   putUserAccount,
   deleteUserAccount,
   postAddSubject,
+  deleteSubject,
   postAddFeeStructure,
   viweFeeStructure,
   deleteFeeStructure,
   viewUserAccounts,
   viewSubjects,
   viewClassSections,
+  editClassSection,
+  deleteClassSection,
   getEditFeeStructure,
   putFeeStructure,
   getMapSubStaff,
@@ -83,10 +86,21 @@ schoolRouter.get("/dashboard/users/delete/:id", isSchool, deleteUserAccount);
 // Subjects CRUD
 schoolRouter.get("/dashboard/subjects", isSchool, viewSubjects);
 schoolRouter.post("/dashboard/add-subject", isSchool, postAddSubject);
+schoolRouter.get(
+  "/dashboard/subjects/delete/:subject_id",
+  isSchool,
+  deleteSubject
+);
 
 // Class Section CRUD
 schoolRouter.get("/dashboard/sections", isSchool, viewClassSections);
 schoolRouter.post("/dashboard/sections", isSchool, postAddClassroom);
+schoolRouter.put("/dashboard/sections/edit/:id", isSchool, editClassSection);
+schoolRouter.get(
+  "/dashboard/sections/delete/:id",
+  isSchool,
+  deleteClassSection
+);
 
 // section-subject-staff mapping
 schoolRouter.get("/dashboard/section-subject-staff", isSchool, getMapSubStaff);

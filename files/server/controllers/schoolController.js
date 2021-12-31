@@ -210,7 +210,7 @@ exports.postAddClassroom = async (req, res) => {
     if (session.logged_in && session.schoolStatus == "Active") {
       const schoolId = session.schoolId;
 
-      var classCheck = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${req.body.class}' AND class_section='${req.body.section}' AND school_id='${schoolId}' ) AS count`;
+      var classCheck = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${req.body.class}' AND class_section='${req.body.section}' AND deleted_at IS NULL AND school_id='${schoolId}' ) AS count`;
 
       dbcon.query(classCheck, (err, data) => {
         if (err) {
@@ -260,6 +260,77 @@ exports.postAddClassroom = async (req, res) => {
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
     return res.status(500).send(err);
+  }
+};
+
+// school edits class sections
+exports.editClassSection = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    //cehck for duplicate section in class section
+    var checkSection = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${req.body.std_id}' AND class_section = '${req.body.section_edit}' AND students_strength = '${req.body.strength_edit}' AND deleted_at iS NULL AND school_id='${session.schoolId}') AS count`;
+    console.log(checkSection);
+    dbcon.query(checkSection, (err, noDuplicate) => {
+      if (err) throw err;
+      else if (noDuplicate[0].count != 0) {
+        req.flash(
+          "err_msg",
+          "The Std and class section combination already exist."
+        );
+        return res.redirect("/school/dashboard/sections");
+      } else {
+        var updateSec = `UPDATE school_classroom SET class_section = '${req.body.section_edit}', students_strength = '${req.body.strength_edit}' WHERE id='${req.body.classsec_id}'`;
+        dbcon.query(updateSec, (err, updatedSec) => {
+          if (err) throw err;
+          req.flash("success", "Class Section edited successfully.");
+          return res.redirect("/school/dashboard/sections");
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// school deletes class section
+exports.deleteClassSection = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let section_id = req.params.id;
+  try {
+    // conditions to be met - check admission table, students should be in that section
+    var isNoStudent = `SELECT EXISTS (SELECT * FROM school_student_admission WHERE class_section = '${req.body.sec_id_hidden}' AND academic_year = YEAR(CURDATE())) AS count`;
+    console.log(isNoStudent);
+    dbcon.query(isNoStudent, (err, sectionEmpty) => {
+      if (err) throw err;
+      else if (sectionEmpty[0].count == 0) {
+        var deleteSec = `UPDATE school_classroom SET deleted_at = CURRENT_TIMESTAMP WHERE id='${section_id}'`;
+        dbcon.query(deleteSec, (err, result) => {
+          if (err) throw err;
+          req.flash("success", "Class Section deleted successfully.");
+          return res.redirect("/school/dashboard/sections");
+        });
+      } else {
+        req.flash(
+          "err_msg",
+          "There are student admitted to this section already. Make sure there is no students enrolled to this section."
+        );
+        return res.redirect("/school/dashboard/sections");
+      }
+    });
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -364,6 +435,40 @@ exports.postAddSubject = (req, res) => {
     });
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// Delete Subject
+exports.deleteSubject = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let subject_id = req.params.subject_id;
+  try {
+    var mappedSubject = `SELECT * FROM school_class_subjects WHERE subject_id='${subject_id}' AND school_id='${session.schoolId}'`;
+    dbcon.query(mappedSubject, (err, mapped) => {
+      if (err) throw err;
+      else if (mapped.length == 0) {
+        var deleteSubject = `UPDATE school_subjects SET deleted_at = CURRENT_TIMESTAMP WHERE id='${subject_id}'`;
+        dbcon.query(deleteSubject, (err) => {
+          if (err) throw err;
+          req.flash("success", "Subject deleted successfully.");
+          return res.redirect("/school/dashboard/subjects");
+        });
+      } else {
+        req.flash(
+          "err_msg",
+          `Subject is already mapped with ${mapped.length} Class Section(s).`
+        );
+        return res.redirect("/school/dashboard/subjects");
+      }
+    });
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -525,7 +630,7 @@ exports.viewSubjects = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var subjectsData = `SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'`;
+    var subjectsData = `SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL`;
 
     dbcon.query(subjectsData, (err, data) => {
       if (err) {
@@ -553,7 +658,7 @@ exports.viewClassSections = (req, res) => {
   let session = req.session;
   try {
     // var classSecData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'`;
-    var classSecData = `SELECT clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}'`;
+    var classSecData = `SELECT clr.id AS sec_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' AND clr.deleted_at IS NULL`;
 
     dbcon.query(classSecData, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
@@ -572,8 +677,6 @@ exports.viewClassSections = (req, res) => {
     return res.render("server-error", { title: "Server Error" });
   }
 };
-
-// editing fee structure in school dashboard
 
 // get edit fee structure
 exports.getEditFeeStructure = (req, res, next) => {
