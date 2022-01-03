@@ -1,49 +1,45 @@
 <div class="pt-5">
   <h4 class="text-center">View Daily Schedules</h4>
   <br />
+
   <table class="table table-light text-center">
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th scope="col">Class Medium & Section</th>
         <th scope="col">Day</th>
-        <th scope="col">Template Name</th>
-        <th width="200px">Actions</th>
+        <th scope="col">Period No</th>
+        <th scope="col">Class Medium & Section</th>
+        <th scope="col">Subject Name</th>
+        <th width="200px">Attendance</th>
       </tr>
     </thead>
     <tbody>
-      <% if(locals.data[2].length > 0) { for(var i = 0; i <
-      locals.data[2].length; i++) {%>
+      <% if(locals.schedule) { for(var i = 0; i <
+      locals.schedule.length; i++) {%>
       <tr>
         <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.schedule[i].day %></td>
+        <td><%= locals.schedule[i].period_no %></td>
         <td>
-          <%= locals.data[2][i].class_std %> std - <%= locals.data[2][i].medium
-          %> Medium - <%= locals.data[2][i].class_section %> Section
+          <%= locals.schedule[i].class_std %> Std - <%= locals.schedule[i].medium
+          %> Medium - <%= locals.schedule[i].class_section %> Section
         </td>
-        <td><%= locals.data[2][i].day %></td>
-        <td><%= locals.data[2][i].schedule_name %></td>
+        <td><%= locals.schedule[i].subject_name %></td>
 
         <td>
           <a
             class="btn btn-info View"
-            href="../dashboard/week-schedule/view/<%= locals.data[2][i].id %>"
-            ><i class="far fa-eye"></i
-          ></a>
+            href="../dashboard/student-attendance/add/<%= locals.schedule[i].class_sec_id %>/<%= staff_id %>"
+            ><i class="fa fa-plus" aria-hidden="true"></i></a>
           <a
             class="btn btn-warning edit"
-            href="../dashboard/students/edit/<%= locals.data[i].id %>"
-            ><i class="fas fa-user-edit"></i
-          ></a>
-          <a
-            class="btn btn-danger delete"
-            href="../dashboard/students/delete/<%= locals.data[i].id %>"
-            ><i class="far fa-trash-alt"></i
-          ></a>
+            href="../dashboard/student-attendance/edit/<%= locals.schedule[i].class_sec_id %>/<%= staff_id %>"
+            ><i class="fas fa-edit"></i></a>
         </td>
       </tr>
       <% } } else { %>
       <tr>
-        <td colspan="5" class="text-center">No Student accounts added.</td>
+        <td colspan="6" class="text-center">No classes Scheduled for you today.</td>
       </tr>
       <% } %>
     </tbody>

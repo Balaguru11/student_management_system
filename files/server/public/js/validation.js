@@ -603,7 +603,7 @@ $(document).ready(function () {
                   value +
                   "_staff'>Period " +
                   value +
-                  " - Staff</label><input id='period_" +
+                  " - Staff</label><input disabled id='period_" +
                   value +
                   "_staff subject_staff' type='text' class='" +
                   counter +
@@ -673,6 +673,8 @@ $(document).on(
     });
   }
 );
+
+
 
 // OPEN edit Class section Modal
 $(document).ready(function () {

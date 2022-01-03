@@ -210,7 +210,7 @@ apiRouter.post("/get-periods-from-schedule-template", (req, res) => {
 //get subjects associated with the class section to add schedule
 apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
   var subjects = `SELECT scs.subject_id, subj.subject_name, scs.staff_id_assigned, scs.classroom_id, sst.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id=scs.subject_id INNER JOIN school_staff AS sst ON sst.staff_id = scs.staff_id_assigned WHERE scs.classroom_id='${req.body.class_sec_id}' AND subj.id='${req.body.subject_id}'`;
-  // var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.subject_id = '${req.body.subject_id}'`;
+  // var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS   ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.subject_id = '${req.body.subject_id}'`;
   dbcon.query(subjects, (err, staffNames) => {
     if (err) res.json({ msg: "error", err });
     else if (subjects.length > 0) {

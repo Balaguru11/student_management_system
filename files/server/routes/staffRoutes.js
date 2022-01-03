@@ -73,7 +73,7 @@ staffRouter.get('/dashboard/my-schedule', isStaff, isTeacher, getMyScheduleStaff
 
 // Students Attendance by Teaching Staff
 staffRouter.get(
-  "/dashboard/student-attendance/:class_sec_id/:staff_id",
+  "/dashboard/student-attendance/add/:class_sec_id/:staff_id",
   isStaff,
   isTeacher,
   getStuAttendance
