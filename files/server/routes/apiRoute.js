@@ -210,7 +210,7 @@ apiRouter.post("/get-periods-from-schedule-template", (req, res) => {
 //get subjects associated with the class section to add schedule
 apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
   var subjects = `SELECT scs.subject_id, subj.subject_name, scs.staff_id_assigned, scs.classroom_id, sst.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id=scs.subject_id INNER JOIN school_staff AS sst ON sst.staff_id = scs.staff_id_assigned WHERE scs.classroom_id='${req.body.class_sec_id}' AND subj.id='${req.body.subject_id}'`;
-  // var subjects = `SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS   ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.subject_id = '${req.body.subject_id}'`;
+
   dbcon.query(subjects, (err, staffNames) => {
     if (err) res.json({ msg: "error", err });
     else if (subjects.length > 0) {
@@ -249,19 +249,75 @@ apiRouter.post("/delete-class-section", (req, res) => {
     }
   });
 });
-// // student getting his admission details from admission & feedue tables
-// apiRouter.post("/get-stu-own-admission-records", (req, res) => {
-//   // checking student_admission table
-//   var stuAdmiData = `SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}'`;
-//   dbcon.query(stuAdmiData, (err, admisRow) => {
-//     if (err) {
-//       res.json({ msg: "error", err });
-//     } else if (admisRow.length != 0) {
-//       console.log(admisRow);
-//     } else {
-//       console.log(admisRow);
-//     }
-//   });
-// });
+
+// OPEN EDIT MODAL for Subject Class Staff Mapping section
+apiRouter.post("/edit-subclassstaff-mapping", (req, res) => {
+  var mapFetch = `SELECT map.school_id, map.id, subj.id AS subject_id, subj.subject_name, staf.name, staf.staff_id, clr.id AS classsec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_class_subjects AS map INNER JOIN school_subjects AS subj ON subj.id=map.subject_id INNER JOIN school_staff AS staf ON staf.staff_id = map.staff_id_assigned INNER JOIN school_classroom AS clr ON clr.id=map.classroom_id INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE map.id='${req.body.mapping_id}'`;
+  dbcon.query(mapFetch, (err, mapData) => {
+    if (err) res.json({ msg: "error", err });
+    else if (mapData.length > 0) {
+      console.log(mapData);
+      res.json({ msg: "success", mapData: mapData });
+    } else {
+      console.log(mapData);
+      res.json({ msg: "error", err });
+    }
+  });
+});
+
+// for mapping edit modal, secondary jq
+apiRouter.post("/get-staff-subject-from-class-sec", (req, res) => {
+  var subStaff = `SELECT clr.id, sfs.class_std, sfs.medium, clr.class_section FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
+  WHERE clr.school_id = '${req.body.school_id}'`;
+
+  dbcon.query(subStaff, (err, classDrop) => {
+    if (err) res.json({ msg: "error", err });
+    else if (classDrop.length > 0) {
+      res.json({ msg: "success", classDrop: classDrop });
+    } else {
+      console.log(`Data: ${classDrop}`);
+      res.json({ msg: "No data found", classDrop: classDrop });
+    }
+  });
+});
+
+// Open delete Modal for mapping
+apiRouter.post("/delete-mapping", (req, res) => {
+  var deleteModalData = `SELECT map.school_id, map.id, subj.id AS subject_id, subj.subject_name, staf.name, staf.staff_id, clr.id AS classsec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_class_subjects AS map INNER JOIN school_subjects AS subj ON subj.id=map.subject_id INNER JOIN school_staff AS staf ON staf.staff_id = map.staff_id_assigned INNER JOIN school_classroom AS clr ON clr.id=map.classroom_id INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE map.id='${req.body.map_id}'`;
+
+  dbcon.query(deleteModalData, (err, mappedData) => {
+    if (err) res.json({ msg: "error", err });
+    else if (mappedData.length > 0) {
+      console.log(mappedData);
+      res.json({ msg: "success", mappedData: mappedData });
+    } else {
+      res.json({ msg: "error here", mappedData: mappedData });
+    }
+  });
+});
+
+// get EDIT Student ACCOUNT Modal for Admin and School
+apiRouter.post("/get-edit-Student-account", (req, res) => {
+  var StudAccData = `SELECT * FROM school_main_login WHERE id='${req.body.student_id}'`;
+  dbcon.query(StudAccData, (err, studData) => {
+    if (err) res.json({ msg: "error", err });
+    else if (studData.length >= 0) {
+      res.json({ msg: "success", studData: studData });
+    } else {
+      res.json({ msg: "Profile not created yet." });
+    }
+  });
+});
+
+// GET Delete Student account modal for school alone
+apiRouter.post("/delete-user-account", (req, res) => {
+  var userLoginData = `SELECT * FROM school_main_login WHERE id='${req.body.user_id}'`;
+  dbcon.query(userLoginData, (err, userLogin) => {
+    if (err) res.json({ msg: "error", err });
+    else {
+      res.json({ msg: "success", userLogin: userLogin });
+    }
+  });
+});
 
 module.exports = apiRouter;

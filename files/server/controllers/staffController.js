@@ -451,25 +451,29 @@ exports.getMyScheduleStaff = (req, res) => {
     //   res.locals.staffSchedule = staffSchedule;
     //   return res.render('staffLevel/teacher-view-class-schedule', {title: 'Teacher View Class Schedule'});
     // })
-      //run a query to fetch schedule data
-      var scheduleToday = `SELECT sws.day, sws.period_no, subs.subject_name, clr.id AS class_sec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_week_schedule AS sws INNER JOIN school_subjects AS subs ON subs.id = sws.period_subject_id INNER JOIN school_classroom AS clr ON clr.id=sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.period_staff_id='${session.staff_id}' AND sws.day=DAYOFWEEK(CURDATE()-1)`;
-      dbcon.query(scheduleToday, (err, schedule) => {
-        if (err) throw err;
-        else if(schedule.length > 0){
-          res.locals.schedule = schedule;
-          res.locals.staff_id = session.staff_id;
-          return res.render('staffLevel/teacher-view-class-schedule', {title: 'Teacher View Class Schedule'});
-        } else {
-          console.log(schedule);
-          res.locals.staff_id = session.staff_id;
-          res.locals.schedule = schedule;
-          return res.render('staffLevel/teacher-view-class-schedule', {title: 'Teacher View Class Schedule'});
-        }
-      });
+    //run a query to fetch schedule data
+    var scheduleToday = `SELECT sws.day, sws.period_no, subs.subject_name, clr.id AS class_sec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_week_schedule AS sws INNER JOIN school_subjects AS subs ON subs.id = sws.period_subject_id INNER JOIN school_classroom AS clr ON clr.id=sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.period_staff_id='${session.staff_id}' AND sws.day=DAYOFWEEK(CURDATE()-1) ORDER BY ABS(sws.period_no)`;
+    dbcon.query(scheduleToday, (err, schedule) => {
+      if (err) throw err;
+      else if (schedule.length > 0) {
+        res.locals.schedule = schedule;
+        res.locals.staff_id = session.staff_id;
+        return res.render("staffLevel/teacher-view-class-schedule", {
+          title: "Teacher View Class Schedule",
+        });
+      } else {
+        console.log(schedule);
+        res.locals.staff_id = session.staff_id;
+        res.locals.schedule = schedule;
+        return res.render("staffLevel/teacher-view-class-schedule", {
+          title: "Teacher View Class Schedule",
+        });
+      }
+    });
   } catch (err) {
     console.log(err);
   }
-}
+};
 
 // get attendance page
 exports.getStuAttendance = (req, res) => {
@@ -528,7 +532,6 @@ exports.postStuAttendance = (req, res) => {
     console.log(err);
   }
 };
-
 // ******** STAFF_ROLE = TEACHING STAFF ********
 
 // ******** STAFF_ROLE = ADMIN ********

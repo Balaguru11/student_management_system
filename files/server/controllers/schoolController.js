@@ -736,11 +736,11 @@ exports.getMapSubStaff = (req, res) => {
     var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) return res.render("server-error", { title: "Server Error" });
-      var bridgeTableQuery = `SELECT scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
+      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
       INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
       INNER JOIN school_main_login AS sml ON sml.id = scs.staff_id_assigned AND sml.status='Active'
-      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}'`;
+      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.tableData = tableData;
@@ -788,6 +788,47 @@ exports.postMapSubStaff = async (req, res) => {
     });
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// edit Map Subject STaff
+exports.editMapSubStaff = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let map_id = req.params.id;
+  try {
+    var getEditMap = `SELECT * FROM school_class_subjects WHERE id='${map_id}'`;
+    bdcon.query(getEditMap);
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// delete Map Subject Staff
+exports.deleteMapSubStaff = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let id = req.params.id;
+  try {
+    // delete here
+    var deleteMapp = `UPDATE school_class_subjects SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+    dbcon.query(deleteMapp, (err) => {
+      if (err) throw err;
+      req.flash("success", "Bonding deleted successfully.");
+      return res.redirect("/school/dashboard/section-subject-staff");
+    });
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -865,7 +906,7 @@ exports.getFeeCollection = (req, res) => {
   try {
     if (session.schoolStatus == "Active") {
       var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_classroom AS clr
-      INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
+    INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
       dbcon.query(fee_data, (err, feeData) => {
         if (err) return res.render("server-error", { title: "Server Error" });
 
@@ -949,7 +990,7 @@ exports.getAddStudent = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var StudentData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='1'`;
+    var StudentData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='1' AND deleted_at IS NULL`;
 
     dbcon.query(StudentData, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
@@ -1016,7 +1057,78 @@ exports.postAddStudent = (req, res) => {
   }
 };
 
-//view A Student Profile
+// edit a student account POST
+// HAVING ISSUE HERE
+exports.editStudentAcc = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let student_id = req.params.id;
+  try {
+    if (req.method == "PUT") {
+      let default_pwd = process.env.STU_PWD_DEFAULT;
+      const hashedPwd = bcrypt.hashSync(default_pwd, 10);
+      var studPwdChange = `UPDATE school_main_login SET password = '${hashedPwd}' WHERE id='${student_id}' AND role_id_fk='8'`;
+      dbcon.query(studPwdChange, (err, response) => {
+        if (err) throw err;
+        // selecting the student data:
+        var studData = `SELECT username, password, email FROM school_main_login WHERE id='${student_id}' AND role_id_fk='8'`;
+        dbcon.query(studData, (err, student) => {
+          if (err) throw err;
+          else if (student.length > 0) {
+            // send email to student
+            const mail = sendMail({
+              from: process.env.MAIL_USERNAME,
+              to: student[0].email,
+              subject: "Your Password has been changed.",
+              html: `<p>Hi ${student[0].username}, As per your request, we resetted your password to the default password, which is '${process.env.STU_PWD_DEFAULT}' (without quotes). <br> If you aren't aware of this, feel free to click this link to change it right now.</p>`,
+            })
+              .then((result) => {
+                req.flash("success", "Mail has been sent");
+                return res.redirect("/");
+              })
+              .catch((err) => {
+                return res.render("server-error", {
+                  title: "Server Error",
+                });
+              });
+            req.flash("success", "Password changed successfully");
+            return res.redirect("/school/dashboard/students");
+          } else {
+            req.flash("error", "No Student account found.");
+            return res.redirect("/school/dashboard/students");
+          }
+        });
+      });
+    } else {
+      req.flash("err_msg", "Not found");
+      return res.redirect("/school/dashboard/students");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// delete a student account
+exports.deleteStudentAcc = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let student_id = req.params.id;
+  try {
+    // do delete here
+  } catch (err) {
+    console.log(err);
+  }
+};
 
 // Showing Schedule Template Form
 exports.getSchedulePlanForm = async (req, res) => {
@@ -1071,7 +1183,7 @@ exports.viewWeekSchedule = (req, res) => {
   let session = req.session;
   try {
     // viewing schedule created - view need to be distinct
-    var schedules = `SELECT DISTINCT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_class_subjects AS scs ON scs.classroom_id=clr.id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'; SELECT DISTINCT week.id, sfs.class_std, sfs.medium, clr.class_section, week.day, temp.schedule_name FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_schedule_template AS temp ON temp.id = week.schedule_tempid WHERE week.period_subject_id IS NOT NULL AND week.period_staff_id IS NOT NULL AND week.school_id='${session.schoolId}' AND week.deleted_at IS NULL`;
+    var schedules = `SELECT DISTINCT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_class_subjects AS scs ON scs.classroom_id=clr.id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'; SELECT week.id, sfs.class_std, sfs.medium, clr.class_section, week.day, temp.schedule_name FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_schedule_template AS temp ON temp.id = week.schedule_tempid WHERE week.period_subject_id IS NOT NULL AND week.period_staff_id IS NOT NULL AND week.school_id='${session.schoolId}' AND week.deleted_at IS NULL GROUP BY week.day, clr.class_section ORDER BY sfs.class_std, clr.class_section`;
 
     dbcon.query(schedules, (err, data) => {
       if (err) throw err;
@@ -1137,16 +1249,16 @@ exports.addWeekScheduleForm = (req, res) => {
         let p10_staff = req.body.period_10_staff_hidden || "NULL";
 
         var classScheduleAdd = `INSERT INTO school_week_schedule (day, school_id, class_sec_id, schedule_tempid, period_no, period_subject_id, period_staff_id, created_by) VALUES 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p1_no}', '${p1_sub}', '${p1_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p2_no}', '${p2_sub}', '${p2_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p3_no}', '${p3_sub}', '${p3_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p4_no}', '${p4_sub}', '${p4_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p5_no}', '${p5_sub}', '${p5_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p6_no}', '${p6_sub}', '${p6_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p7_no}', '${p7_sub}', '${p7_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p8_no}', '${p8_sub}', '${p8_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p9_no}', '${p9_sub}', '${p9_staff}', '${session.schoolId}'), 
-        ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p10_no}', '${p10_sub}', '${p10_staff}', '${session.schoolId}')`;
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p1_no}', '${p1_sub}', '${p1_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p2_no}', '${p2_sub}', '${p2_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p3_no}', '${p3_sub}', '${p3_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p4_no}', '${p4_sub}', '${p4_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p5_no}', '${p5_sub}', '${p5_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p6_no}', '${p6_sub}', '${p6_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p7_no}', '${p7_sub}', '${p7_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p8_no}', '${p8_sub}', '${p8_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p9_no}', '${p9_sub}', '${p9_staff}', '${session.schoolId}'), 
+      ('${req.body.day}', '${session.schoolId}', '${req.body.class}', '${req.body.schedule_name}', '${p10_no}', '${p10_sub}', '${p10_staff}', '${session.schoolId}')`;
         dbcon.query(classScheduleAdd, (err, result) => {
           if (err) throw err;
           req.flash("success", "Day Schedule added successfully.");
@@ -1154,9 +1266,9 @@ exports.addWeekScheduleForm = (req, res) => {
           // delete null values from table
           var nullData = `UPDATE school_week_schedule SET deleted_at = CURRENT_TIMESTAMP WHERE period_no='0'`;
           dbcon.query(nullData, (err) => {
-            if(err) throw err;
+            if (err) throw err;
             return res.redirect("/school/dashboard/week-schedule");
-          })
+          });
         });
       }
     });
@@ -1164,6 +1276,7 @@ exports.addWeekScheduleForm = (req, res) => {
     console.log(err);
   }
 };
+
 // change password
 exports.allChangePwd = (req, res) => {
   let success_msg = req.flash("success");
@@ -1272,7 +1385,7 @@ exports.putUserAccount = (req, res) => {
 };
 
 // // delete user accounts
-exports.deleteUserAccount = async (req, res) => {
+exports.deleteUserAccount = (req, res) => {
   //flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
@@ -1326,3 +1439,5 @@ exports.deleteUserAccount = async (req, res) => {
     console.log(err);
   }
 };
+
+//test

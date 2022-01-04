@@ -587,7 +587,11 @@ $(document).ready(function () {
             $("#schedule_list").html("<p>Schedule Plan</p> <hr />");
             $.each(foo, (key, value) => {
               $("#schedule_list").append(
-                "<input type='hidden' name='period_no_"+ value +"' value='"+ value +"'></input><div id='schedule_main' class='mt-3 row g-3'><div class='col'><label for='period_" +
+                "<input type='hidden' name='period_no_" +
+                  value +
+                  "' value='" +
+                  value +
+                  "'></input><div id='schedule_main' class='mt-3 row g-3'><div class='col'><label for='period_" +
                   value +
                   "_sub'>Period " +
                   value +
@@ -674,8 +678,6 @@ $(document).on(
   }
 );
 
-
-
 // OPEN edit Class section Modal
 $(document).ready(function () {
   $(".editClassSec").on("click", function () {
@@ -738,54 +740,155 @@ $(document).ready(function () {
   });
 });
 
-// add ajax call for Subjects to week schedule
-// $(document).ready(function(){
-// $("#class").on('change', function(){
-//   var class_sec_id =  $('#class').val();
-//     $.ajax({
-//       url: '/api/get-subjects-from-class-section',
-//       type: 'POST',
-//       data: {
-//         class_sec_id: class_sec_id,
-//       },
-//       dataType: "Json",
-//       success: function (data) {
-//         var subject_name = [];
-//         var subject_id = [];
-//         var staff_id = [];
-//         var staff_name = [];
-//         // var class_sec = data.subjects[0].classroom_id;
+// OPEN edit Subject Class Staff Mapping Modal - having issue
+$(document).ready(function () {
+  $(".editMapping").on("click", function () {
+    var mapping_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/edit-subclassstaff-mapping",
+      type: "POST",
+      data: {
+        mapping_id: mapping_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          return `<form id='edimapping-form' action='../dashboard/section-subject-staff/edit/${data.mapData[0].id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='school_id' id='school_id' value='${data.mapData[0].school_id}' /><input type='hidden' class='form-control' name='map_id' id='map_id' value='${data.mapData[0].id}' /><div class='mb-3'><label for='class_std'>Class Std & Medium :</label><select  class='class_std_sec_edit form-control' name='class_std_sec_edit' id='class_std_sec_edit'><option value='${data.mapData[0].classsec_id}' selected >${data.mapData[0].class_std} std - ${data.mapData[0].medium} medium - ${data.mapData[0].class_section} sec</option></select></div><div class='mb-3'><label for='subject_edit'>Subject: </label><select class='form-control' name='subject_edit' id='strength_edit' ><option selected value='${data.mapData[0].subject_id}'>${data.mapData[0].subject_name}</option></select></div><div class='mb-3'><label for='staff_edit'>Select A Staff:</label><input type='hidden' class='form-control' name='staff_edit_id' id='staff_edit_id' value='${data.mapData[0].staff_id}' /><select id='staff_edit' class='form-control' name='staff_edit'> <option selected value='${data.mapData[0].staff_id}'>${data.mapData[0].name}</option></select></div><div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>`;
+        });
+        // show data in the element.
+        $("#editMappingModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
 
-//         for (var i = 0; i <= data.subjects.length; i++) {
-//           subject_name.push(data.subjects[i].subject_name);
-//           subject_id.push(data.subjects[i].subject_id);
-//           staff_id.push(data.subjects[i].staff_id_assigned);
-//           staff_name.push(data.subjects[i].name);
-//         }
-//         console.log(subject_name);
+// fetching staff and subject for chosen class section - mapping edit - having issue
+$(document).on("click", ".class_std_sec_edit", function () {
+  var school_id = $("#school_id").val();
+  var class_sec = $(this).val();
+  $.ajax({
+    url: "/api/get-staff-subject-from-class-sec",
+    type: "POST",
+    data: {
+      school_id: school_id,
+      class_sec: class_sec,
+    },
+    dataType: "JSON",
+    success: function (data) {
+      var class_sec_drop = [];
+      for (var i = 0; i < data.classDrop.length; i++) {
+        class_sec_drop.push(data.classDrop[i].id);
+      }
+      $.each(class_sec_drop, (key, value) => {
+        $("#class_std_sec_edit").append(
+          `<option value='${data.classDrop[key].id}'>${data.classDrop[key].class_std} std - ${data.classDrop[key].medium} medium - ${data.classDrop[key].class_section} sec </option>`
+        );
+      });
+    },
+    error: function (err) {
+      console.log(err);
+    },
+  });
+});
 
-//         var select = $('#subject_option');
-//         $(subject_name).each(function(){
-//           select.append($('<option>').prop('value', this).text(this.charAt(0).toUpperCase() + this.slice(1)));
-//         })
+// delete modal for mapping
+$(document).ready(function () {
+  $(".deleteMapping").on("click", function () {
+    var map_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/delete-mapping",
+      type: "POST",
+      data: {
+        map_id: map_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          return `<div class='container'><div class='row text-center'><input type='hidden' class='form-control' name='map_id_hidden' id='map_id_hidden' value='${data.mappedData[0].id}' /><p class='mb-3'><b>Do you want to delete?</p><p class='mb-3'>${data.mappedData[0].class_std} STD - ${data.mappedData[0].medium} Medium - ${data.mappedData[0].class_section} Section 's</p><p class='mb-3'><h6>${data.mappedData[0].subject_name} Subject & Faculty. ${data.mappedData[0].name}'s bonding ?</h6></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/section-subject-staff/delete/${data.mappedData[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`;
+        });
+        // show data in the element.
+        $("#deleteMappingModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
 
-//         // var label = $('<label>').prop('for', 'subject').text('Choose Subject:');
+// data tables
+$(document).ready(function () {
+  $("#schedule").DataTable();
+});
 
-//         // var br = $('<br>');
+// edit student Account Modal for School Login
+// editing only password
+$(document).ready(function () {
+  $(".editStudAcc").on("click", function () {
+    var student_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/get-edit-student-account",
+      type: "POST",
+      data: {
+        student_id: student_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          return (
+            "<div class='container'><div class='row'><input type='hidden' class='form-control' name='student_id_hidden' id='student_id_hidden' value='" +
+            data.studData[0].id +
+            "' /><p><b>Do you want to RESET PASSWORD for '" +
+            data.studData[0].username +
+            "'s account'?</b></p><small>The Student will be notified to his Email id: <b>" +
+            data.studData[0].email +
+            "</b></small><br></div><div class='row'><div class='col-2'></div><div class='col-5'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-5'><a href='../dashboard/students/edit/" +
+            data.studData[0].id +
+            "?_method=PUT' role='button' class='btn btn-primary btn-block'>RESET PASSWORD</a></div></div></div>"
+          );
+        });
+        // show data in the element.
+        $("#editStudAccModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
 
-//         $('#schedule_name').append(select);
-
-//       //   $("#schedule_name").after(function () {
-//       //   //success call
-//       //   $('#subject_option').append(
-//       //     '<option>Select Class first </option>'
-//       //   );
-//       //   $.each()
-//       // })
-//   },
-//   error: function(err){
-//     console.log(err);
-//   }
-//     })
-//   })
-// })
+// get Delete Modal for USER ACCOUNTS by School
+$(document).ready(function () {
+  $(".deleteStudAcc").on("click", function () {
+    var student_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/delete-student-account",
+      type: "POST",
+      data: {
+        student_id: student_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".modal-body").html(function () {
+          return (
+            "<div class='container'><div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='" +
+            data.userLogin[0].id +
+            "' /><p><b>Do you want to delete '" +
+            data.userLogin[0].username +
+            "'s account'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/users/delete/" +
+            data.userLogin[0].id +
+            "?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>"
+          );
+        });
+        // show data in the element.
+        $("#deleteStudAccModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});

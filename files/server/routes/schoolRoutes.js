@@ -28,6 +28,8 @@ const {
   putFeeStructure,
   getMapSubStaff,
   postMapSubStaff,
+  editMapSubStaff,
+  deleteMapSubStaff,
   getMessageR,
   postMessageC,
   putMessageU,
@@ -36,6 +38,8 @@ const {
   postFeeCollection,
   getAddStudent,
   postAddStudent,
+  editStudentAcc,
+  deleteStudentAcc,
   getSchedulePlanForm,
   postSchedulePlanForm,
   viewWeekSchedule,
@@ -109,10 +113,26 @@ schoolRouter.post(
   isSchool,
   postMapSubStaff
 );
+schoolRouter.put(
+  "/dashboard/section-subject-staff/edit/:id",
+  isSchool,
+  editMapSubStaff
+);
+schoolRouter.get(
+  "/dashboard/section-subject-staff/delete/:id",
+  isSchool,
+  deleteMapSubStaff
+);
 
 // STUDDNT CRUD
 schoolRouter.get("/dashboard/students", isSchool, getAddStudent);
 schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent); // Adding student to main_login (Inactive)
+schoolRouter.get(
+  "/dashboard/students/edit/:student_id",
+  isSchool,
+  editStudentAcc
+); // only change password is enabled.
+schoolRouter.get("/dashboard/students/delete/:id", isSchool, deleteStudentAcc);
 
 // fee collection CRUD
 schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
