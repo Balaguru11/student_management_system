@@ -40,7 +40,7 @@ const {
   editStudentAcc,
   deleteStudentAcc,
   getSchedulePlanForm,
-  postSchedulePlanForm,
+  postSchedulePlanForm, deleteSchedulePlan, 
   viewWeekSchedule,
   addWeekScheduleForm,
   allChangePwd,
@@ -142,6 +142,7 @@ schoolRouter.all("/dashboard/fee-due-collection", isSchool, allDueCollection);
 // schedule template CRUD
 schoolRouter.get("/dashboard/schedule-plan", isSchool, getSchedulePlanForm);
 schoolRouter.post("/dashboard/schedule-plan", isSchool, postSchedulePlanForm);
+schoolRouter.delete('/dashboard/schedule-plan/delete/:sched_tempid', isSchool, deleteSchedulePlan);
 
 // Week Schedule for class sections with schedule plan integrated
 schoolRouter.get("/dashboard/week-schedule", isSchool, viewWeekSchedule);

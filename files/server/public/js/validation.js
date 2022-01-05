@@ -927,3 +927,40 @@ $(document).ready(function () {
     });
   });
 });
+
+// delete schedule template from school login
+$(document).ready(function () {
+  $('.deleteSchedTemp').on('click', function() {
+    var sched_tempid = $(this).attr('data-id');
+    $.ajax({
+      url: '/api/get-schedule-template-data',
+      type: 'POST',
+      data: {
+        sched_tempid: sched_tempid,
+      }, dataType: 'JSON',
+      success: function (data){
+        $('.delete-modal-body').html(function (){
+          return (
+            `<div class='container'>
+            <div class='row'><input type='hidden' class='form-control' name='schedtemp_id_hidden' id='schedtemp_id_hidden' value='${data.tempData[0].id}' /><p><b>Do you want to delete '${data.tempData[0].schedule_name}' Template ?</b></p></div>
+            <div class='row'>
+            <form id='delschedtemp-form' action='../dashboard/schedule-plan/delete/${data.tempData[0].id}?_method=DELETE' method='POST'>
+            <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>No</a> <button class='btn btn-primary' type='submit' value='submit'>Yes</button></div>
+            </form>
+            </div></div>`
+          )
+        })
+        $('#deleteSchedTempModal').modal("show");
+      }, 
+      error: function (err) {
+        console.log(err);
+      }, 
+      zero: function () {
+        $('.delete-modal-body').html(function (data){
+          return `<p>${data.text}<p>`
+        })
+        $('#deleteSchedTempModal').modal("show");
+      }
+    })
+  })
+})

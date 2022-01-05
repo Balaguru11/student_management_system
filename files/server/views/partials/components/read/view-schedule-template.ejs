@@ -18,16 +18,14 @@
         <td><%= locals.templates[i].schedule_name %></td>
         <td><%= locals.templates[i].no_of_periods %></td>
         <td>
-          <a
-            class="btn btn-warning edit"
-            href="../dashboard/schedule-plan/edit/<%= locals.templates[i].id %>"
-            ><i class="far fa-edit" aria-hidden="true"></i
-          ></a>
-          <a
-            class="btn btn-danger delete"
-            href="../dashboard/schedule-plan/delete/<%= locals.templates[i].id %>"
-            ><i class="far fa-trash-alt" aria-hidden="true"></i
-          ></a>
+          <button
+            data-id="<%= locals.templates[i].id %>"
+            type="button"
+            class="deleteSchedTemp btn btn-danger View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-trash-alt" aria-hidden="true"></i>
+          </button>
         </td>
       </tr>
       <% } } else { %>
@@ -39,4 +37,30 @@
       <% } %>
     </tbody>
   </table>
+</div>
+
+<!-- delete modal -->
+<div
+  class="modal fade"
+  id="deleteSchedTempModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          Deleting Class - Section
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="delete-modal-body"></div>
+    </div>
+  </div>
 </div>

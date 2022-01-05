@@ -323,4 +323,17 @@ apiRouter.post("/delete-student-account", (req, res) => {
   });
 });
 
+// get schedule template data
+apiRouter.post('/get-schedule-template-data', (req, res) => {
+  var schedTempData = `SELECT * FROM school_schedule_template WHERE id='${req.body.sched_tempid}'`;
+  dbcon.query(schedTempData, (err, tempData) => {
+    if(err) res.json({msg: 'error', err});
+    else if (tempData.length != 0){
+      res.json({msg: 'success', tempData: tempData});
+    } else {
+      res.json({msg: 'zero', text: 'No Data found.'});
+    }
+  })
+})
+
 module.exports = apiRouter;

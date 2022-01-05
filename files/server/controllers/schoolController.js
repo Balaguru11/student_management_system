@@ -1156,7 +1156,7 @@ exports.getSchedulePlanForm = async (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var getScheduleTemps = `SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'`;
+    var getScheduleTemps = `SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}' AND deleted_at IS NULL`;
     dbcon.query(getScheduleTemps, (err, templates) => {
       if (err) return res.render("server-error", { title: "Server Error" });
       res.locals.templates = templates;
@@ -1169,7 +1169,7 @@ exports.getSchedulePlanForm = async (req, res) => {
   }
 };
 
-// Add Schedule Plan to the School (POST)
+// Add Schedule Plan (template) to the School (POST)
 exports.postSchedulePlanForm = async (req, res) => {
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
@@ -1190,6 +1190,25 @@ exports.postSchedulePlanForm = async (req, res) => {
   }
 };
 
+// delete schedule plan (template)
+exports.deleteSchedulePlan = (req, res) => {
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let sched_tempid = req.params.sched_tempid;
+  try {
+    var deleteSchedPlan = `UPDATE school_schedule_template SET deleted_at = CURRENT_TIMESTAMP WHERE id='${sched_tempid}'`;
+    dbcon.query(deleteSchedPlan, (err, schePlan) => {
+      if(err) throw err;
+      req.flash('success', 'schedule Template deleted successfully.');
+      return res.redirect('/school/dashboard/schedule-plan');
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // make weekly schedule
 exports.viewWeekSchedule = (req, res) => {
   let success_msg = req.flash("success");
@@ -1199,7 +1218,7 @@ exports.viewWeekSchedule = (req, res) => {
   let session = req.session;
   try {
     // viewing schedule created - view need to be distinct
-    var schedules = `SELECT DISTINCT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_class_subjects AS scs ON scs.classroom_id=clr.id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}'; SELECT week.id, sfs.class_std, sfs.medium, clr.class_section, week.day, temp.schedule_name FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_schedule_template AS temp ON temp.id = week.schedule_tempid WHERE week.period_subject_id IS NOT NULL AND week.period_staff_id IS NOT NULL AND week.school_id='${session.schoolId}' AND week.deleted_at IS NULL GROUP BY week.day, clr.class_section ORDER BY sfs.class_std, clr.class_section`;
+    var schedules = `SELECT DISTINCT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_class_subjects AS scs ON scs.classroom_id=clr.id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT week.id, sfs.class_std, sfs.medium, clr.class_section, week.day, temp.schedule_name FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_schedule_template AS temp ON temp.id = week.schedule_tempid WHERE week.period_subject_id IS NOT NULL AND week.period_staff_id IS NOT NULL AND week.school_id='${session.schoolId}' AND week.deleted_at IS NULL GROUP BY week.day, clr.class_section ORDER BY sfs.class_std, clr.class_section`;
 
     dbcon.query(schedules, (err, data) => {
       if (err) throw err;
@@ -1279,7 +1298,7 @@ exports.addWeekScheduleForm = (req, res) => {
           if (err) throw err;
           req.flash("success", "Day Schedule added successfully.");
 
-          // delete null values from table
+          // delete null values from table - soft delete
           var nullData = `UPDATE school_week_schedule SET deleted_at = CURRENT_TIMESTAMP WHERE period_no='0'`;
           dbcon.query(nullData, (err) => {
             if (err) throw err;
