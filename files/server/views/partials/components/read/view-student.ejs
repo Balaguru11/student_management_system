@@ -31,6 +31,15 @@
           <button
             data-id="<%= locals.data[i].id %>"
             type="button"
+            class="pwdStudAcc btn btn-info View"
+            data-bs-toggle="modal"
+          >
+          <i class="fas fa-key"></i>
+          </button>
+          
+          <button
+            data-id="<%= locals.data[i].id %>"
+            type="button"
             class="deleteStudAcc btn btn-danger View"
             data-bs-toggle="modal"
           >
@@ -59,8 +68,32 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="exampleModalLabel">
-          Deleting Staff Acoount
+          Deleting Student Acoount
         </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="delete-modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- pwd reset modal -->
+<div
+  class="modal fade"
+  id="pwdStudAccModal"
+  tabindex="-1"
+  aria-labelledby="pwdModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Reset Password</h5>
         <button
           type="button"
           class="btn-close"
@@ -84,7 +117,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Edit Staff Account</h5>
+        <h5 class="modal-title" id="exampleModalLabel">Reset Password</h5>
         <button
           type="button"
           class="btn-close"
@@ -92,7 +125,7 @@
           aria-label="Close"
         ></button>
       </div>
-      <div class="modal-body"></div>
+      <div class="edit-modal-body"></div>
     </div>
   </div>
 </div>

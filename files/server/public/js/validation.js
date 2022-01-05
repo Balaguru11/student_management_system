@@ -703,7 +703,7 @@ $(document).ready(function () {
   });
 });
 
-// fee structure GET DELETE Modal
+// Class section GET DELETE Modal
 $(document).ready(function () {
   $(".deleteClassSec").on("click", function () {
     var section_id = $(this).attr("data-id");
@@ -824,10 +824,9 @@ $(document).ready(function () {
   $("#schedule").DataTable();
 });
 
-// edit student Account Modal for School Login
-// editing only password
+// Password Reset student Account Modal for School Login
 $(document).ready(function () {
-  $(".editStudAcc").on("click", function () {
+  $(".pwdStudAcc").on("click", function () {
     var student_id = $(this).attr("data-id");
     $.ajax({
       url: "/api/get-edit-student-account",
@@ -843,11 +842,45 @@ $(document).ready(function () {
             data.studData[0].id +
             "' /><p><b>Do you want to RESET PASSWORD for '" +
             data.studData[0].username +
-            "'s account'?</b></p><small>The Student will be notified to his Email id: <b>" +
+            "'s account'?</b></p><small>The Student will be notified to his/her Email id: <b>" +
             data.studData[0].email +
-            "</b></small><br></div><div class='row'><div class='col-2'></div><div class='col-5'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-5'><a href='../dashboard/students/edit/" +
+            "</b></small><br></div><div class='row mt-2'><div class='col-2'></div><div class='col-5'><a role='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel</a></div><div class='col-5'><form id='resetpwd-form' action='../dashboard/students/edit/" +
             data.studData[0].id +
-            "?_method=PUT' role='button' class='btn btn-primary btn-block'>RESET PASSWORD</a></div></div></div>"
+            "?_method=PUT' method='POST'><button class='btn btn-primary' type='submit' value='submit'>RESET PASSWORD</button></form></div></div></div>"
+          );
+        });
+        // show data in the element.
+        $("#pwdStudAccModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
+
+// Edit student Account Modal for School Login
+$(document).ready(function () {
+  $(".editStudAcc").on("click", function () {
+    var student_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/get-edit-student-account",
+      type: "POST",
+      data: {
+        student_id: student_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".edit-modal-body").html(function () {
+          return (
+            `<div class='container'>
+            <div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='${data.studData[0].id}' /><p><b>Update Status for '${data.studData[0].username} 's account'?</b></p></div>
+            <div class='row'>
+            <form id='editstu-form' action='../dashboard/students/edit/${data.studData[0].id}?_method=PUT' method='POST'>
+            <div class='mb-3'><label for='status'>Student Status:</label><select id='status_edit' class='form-control' name='status_edit'><option value='${data.studData[0].status}'>${data.studData[0].status}</option><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></div>
+            <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Update</button></div>
+            </form>
+            </div></div>`
           );
         });
         // show data in the element.
@@ -860,7 +893,7 @@ $(document).ready(function () {
   });
 });
 
-// get Delete Modal for USER ACCOUNTS by School
+// get Delete Modal for Student ACCOUNTS by School
 $(document).ready(function () {
   $(".deleteStudAcc").on("click", function () {
     var student_id = $(this).attr("data-id");
@@ -872,16 +905,18 @@ $(document).ready(function () {
       },
       dataType: "Json",
       success: function (data) {
-        $(".modal-body").html(function () {
+        $(".delete-modal-body").html(function () {
           return (
-            "<div class='container'><div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='" +
-            data.userLogin[0].id +
-            "' /><p><b>Do you want to delete '" +
-            data.userLogin[0].username +
-            "'s account'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/users/delete/" +
-            data.userLogin[0].id +
-            "?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>"
+            `<div class='container'>
+            <div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='${data.studLogin[0].id}' /><p><b>Do you want to delete '${data.studLogin[0].username}'s account'?</b></p></div>
+            <div class='row'>
+            <form id='delstu-form' action='../dashboard/students/delete/${data.studLogin[0].id}?_method=DELETE' method='POST'>
+            <div class='mb-3'><label for='status'>Want to change status as well?</label><select id='status_edit' class='form-control' name='status_edit'><option value='${data.studLogin[0].status}'>${data.studLogin[0].status}</option><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></div>
+            <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Delete</button></div>
+            </form>
+            </div></div>`
           );
+          
         });
         // show data in the element.
         $("#deleteStudAccModal").modal("show");

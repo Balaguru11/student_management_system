@@ -301,7 +301,7 @@ apiRouter.post("/get-edit-Student-account", (req, res) => {
   var StudAccData = `SELECT * FROM school_main_login WHERE id='${req.body.student_id}'`;
   dbcon.query(StudAccData, (err, studData) => {
     if (err) res.json({ msg: "error", err });
-    else if (studData.length >= 0) {
+    else if (studData.length != 0) {
       res.json({ msg: "success", studData: studData });
     } else {
       res.json({ msg: "Profile not created yet." });
@@ -310,12 +310,15 @@ apiRouter.post("/get-edit-Student-account", (req, res) => {
 });
 
 // GET Delete Student account modal for school alone
-apiRouter.post("/delete-user-account", (req, res) => {
-  var userLoginData = `SELECT * FROM school_main_login WHERE id='${req.body.user_id}'`;
-  dbcon.query(userLoginData, (err, userLogin) => {
+apiRouter.post("/delete-student-account", (req, res) => {
+  var studLoginData = `SELECT * FROM school_main_login WHERE id='${req.body.student_id}'`;
+  dbcon.query(studLoginData, (err, studLogin) => {
     if (err) res.json({ msg: "error", err });
+    else if(studLogin.length != 0 ){
+      res.json({ msg: "success", studLogin: studLogin });
+    }
     else {
-      res.json({ msg: "success", userLogin: userLogin });
+      res.json({ msg: "error", err });
     }
   });
 });

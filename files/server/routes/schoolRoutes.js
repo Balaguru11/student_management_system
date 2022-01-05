@@ -24,7 +24,6 @@ const {
   viewClassSections,
   editClassSection,
   deleteClassSection,
-  getEditFeeStructure,
   putFeeStructure,
   getMapSubStaff,
   postMapSubStaff,
@@ -37,7 +36,7 @@ const {
   getFeeCollection,
   postFeeCollection,
   getAddStudent,
-  postAddStudent,
+  postAddStudent, pwdResetStudentAcc, 
   editStudentAcc,
   deleteStudentAcc,
   getSchedulePlanForm,
@@ -65,11 +64,6 @@ schoolRouter.all("/dashboard/change-password", isSchool, allChangePwd);
 // Fee Structure CRUD (assigned to staff_role = 9 Admin)
 schoolRouter.get("/dashboard/fee-structure", isSchool, viweFeeStructure);
 schoolRouter.post("/dashboard/fee-structure", isSchool, postAddFeeStructure);
-schoolRouter.get(
-  "/dashboard/fee-structure/edit/:id",
-  isSchool,
-  getEditFeeStructure
-);
 schoolRouter.put(
   "/dashboard/fee-structure/edit/:id",
   isSchool,
@@ -127,12 +121,17 @@ schoolRouter.get(
 // STUDDNT CRUD
 schoolRouter.get("/dashboard/students", isSchool, getAddStudent);
 schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent); // Adding student to main_login (Inactive)
-schoolRouter.get(
+schoolRouter.put(
+  "/dashboard/students/reset-password/:student_id",
+  isSchool,
+  pwdResetStudentAcc
+);
+schoolRouter.put(
   "/dashboard/students/edit/:student_id",
   isSchool,
   editStudentAcc
-); // only change password is enabled.
-schoolRouter.get("/dashboard/students/delete/:id", isSchool, deleteStudentAcc);
+);
+schoolRouter.delete("/dashboard/students/delete/:id", isSchool, deleteStudentAcc);
 
 // fee collection CRUD
 schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);

@@ -18,7 +18,7 @@ exports.getCreateSchool = (req, res) => {
 
 exports.postCreateSchool = async (req, res) => {
   try {
-    var check = `SELECT EXISTS (SELECT * FROM school_add_school WHERE email='${req.body.email}') AS count`;
+    var check = `SELECT EXISTS (SELECT * FROM school_add_school WHERE email='${req.body.email}' AND deleted_at IS NULL) AS count`;
     //res >> 0 / 1
 
     dbcon.query(check, (err, data) => {
@@ -118,7 +118,7 @@ exports.postSchoolLogin = async (req, res) => {
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   try {
-    var loginQuery = `SELECT * FROM school_add_school WHERE school_login='${req.body.schoolUserName}'`;
+    var loginQuery = `SELECT * FROM school_add_school WHERE school_login='${req.body.schoolUserName}' AND deleted_at IS NULL`;
     dbcon.query(loginQuery, function (err, result) {
       if (err) {
         return res.render("server-error", { title: "Server Error" });
@@ -175,7 +175,7 @@ exports.getSchoolDashBoard = (req, res) => {
     res.locals.status = status;
 
     if (session.logged_in && session.schoolStatus == "Active") {
-      var countData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='8'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='8'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='1'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='1'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='2'; SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT school_name FROM school_add_school WHERE id='${session.schoolId}'`;
+      var countData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='8' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='8' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Active' AND role_id_fk='1' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND status='Inactive' AND role_id_fk='1' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='2' AND deleted_at IS NULL; SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT school_name FROM school_add_school WHERE id='${session.schoolId}' AND deleted_at IS NULL`;
 
       dbcon.query(countData, (err, countNos) => {
         if (err) return res.render("server-error", { title: "Server Error" });
@@ -309,9 +309,8 @@ exports.deleteClassSection = (req, res) => {
   let session = req.session;
   let section_id = req.params.id;
   try {
-    // conditions to be met - check admission table, students should be in that section
+    // conditions to be met - check admission table, students should not be in that section
     var isNoStudent = `SELECT EXISTS (SELECT * FROM school_student_admission WHERE class_section = '${req.body.sec_id_hidden}' AND academic_year = YEAR(CURDATE())) AS count`;
-    console.log(isNoStudent);
     dbcon.query(isNoStudent, (err, sectionEmpty) => {
       if (err) throw err;
       else if (sectionEmpty[0].count == 0) {
@@ -348,7 +347,7 @@ exports.postAddUser = async (req, res) => {
     if (session.logged_in && session.schoolStatus == "Active") {
       const schoolId = session.schoolId;
 
-      var userCheck = `SELECT EXISTS (SELECT * FROM school_main_login WHERE username='${req.body.username}' OR email='${req.body.email}' AND school_id='${schoolId}' ) AS count`;
+      var userCheck = `SELECT EXISTS (SELECT * FROM school_main_login WHERE username='${req.body.username}' OR email='${req.body.email}' AND school_id='${schoolId}' AND deleted_at IS NULL ) AS count`;
 
       dbcon.query(userCheck, (err, data) => {
         if (err) {
@@ -411,7 +410,7 @@ exports.postAddSubject = (req, res) => {
     let session = req.session;
 
     // checing the school_subject table for duplicate entry
-    var checkSubject = `SELECT EXISTS (SELECT * FROM school_subjects WHERE subject_name='${req.body.subject}' AND school_id='${session.schoolId}') AS count`;
+    var checkSubject = `SELECT EXISTS (SELECT * FROM school_subjects WHERE subject_name='${req.body.subject}' AND school_id='${session.schoolId}' AND deleted_at IS NULL) AS count`;
 
     dbcon.query(checkSubject, (err, result) => {
       if (err) {
@@ -449,7 +448,7 @@ exports.deleteSubject = (req, res) => {
   let session = req.session;
   let subject_id = req.params.subject_id;
   try {
-    var mappedSubject = `SELECT * FROM school_class_subjects WHERE subject_id='${subject_id}' AND school_id='${session.schoolId}'`;
+    var mappedSubject = `SELECT * FROM school_class_subjects WHERE subject_id='${subject_id}' AND school_id='${session.schoolId}' AND deleted_at IS NULL`;
     dbcon.query(mappedSubject, (err, mapped) => {
       if (err) throw err;
       else if (mapped.length == 0) {
@@ -488,7 +487,7 @@ exports.postAddFeeStructure = (req, res) => {
       const medium = req.body.medium;
       const actual_fee = req.body.fee;
 
-      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class_std='${class_std}' AND medium='${medium}') AS count`;
+      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class_std='${class_std}' AND medium='${medium}' AND deleted_at IS NULL) AS count`;
 
       dbcon.query(feeQuery, (err, data) => {
         if (err) {
@@ -562,7 +561,7 @@ exports.deleteFeeStructure = (req, res) => {
   let session = req.session;
   let id = req.params.id;
   try {
-    // deleting a fee structure
+    // deleting a fee structure 
     var deleteFee = `UPDATE school_feestructure SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
     dbcon.query(deleteFee, (err, deletedFee) => {
       if (err) throw err;
@@ -584,7 +583,7 @@ exports.viewUserAccounts = (req, res) => {
   let session = req.session;
   res.locals.schoolId = session.schoolId;
   try {
-    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND deleted_at IS NULL AND NOT(role_id_fk='1')  AND NOT(role_id_fk='5')`;
+    var userAccData = `SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND deleted_at IS NULL AND NOT(role_id_fk='1') AND NOT(role_id_fk='5')`;
 
     dbcon.query(userAccData, (err, data) => {
       if (err) {
@@ -678,32 +677,6 @@ exports.viewClassSections = (req, res) => {
   }
 };
 
-// get edit fee structure
-exports.getEditFeeStructure = (req, res, next) => {
-  //flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing success_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
-  let session = req.session;
-  try {
-    const feeS_id = req.params.id;
-    const feeS_query = `SELECT * FROM school_feestructure WHERE id='${feeS_id}'`;
-    dbcon.query(feeS_query, (err, fetchedData) => {
-      if (err) return res.render("server-error", { title: "Server Error" });
-      res.locals.class_std = fetchedData[0].class_std;
-      res.locals.medium = fetchedData[0].medium;
-      res.locals.actual_fee = fetchedData[0].actual_fee;
-      return res.render("schoolLevel/school-edit-feeStructure", {
-        title: "Edit Fee Structure",
-      });
-    });
-  } catch (err) {
-    return res.render("server-error", { title: "Server Error" });
-  }
-};
-
 // put Edit fee structure
 exports.putFeeStructure = (req, res, next) => {
   //flashing err_msg
@@ -714,8 +687,23 @@ exports.putFeeStructure = (req, res, next) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    const check = req.params.id;
-    // console.log(check);
+    const id = req.params.id;
+    // check the edited data for duplicate entry
+    var dupeFeeStruc = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE class_std = ${req.body.class_std_edit} AND medium = '${req.body.medium_edit}' AND school_id = ${session.schoolId} AND deleted_at IS NULL) AS count`;
+    dbcon.query(dupeFeeStruc, (err, duplicate) => {
+      if(err) return res.render("server-error", { title: "Server Error" });
+      else if(duplicate[0].count != 0){
+        req.flash('err_msg', `${req.body.class_std_edit} std & ${req.body.medium_edit} medium already exist.`);
+        return res.redirect('/school/dashboard/fee-structure');
+      } else {
+        var updateFeeStruc = `UPDATE school_feestructure SET class_std = ${req.body.class_std_edit}, medium = '${req.body.medium_edit}', actual_fee='${req.body.fee_edit}' WHERE id='${id}'`;
+        dbcon.query(updateFeeStruc, (err, updated) => {
+          if(err) return res.render("server-error", { title: "Server Error" });
+          req.flash('success', 'Fee structure updated successfully.');
+          return res.redirect('/school/dashboard/fee-structure');
+        })
+      }
+    })
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
   }
@@ -1057,9 +1045,8 @@ exports.postAddStudent = (req, res) => {
   }
 };
 
-// edit a student account POST
-// HAVING ISSUE HERE
-exports.editStudentAcc = (req, res) => {
+// Password Reseting for a student account POST
+exports.pwdResetStudentAcc = (req, res) => {
   //flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
@@ -1067,19 +1054,19 @@ exports.editStudentAcc = (req, res) => {
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
-  let student_id = req.params.id;
+  let student_id = req.params.student_id;
   try {
     if (req.method == "PUT") {
       let default_pwd = process.env.STU_PWD_DEFAULT;
       const hashedPwd = bcrypt.hashSync(default_pwd, 10);
-      var studPwdChange = `UPDATE school_main_login SET password = '${hashedPwd}' WHERE id='${student_id}' AND role_id_fk='8'`;
+      var studPwdChange = `UPDATE school_main_login SET password = '${hashedPwd}' WHERE id='${student_id}' AND role_id_fk='1'`;
       dbcon.query(studPwdChange, (err, response) => {
         if (err) throw err;
         // selecting the student data:
-        var studData = `SELECT username, password, email FROM school_main_login WHERE id='${student_id}' AND role_id_fk='8'`;
+        var studData = `SELECT username, email FROM school_main_login WHERE id='${student_id}' AND role_id_fk='1'`;
         dbcon.query(studData, (err, student) => {
           if (err) throw err;
-          else if (student.length > 0) {
+          else if (student.length != 0) {
             // send email to student
             const mail = sendMail({
               from: process.env.MAIL_USERNAME,
@@ -1099,7 +1086,7 @@ exports.editStudentAcc = (req, res) => {
             req.flash("success", "Password changed successfully");
             return res.redirect("/school/dashboard/students");
           } else {
-            req.flash("error", "No Student account found.");
+            req.flash("err_msg", "No Student account found.");
             return res.redirect("/school/dashboard/students");
           }
         });
@@ -1113,6 +1100,29 @@ exports.editStudentAcc = (req, res) => {
   }
 };
 
+// edit student account by school
+exports.editStudentAcc = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let student_id = req.params.student_id;
+  try {
+    // do something
+    var updateStud = `UPDATE school_main_login SET status = '${req.body.status_edit}' WHERE id='${student_id}'`;
+    dbcon.query(updateStud, (err, student) => {
+      if(err) throw err;
+      req.flash('success', 'Student account updated.');
+      return res.redirect('/school/dashboard/students');
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // delete a student account
 exports.deleteStudentAcc = (req, res) => {
   //flashing err_msg
@@ -1125,6 +1135,12 @@ exports.deleteStudentAcc = (req, res) => {
   let student_id = req.params.id;
   try {
     // do delete here
+    var deleteStud = `UPDATE school_main_login SET status = '${req.body.status_edit}', deleted_at = CURRENT_TIMESTAMP WHERE id='${student_id}' AND role_id_fk='1'`;
+    dbcon.query(deleteStud, (err, deletedData) => {
+      if(err) throw err;
+      req.flash('success', 'Student account deleted successfully.');
+      return res.redirect('/school/dashboard/students');
+    })
   } catch (err) {
     console.log(err);
   }
@@ -1406,7 +1422,7 @@ exports.deleteUserAccount = (req, res) => {
           dbcon.query(checkAssign, (err, mappedStaff) => {
             if (err) throw err;
             else if (mappedStaff[0].count == 0) {
-              var deleteUser = `UPDATE school_main_login SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+              var deleteUser = `UPDATE school_main_login SET status='Inactive', deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
               dbcon.query(deleteUser, (err, deletedUser) => {
                 if (err) throw err;
                 req.flash(
@@ -1425,7 +1441,7 @@ exports.deleteUserAccount = (req, res) => {
           });
           break;
         default:
-          var deleteUser = `UPDATE school_main_login SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+          var deleteUser = `UPDATE school_main_login SET status='Inactive', deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
           dbcon.query(deleteUser, (err, deletedUser) => {
             if (err) throw err;
             req.flash("success", "User Account has been deleted successfully.");
