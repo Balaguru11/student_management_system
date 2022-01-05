@@ -567,7 +567,7 @@ $(document).ready(function () {
 $(document).ready(function () {
   $("#schedule_name").on("change", function () {
     var schedule_temp_id = $("#schedule_name").val();
-    var class_sec_id = $("#class").val();
+    var class_sec_id = $("#class_sec").val();
     $.ajax({
       url: "/api/get-periods-from-schedule-template",
       type: "POST",
@@ -587,43 +587,7 @@ $(document).ready(function () {
             $("#schedule_list").html("<p>Schedule Plan</p> <hr />");
             $.each(foo, (key, value) => {
               $("#schedule_list").append(
-                "<input type='hidden' name='period_no_" +
-                  value +
-                  "' value='" +
-                  value +
-                  "'></input><div id='schedule_main' class='mt-3 row g-3'><div class='col'><label for='period_" +
-                  value +
-                  "_sub'>Period " +
-                  value +
-                  "- Subject</label><select data-id='" +
-                  counter +
-                  "' id='subject_option period_" +
-                  value +
-                  "_sub' class='period_" +
-                  value +
-                  "_sub form-control subject_option' name='period_" +
-                  value +
-                  "_sub'><option>Choose a Subject</option></select></div><div class='col'><label for='period_" +
-                  value +
-                  "_staff'>Period " +
-                  value +
-                  " - Staff</label><input disabled id='period_" +
-                  value +
-                  "_staff subject_staff' type='text' class='" +
-                  counter +
-                  " subject_staff period_" +
-                  value +
-                  "_staff form-control' placeholder='Choose Staff' name='period_" +
-                  value +
-                  "_staff'><input id='period_" +
-                  value +
-                  "_staff_hidden subject_staff_hidden' type='hidden' class='" +
-                  counter +
-                  "_hidden subject_staff_hidden period_" +
-                  value +
-                  "_staff form-control' name='period_" +
-                  value +
-                  "_staff_hidden'></div></div>"
+                `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub'><option value=''>Choose a Subject</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden'></div></div>`
               );
               counter++;
             });
@@ -657,7 +621,7 @@ $(document).on(
   function () {
     var counter_id = $(this).attr("data-id");
     var subject_id = $(this).val();
-    var class_sec_id = $("#class").val();
+    var class_sec_id = $("#class_sec").val();
 
     $.ajax({
       url: "/api/get-staff-assigned-to-subject",
@@ -677,6 +641,37 @@ $(document).on(
     });
   }
 );
+
+// run insert query on focusout in week schedule - having issue
+$(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4_sub,.period_5_sub, .period_6_sub, .period_7_sub, .period_8_sub, .period_9_sub, .period_10_sub", function () {
+  var class_sec_id = $('#class_sec').val();
+  var day = $('#day').val();
+  var sched_temp_name = $('#schedule_name').val();
+  var subject = $('.subject_option').val();
+  var staff = $('.subject_staff_hidden').val();
+  var period_name = $(this).attr('name').match(/\d+/);
+  var period_no = period_name[0];
+  $.ajax({
+    url: '/api/insert-week-schedule-by-period',
+    type: 'POST',
+    data: {
+      class_sec_id: class_sec_id,
+      day: day,
+      sched_temp_name: sched_temp_name,
+      period_no: period_no,
+      subject: subject,
+      staff: staff,
+    }, dataType: 'JSON',
+    reserved: function (data) {
+      $('#schedule_main_'+data.dataFound[0].period_no).addClass('alert alert-warning')
+    }, vacant: function () {
+      $('#schedule_main_'+something_here).addClass('alert alert-success')
+    },
+    error: function (err) {
+      console.log(err)
+    }
+  })
+})
 
 // OPEN edit Class section Modal
 $(document).ready(function () {
@@ -964,3 +959,4 @@ $(document).ready(function () {
     })
   })
 })
+

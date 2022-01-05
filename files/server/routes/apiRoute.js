@@ -222,6 +222,22 @@ apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
   });
 });
 
+// insert query on focusout of period entries in week schedule
+apiRouter.post('/insert-week-schedule-by-period', (req, res) => {
+  let session = req.session;
+  var checkData = `SELECT * FROM school_week_schedule WHERE school_id='${session.schoolId}' AND day='${req.body.day}' AND period_no = '${req.body.period_no}' AND period_staff_id='${req.body.staff}'`;
+  dbcon.query(checkData, (err, dataFound) => {
+    if(err) res.json({msg: 'error', err});
+    else if(dataFound.length != 0){
+      console.log(dataFound);
+      res.json({msg: 'reserved', text: 'Staff not available', dataFound: dataFound});
+    } else {
+      console.log(dataFound);
+      res.json({msg: 'vacant', text: 'Staff available', dataFound: dataFound});
+    }
+  })
+})
+
 // OPEN EDIT MODAL for class section
 apiRouter.post("/edit-class-section", (req, res) => {
   var classSec = `SELECT clr.id AS classsec_id, clr.class_id AS std_id, sfs.class_std, sfs.medium, clr.class_section, clr.students_strength FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE clr.id='${req.body.section_id}'`;
