@@ -25,15 +25,14 @@
           %> Medium - <%= locals.schedule[i].class_section %> Section
         </td>
         <td><%= locals.schedule[i].subject_name %></td>
-
         <td>
           <a
             class="btn btn-info View"
-            href="../dashboard/student-attendance/add/<%= locals.schedule[i].class_sec_id %>/<%= staff_id %>"
+            href="../dashboard/student-attendance/add/<%= locals.schedule[i].class_sec_id %>/<%= staff_id %>/<%= locals.schedule[i].id %>"
             ><i class="fa fa-plus" aria-hidden="true"></i></a>
           <a
             class="btn btn-warning edit"
-            href="../dashboard/student-attendance/edit/<%= locals.schedule[i].class_sec_id %>/<%= staff_id %>"
+            href="../dashboard/student-attendance/edit/<%= locals.schedule[i].class_sec_id %>/<%= staff_id %>/<%= locals.schedule[i].id %>"
             ><i class="fas fa-edit"></i></a>
         </td>
       </tr>

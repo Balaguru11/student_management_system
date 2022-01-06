@@ -444,15 +444,8 @@ exports.getMyScheduleStaff = (req, res) => {
   let staff_role = session.roleId;
   res.locals.staff_role = staff_role;
   try {
-    // do something
-    // var getStaffSchedule = `SELECT * FROM school_week_schedule WHERE school_id='${session.school_id}'`
-    // dbcon.query(getStaffSchedule, (err, staffSchedule) => {
-    //   if(err) throw err;
-    //   res.locals.staffSchedule = staffSchedule;
-    //   return res.render('staffLevel/teacher-view-class-schedule', {title: 'Teacher View Class Schedule'});
-    // })
     //run a query to fetch schedule data
-    var scheduleToday = `SELECT sws.day, sws.period_no, subs.subject_name, clr.id AS class_sec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_week_schedule AS sws INNER JOIN school_subjects AS subs ON subs.id = sws.period_subject_id INNER JOIN school_classroom AS clr ON clr.id=sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.period_staff_id='${session.staff_id}' AND sws.day=DAYOFWEEK(CURDATE()-1) ORDER BY ABS(sws.period_no)`;
+    var scheduleToday = `SELECT sws.id, sws.day, sws.period_no, subs.subject_name, clr.id AS class_sec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_week_schedule AS sws INNER JOIN school_subjects AS subs ON subs.id = sws.period_subject_id INNER JOIN school_classroom AS clr ON clr.id=sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.period_staff_id='${session.staff_id}' AND sws.day=DAYOFWEEK(CURDATE()-1) ORDER BY ABS(sws.period_no)`;
     dbcon.query(scheduleToday, (err, schedule) => {
       if (err) throw err;
       else if (schedule.length > 0) {
@@ -489,11 +482,13 @@ exports.getStuAttendance = (req, res) => {
   try {
     let class_sec_id = req.params.class_sec_id;
     let staff_id = req.params.staff_id;
+    var week_sched_id = req.params.week_sched_id;
     if (staff_id == session.staff_id) {
       // get data from school_student_attendance table
-      var StuAttendance = `SELECT * FROM school_student_attendance WHERE school_id='${session.school_id}' AND class_sec = '${class_sec_id}'`;
+      var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT ssa.date, ssa.period_no, ssa.on_duty, ssa.absent, ssa.leave_intimated FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.class_sec = '${class_sec_id}'; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}' AND ssa.academic_year = YEAR(CURDATE())`;
       dbcon.query(StuAttendance, (err, attendances) => {
         if (err) throw err;
+        console.log(attendances);
         res.locals.attendances = attendances;
         return res.render("staffLevel/teacher-add-attendance", {
           title: "Student Attendance Records",
@@ -521,12 +516,12 @@ exports.postStuAttendance = (req, res) => {
   res.locals.staff_role = staff_role;
   try {
     // inserting attendance
-    var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, leave_intimated, absent, on_duty, entered_by) VALUES ('${req.body.attendance_date}', '${session.school_id}', '${req.body.class_sec_id}','${req.body.period_no}','${req.body.leave_informed_stu}','${req.body.absent_stu}', '${req.body.on_duty_stu}', '${session.staff_id}')`;
+    var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, leave_intimated, absent, on_duty, entered_by) VALUES ('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','${req.body.leave_informed_stu}','${req.body.absent_stu}', '${req.body.on_duty_stu}', '${session.staff_id}')`;
     dbcon.query(attendanceData, (err, attendanceAdded) => {
       if (err) throw err;
       console.log(attendanceAdded);
       req.flash("success", "Attendance added successfully.");
-      return res.redirect("/staff/dashboard");
+      return res.redirect("/staff/dashboard/my-schedule");
     });
   } catch (err) {
     console.log(err);

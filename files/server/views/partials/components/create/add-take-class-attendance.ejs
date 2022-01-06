@@ -7,34 +7,56 @@
     <h2 class="text-center">Attendance Progress</h2>
     <hr />
   </div>
-  <!-- Name this Schedule Plan and choose for each class sections -->
   <div class="mb-3">
     <label for="date">Date: </label>
-    <input type="text" class="form-control" name="attendance_date" id="attendance_date" value="<%= new Date().getDate(); %>-<%= new Date().getMonth()+1; %>-<%= new Date().getFullYear(); %>" disabled>
+    <input type="text" class="form-control" name="attendance_date" id="attendance_date" value="<%= moment().format('DD-MM-YYYY') %>" disabled>
+    <input type="hidden" class="form-control" name="attendance_date_hide" id="attendance_date_hide" value="<%= moment().format('YYYY-MM-DD') %>">
   </div>
   <div class="mb-3">
     <label for="period_no">Preiod No: </label>
-    <input type="number" class="form-control" name="period_no" id="period_no">
+    <select name="period_no" id="period_no" class="form-control">
+      <option value="<%= locals.attendances[0][0].period_no %>" selected><%= locals.attendances[0][0].period_no %></option>
+    </select>
   </div>
   <div class="mb-3">
     <label for="class_sec_id">Class Section: </label>
-    <input type="text" class="form-control" name="class_sec_id" id="class_sec_id" value="">
+    <input type="text" class="form-control" name="class_sec_id" id="class_sec_id" value="<%= locals.attendances[0][0].class_std %> std - <%= locals.attendances[0][0].medium %> medium - <%= locals.attendances[0][0].class_section %> sec" disabled>
+    <input type="hidden" class="form-control" name="class_sec_id_hide" id="class_sec_id_hide" value="<%= locals.attendances[0][0].class_sec_id %>">
   </div>
-  <div class="mb-3">
-    <label for="absent_stu">Absent Students: </label>
-    <input type="text" class="form-control" name="absent_stu" id="absent_stu">
-  </div>
-  <div class="mb-3">
-    <label for="leave_informed_stu">Leave Intimated: </label>
-    <input type="text" class="form-control" name="leave_informed_stu" id="leave_informed_stu">
-  </div>
-  <div class="mb-3">
-    <label for="on_duty_stu">On-Duty students: </label>
-    <input type="text" class="form-control" name="on_duty_stu" id="on_duty_stu">
-  </div>
-  <div class="mt-3 mb-3">
-    <button class="btn btn-secondary" type="submit" value="submit">
-      Add Attendance Record
-    </button>
-  </div>
+  <% if (locals.attendances[2].length > 0) { %>
+    <div class="mb-3">
+      <label for="absent_stu">Absent Students: </label>
+      <select multiple id="absent_stu" class="form-control" name="absent_stu">
+        <option value="">Select students</option>
+         <% for (let i=0; i < locals.attendances[2].length; i++) { %>
+            <option value="<%= locals.attendances[2][i].student_id %>"><%= locals.attendances[2][i].student_id %> - <%= locals.attendances[2][i].name %></option>
+          <% }  %>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="leave_informed_stu">Leave Intimated: </label>
+      <select id="leave_informed_stu" class="form-control" name="leave_informed_stu">
+        <option value="">Select students</option>
+         <% for (let i=0; i < locals.attendances[2].length; i++) { %>
+            <option value="<%= locals.attendances[2][i].student_id %>"><%= locals.attendances[2][i].student_id %> - <%= locals.attendances[2][i].name %></option>
+          <% }  %>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="on_duty_stu">On-Duty students: </label>
+      <select id="on_duty_stu" class="form-control" name="on_duty_stu">
+        <option value="">Select students</option>
+         <% for (let i=0; i < locals.attendances[2].length; i++) { %>
+            <option value="<%= locals.attendances[2][i].student_id %>"><%= locals.attendances[2][i].student_id %> - <%= locals.attendances[2][i].name %></option>
+          <% }  %>
+      </select>
+    </div>
+    <div class="mt-3 mb-3">
+      <button class="btn btn-secondary" type="submit" value="submit">
+        Add Attendance Record
+      </button>
+    </div>
+  <% } else { %>
+    <p>No students enrolled to this section.</p>
+  <% } %>
 </form>

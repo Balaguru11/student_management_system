@@ -15,25 +15,25 @@
       </tr>
     </thead>
     <tbody>
-      <% if(locals.attendances.length > 0) { for(var i = 0; i < locals.attendances.length;
+      <% if(locals.attendances[1].length > 0) { for(var i = 0; i < locals.attendances[1].length;
       i++) {%>
       <tr>
         <th scope="row"><%= (i+1) %></th>
-        <td><%= locals.attendances[i].date %></td>
-        <td><%= locals.attendances[i].class_sec %></td>
-        <td><%= locals.attendances[i].period_no %></td>
-        <td><%= locals.attendances[i].leave_intimated %> Mins</td>
-        <td><%= locals.attendances[i].absent %></td>
-        <td><%= locals.attendances[i].on_duty %></td>
+        <td><%= locals.attendances[1][i].date %></td>
+        <td><%= locals.attendances[1][i].class_sec %></td>
+        <td><%= locals.attendances[1][i].period_no %></td>
+        <td><%= locals.attendances[1][i].leave_intimated %></td>
+        <td><%= locals.attendances[1][i].absent %></td>
+        <td><%= locals.attendances[1][i].on_duty %></td>
         <td>
           <a
             class="btn btn-warning edit"
-            href="../dashboard/schedule-plan/edit/<%= locals.attendances[i].id %>"
+            href="../dashboard/schedule-plan/edit/<%= locals.attendances[1][i].id %>"
             ><i class="far fa-edit" aria-hidden="true"></i></a
           >
           <a
             class="btn btn-danger delete"
-            href="../dashboard/schedule-plan/delete/<%= locals.attendances[i].id %>"
+            href="../dashboard/schedule-plan/delete/<%= locals.attendances[1][i].id %>"
             ><i class="far fa-trash-alt" aria-hidden="true"></i></a
           >
         </td>
@@ -41,7 +41,7 @@
       <% } } else { %>
       <tr>
         <td colspan="7" class="text-center">
-          <mark>No Schedule plan is found.</mark>
+          <mark>No attendance record inserted.</mark>
         </td>
       </tr>
       <% } %>

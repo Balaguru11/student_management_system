@@ -8,6 +8,8 @@ const morgan = require("morgan");
 
 const app = express();
 
+const moment = require("moment");
+
 //dotenv config
 require("dotenv").config();
 
@@ -28,6 +30,12 @@ app.use(
 );
 app.use(flash());
 app.use(morgan("tiny"));
+
+// moment middleware
+app.use((req, res, next)=>{
+  res.locals.moment = moment;
+  next();
+});
 
 //body-parser deprecated
 app.use(express.urlencoded({ extended: true }));
