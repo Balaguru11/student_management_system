@@ -26,7 +26,7 @@
   <% if (locals.attendances[2].length > 0) { %>
     <div class="mb-3">
       <label for="absent_stu">Absent Students: </label>
-      <select multiple id="absent_stu" class="form-control" name="absent_stu">
+      <select  class="form-control js-example-basic-multiple" id="absent_stu"  name="absent_stu[]" multiple="multiple">
         <option value="">Select students</option>
          <% for (let i=0; i < locals.attendances[2].length; i++) { %>
             <option value="<%= locals.attendances[2][i].student_id %>"><%= locals.attendances[2][i].student_id %> - <%= locals.attendances[2][i].name %></option>
@@ -35,7 +35,7 @@
     </div>
     <div class="mb-3">
       <label for="leave_informed_stu">Leave Intimated: </label>
-      <select id="leave_informed_stu" class="form-control" name="leave_informed_stu">
+      <select class="form-control js-example-basic-multiple" id="leave_informed_stu" name="leave_informed_stu[]" multiple="multiple" >
         <option value="">Select students</option>
          <% for (let i=0; i < locals.attendances[2].length; i++) { %>
             <option value="<%= locals.attendances[2][i].student_id %>"><%= locals.attendances[2][i].student_id %> - <%= locals.attendances[2][i].name %></option>
@@ -44,7 +44,7 @@
     </div>
     <div class="mb-3">
       <label for="on_duty_stu">On-Duty students: </label>
-      <select id="on_duty_stu" class="form-control" name="on_duty_stu">
+      <select multiple="multiple" class="form-control js-example-basic-multiple" id="on_duty_stu" name="on_duty_stu[]">
         <option value="">Select students</option>
          <% for (let i=0; i < locals.attendances[2].length; i++) { %>
             <option value="<%= locals.attendances[2][i].student_id %>"><%= locals.attendances[2][i].student_id %> - <%= locals.attendances[2][i].name %></option>

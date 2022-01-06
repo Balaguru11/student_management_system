@@ -102,11 +102,8 @@ exports.isStudent = async (req, res, next) => {
 };
 
 
-
-
-
 exports.isParent = async (req, res, next) => {
-  let session = re.session;
+  let session = req.session;
   res.locals.school_id = session.school_id;
   res.role_id_fk = session.role_id_fk;
   res.locals.parentName = session.username;

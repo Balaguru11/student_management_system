@@ -312,6 +312,34 @@ apiRouter.post("/delete-mapping", (req, res) => {
   });
 });
 
+// get Parent account data -used in edit & delete jqueries
+apiRouter.post('/get-parent-account-data', (req, res) => {
+  var findParent = `SELECT * FROM school_main_login WHERE id='${req.body.parent_id}' AND role_id_fk='5'`;
+  dbcon.query(findParent, (err, parData) => {
+    if(err) res.json({msg: 'error', err})
+    else if(parData.length != 0) {
+      res.json({msg: 'success', parData: parData});
+    } else {
+      res.json({msg: 'zero', text: 'No Parent account found.'});
+    }
+  })
+})
+
+// get parent account data and mapped date
+apiRouter.post('/get-parent-account-mapped-data', (req, res) => {
+var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.params.parent_id}' AND role_id_fk='5'; SELECT spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.params.parent_id}'`;
+dbcon.query(parentMapData, (err, parMapData) => {
+  if(err) res.json({msg: 'error', err});
+  else if(parMapData[0].length != 0){
+    res.json({msg: 'success', parMapData: parMapData});
+  } else {
+    res.json({msg: 'zero', text: 'Not a Parent account'});
+  }
+})
+
+ 
+})
+
 // get EDIT Student ACCOUNT Modal for Admin and School
 apiRouter.post("/get-edit-Student-account", (req, res) => {
   var StudAccData = `SELECT * FROM school_main_login WHERE id='${req.body.student_id}'`;

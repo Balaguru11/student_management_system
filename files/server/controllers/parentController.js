@@ -17,9 +17,10 @@ exports.allParentLogin = (req, res) => {
     return res.redirect("/");
   } else {
     try {
-      var parentLogin = `SELECT * FROM school_main_login WHERE role_id_fk='5', username='${req.body.username}'`;
+      var parentLogin = `SELECT * FROM school_main_login WHERE role_id_fk='5' AND username='${req.body.username}'`;
       dbcon.query(parentLogin, (err, parent) => {
-        if (err) return res.render("server-error", { title: "Server Error" });
+        if (err) console.log(err);
+        // return res.render("server-error", { title: "Server Error" });
         else if (parent.length == 1) {
           const passTyped = req.body.password;
           const parent_password = parent[0].password;
@@ -53,7 +54,8 @@ exports.allParentLogin = (req, res) => {
         }
       });
     } catch (err) {
-      return res.render("server-error", { title: "SERVER Error" });
+      // return res.render("server-error", { title: "SERVER Error" });
+      console.log(err);
     }
   }
 };

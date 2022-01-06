@@ -9,7 +9,7 @@ const {
 } = require("../controllers/parentController");
 
 // parent Login
-parentRouter.all("/login", isParent, allParentLogin);
+parentRouter.all("/login", allParentLogin);
 parentRouter.get("/dashboard", isParent, getParentDashboard);
 
 module.exports = parentRouter;

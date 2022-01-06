@@ -819,6 +819,11 @@ $(document).ready(function () {
   $("#schedule").DataTable();
 });
 
+// multi select option
+$(document).ready(function() {
+  $('.js-example-basic-multiple').select2();
+});
+
 // Password Reset student Account Modal for School Login
 $(document).ready(function () {
   $(".pwdStudAcc").on("click", function () {
@@ -915,6 +920,97 @@ $(document).ready(function () {
         });
         // show data in the element.
         $("#deleteStudAccModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
+
+// Edit PARENT Account Modal for School Login
+$(document).ready(function () {
+  $(".editParAcc").on("click", function () {
+    var parent_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/get-parent-account-data",
+      type: "POST",
+      data: {
+        parent_id: parent_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".edit-modal-body").html(function () {
+          return (
+            `<div class='container'>
+            <div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='${data.parData[0].id}' /><p><b>Update Status for '${data.parData[0].username} 's account'?</b></p></div>
+            <div class='row'>
+            <form id='editpar-form' action='../dashboard/parents/edit/${data.parData[0].id}?_method=PUT' method='POST'>
+            <div class='mb-3'><label for='status'>Parent Status:</label><select id='status_edit' class='form-control' name='status_edit'><option value='${data.parData[0].status}'>${data.parData[0].status}</option><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></div>
+            <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Update</button></div>
+            </form>
+            </div></div>`
+          );
+        });
+        // show data in the element.
+        $("#editParAccModal").modal("show");
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+  });
+});
+
+// showing modal to map children with parent
+$(document).ready(function(){
+  $(".mapParAcc").on("click", function () {
+    var parent_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/get-parent-account-mapped-data",
+      type: "POST",
+      data: {
+        parent_id: parent_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".edit-modal-body").html(function () {
+          return ("<p></p>");
+        })
+      }, error: function (err){
+        console.log(err)
+      }
+    })
+  })
+})
+
+// get Delete Modal for PARENT ACCOUNTS by School
+$(document).ready(function () {
+  $(".deleteParAcc").on("click", function () {
+    var parent_id = $(this).attr("data-id");
+    $.ajax({
+      url: "/api/get-parent-account-data",
+      type: "POST",
+      data: {
+        parent_id: parent_id,
+      },
+      dataType: "Json",
+      success: function (data) {
+        $(".delete-modal-body").html(function () {
+          return (
+            `<div class='container'>
+            <div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='${data.parData[0].id}' /><p><b>Do you want to delete '${data.parData[0].username}'s account'?</b></p></div>
+            <div class='row'>
+            <form id='delpar-form' action='../dashboard/parents/delete/${data.parData[0].id}?_method=DELETE' method='POST'>
+            <div class='mb-3'><label for='status'>Want to change status as well?</label><select id='status_edit' class='form-control' name='status_edit'><option value='${data.parData[0].status}'>${data.parData[0].status}</option><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select></div>
+            <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Delete</button></div>
+            </form>
+            </div></div>`
+          );
+          
+        });
+        // show data in the element.
+        $("#deleteParAccModal").modal("show");
       },
       error: function (err) {
         console.log(err);

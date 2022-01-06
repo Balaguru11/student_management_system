@@ -34,7 +34,7 @@ const {
   putMessageU,
   deleteMessageD,
   getFeeCollection,
-  postFeeCollection,
+  postFeeCollection, getParentsList, addNewParent, editParentAcc, deleteParentAcc, 
   getAddStudent,
   postAddStudent, pwdResetStudentAcc, 
   editStudentAcc,
@@ -118,7 +118,17 @@ schoolRouter.get(
   deleteMapSubStaff
 );
 
-// STUDDNT CRUD
+// PARENTS CRUD
+schoolRouter.get('/dashboard/parents', isSchool, getParentsList);
+schoolRouter.post('/dashboard/add-Parent', isSchool, addNewParent); // parent active default
+schoolRouter.put(
+  "/dashboard/parents/edit/:parent_id",
+  isSchool,
+  editParentAcc
+);
+schoolRouter.delete("/dashboard/parents/delete/:parent_id", isSchool, deleteParentAcc);
+
+// STUDENT CRUD
 schoolRouter.get("/dashboard/students", isSchool, getAddStudent);
 schoolRouter.post("/dashboard/add-student", isSchool, postAddStudent); // Adding student to main_login (Inactive)
 schoolRouter.put(

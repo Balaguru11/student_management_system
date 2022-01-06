@@ -1,0 +1,131 @@
+<div class="pt-5">
+  <h4 class="text-center">View Parent Accounts</h4>
+  <br />
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Username</th>
+        <th scope="col">Email ID</th>
+        <th scope="col">Status</th>
+        <th width="200px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.parentsList.length > 0) { for(var i = 0; i < locals.parentsList.length;
+      i++) {%>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.parentsList[i].username %></td>
+        <td><%= locals.parentsList[i].email %></td>
+        <td><%= locals.parentsList[i].status %></td>
+        <td>
+          <button
+            data-id="<%= locals.parentsList[i].id %>"
+            type="button"
+            class="editParAcc btn btn-warning View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-edit"></i>
+          </button>
+          <button
+            data-id="<%= locals.parentsList[i].id %>"
+            type="button"
+            class="mapParAcc btn btn-info View"
+            data-bs-toggle="modal"
+          >
+          <i class="fas fa-magnet"></i>
+          </button>
+          
+          <button
+            data-id="<%= locals.parentsList[i].id %>"
+            type="button"
+            class="deleteParAcc btn btn-danger View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-trash-alt" aria-hidden="true"></i>
+          </button>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center">No Parent account created.</td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- delete Modal -->
+<div
+  class="modal fade"
+  id="deleteParAccModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          Deleting Parent Acoount
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="delete-modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- pwd reset modal -->
+<div
+  class="modal fade"
+  id="mapParAccModal"
+  tabindex="-1"
+  aria-labelledby="mapModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Assgin Parent to Student</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- edit modal -->
+<div
+  class="modal fade"
+  id="editParAccModal"
+  tabindex="-1"
+  aria-labelledby="editModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit Parent Account</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="edit-modal-body"></div>
+    </div>
+  </div>
+</div>

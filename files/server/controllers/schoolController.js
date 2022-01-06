@@ -1475,4 +1475,114 @@ exports.deleteUserAccount = (req, res) => {
   }
 };
 
-//test
+//GET Parent list and add a secondary Parent
+exports.getParentsList = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var getParents = `SELECT * FROM school_main_login WHERE role_id_fk = '5' AND deleted_at IS NULL`;
+    dbcon.query(getParents, (err, parentsList) => {
+      if(err) throw err;
+      res.locals.parentsList = parentsList;
+      return res.render('schoolLevel/school-add-parents', {title: 'Parent Accounts'});
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// add New Parent (secondary account)
+exports.addNewParent = (req, res) => {
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // cehck for duplicates
+    var checkParent = `SELECT EXISTS (SELECT * FROM school_main_login WHERE email = '${req.body.email}') AS count`;
+    dbcon.query(checkParent, (err, foundParent) => {
+      if(err) throw err;
+      else if(foundParent[0].count != 0){
+        req.flash('err_msg', 'This Parent is already exists.');
+        return res.redirect('/school/dashboard/parents');
+      } else {
+        const hashedParentPwd = bcrypt.hashSync(req.body.password, 10);
+        var secParent = `INSERT INTO school_main_login (school_id, role_id_fk, username, password, email, status) VALUES ('${session.schoolId}', '${req.body.role}', '${req.body.username}', '${hashedParentPwd}', '${req.body.email}', 'Active')`;
+        dbcon.query(secParent, (err) => {
+          if(err) throw err;
+          req.flash('success', "New Parent account created.");
+          return res.redirect('/school/dashboard/parents');
+        })   
+      }
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// edit Parent status by school
+exports.editParentAcc = (req, res) => {
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    // get parent data from params.parent_id
+    var parentEmail = `SELECT * FROM school_main_login WHERE id='${req.params.parent_id}' AND role_id_fk='5'`;
+    dbcon.query(parentEmail, (err, emailId) => {
+      if(err) throw err;
+      else if (emailId.length == 1) {
+        // run update here n send mail
+        var editParentAcc = `UPDATE school_main_login SET status= '${req.body.status_edit}' WHERE id='${req.params.parent_id}'`;
+        dbcon.query(editParentAcc, (err) => {
+          if(err) throw err;
+          const mail_to_parent = sendMail({
+            from: process.env.MAIL_USERNAME,
+            to: emailId[0].email,
+            subject: "Your account status has been modified.",
+            html: `<h2>${session.schoolName} has modified your Account Status to ${emailId[0].status}.</h2><p>Hi Parent, [Referencing email address: ${emailId[0].email} and username: ${emailId[0].username}] Your account status has been recently modified to ${emailId[0].status}, by the School ${session.schoolName}. If you think it is accidental or If you havent requested this change, please contact the school for further clarifications.</p><br><p>- Thank you. Have a good day.</p>`,
+          })
+            .then((result) => {
+              console.log("Mail has been sent");
+            })
+            .catch((err) => {
+              return res.render("server-error", {
+                title: "Server Error",
+              });
+            });
+            req.flash('success', 'Parent Account updated.');
+            return res.redirect('/school/dashboard/parents');
+        })
+      } else {
+        req.flash('err_msg', 'NO Parent account found.')
+        return res.redirect('/school/dashboard/parents');
+      }
+    })
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+// delete Parent account by School
+exports.deleteParentAcc = (req, res) => {
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+    var deleteParent = `UPDATE school_main_login SET status='${req.body.status_edit}', deleted_at = CURRENT_TIMESTAMP WHERE id='${req.params.parent_id}'`;
+    dbcon.query(deleteParent, (err, deletedParent) => {
+      if(err) throw err;
+      req.flash('success', 'Parent account has been deleted successfully.');
+      return res.redirect('/school/dashboard/parents');
+    })
+  } catch(err) {
+    console.log(err);
+  }
+}
