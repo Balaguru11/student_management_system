@@ -34,7 +34,7 @@ const {
   putMessageU,
   deleteMessageD,
   getFeeCollection,
-  postFeeCollection, getParentsList, addNewParent, editParentAcc, deleteParentAcc, 
+  postFeeCollection, getParentsList, addNewParent, editParentAcc, deleteParentAcc, mapParStudent, 
   getAddStudent,
   postAddStudent, pwdResetStudentAcc, 
   editStudentAcc,
@@ -44,7 +44,7 @@ const {
   viewWeekSchedule,
   addWeekScheduleForm,
   allChangePwd,
-  allDueCollection,
+  allDueCollection, viewDueCollectionData
 } = require("../controllers/schoolController");
 
 // CREATE SCHOOL
@@ -125,7 +125,8 @@ schoolRouter.put(
   "/dashboard/parents/edit/:parent_id",
   isSchool,
   editParentAcc
-);
+); // changing status only
+schoolRouter.put('/dashboard/parents/map/:parent_id', isSchool, mapParStudent);
 schoolRouter.delete("/dashboard/parents/delete/:parent_id", isSchool, deleteParentAcc);
 
 // STUDENT CRUD
@@ -146,6 +147,8 @@ schoolRouter.delete("/dashboard/students/delete/:id", isSchool, deleteStudentAcc
 // fee collection CRUD
 schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
 schoolRouter.post("/dashboard/fee-collection", isSchool, postFeeCollection);
+schoolRouter.get('/dashboard/fee-due-collection/view/:student_id/:admission_id', isSchool, viewDueCollectionData)
+
 // Due collection
 schoolRouter.all("/dashboard/fee-due-collection", isSchool, allDueCollection);
 

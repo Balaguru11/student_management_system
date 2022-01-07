@@ -893,8 +893,7 @@ exports.getFeeCollection = (req, res) => {
   let session = req.session;
   try {
     if (session.schoolStatus == "Active") {
-      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_classroom AS clr
-    INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
+      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
       dbcon.query(fee_data, (err, feeData) => {
         if (err) return res.render("server-error", { title: "Server Error" });
 
@@ -967,6 +966,19 @@ exports.postFeeCollection = (req, res) => {
     return res.render("server-error", { title: "Server Error" });
   }
 };
+
+// view Due collection records
+exports.viewDueCollectionData = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  try {
+  } catch(err){
+    console.log(err);
+  }
+}
 
 // STUDENT CRUD
 exports.getAddStudent = (req, res) => {
@@ -1564,6 +1576,25 @@ exports.editParentAcc = (req, res) => {
       }
     })
   } catch(err) {
+    console.log(err);
+  }
+}
+
+// mapping Parent and student by School
+exports.mapParStudent = (req, res) => {
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let parent_id = req.params.parent_id;
+  try {
+    var mapStuParent = `INSERT IGNORE INTO school_parent_student_map (stu_school_id, parent_id, ml_student_id) VALUES ('${session.schoolId}', '${parent_id}', '${req.body.map_students_edit}')`;
+    dbcon.query(mapStuParent, (err, result) => {
+      if(err) throw err;
+      req.flash('success', 'Parent and Student Mapped successfully.');
+      return res.redirect('/school/dashboard/parents');
+    })
+  }catch(err){
     console.log(err);
   }
 }

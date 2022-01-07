@@ -108,14 +108,6 @@ $(function () {
   $("form").trigger("click", function (event) {
     $("input").trigger("input");
     var form_data = $("#login-form").serializeArray();
-    // var error_free=true;
-    // for (var input in form_data) {
-    //   var element=$(form_data[input]['name']);
-    //   var valid=element.hasClass("valid");
-    //   var error_element=$("span", element.parent());
-    //   if (!valid){error_element.removeClass("error").addClass("error_show"); error_free=false;}
-    //   else{error_element.removeClass("error_show").addClass("error");}
-    // }
     if ($(".form-control.invalid").length) {
       alert("Please fill all the fields.");
       event.preventDefault();
@@ -126,19 +118,59 @@ $(function () {
 });
 
 $(document).ready(function () {
-  // // Handling data-toggle manually
-  //     $('.nav-tabs a').click(function(){
-  //         $(this).tab('show');
-  //     });
-  // The on tab shown event
   $(".nav-pills button").on("shown.bs.tab", function (e) {
     var current_tab = e.target;
-    // if(current_tab.id == ){
-    //   //show elements
-    // }
     var previous_tab = e.relatedTarget;
   });
 });
+
+// view fee due collection data as modal
+$(document).ready(function () {
+  $('.viewDueCollData').on('click', function () {
+    var student_id = $(this).attr('data-st-id');
+    var admission_id = $(this).attr('data-id');
+    $.ajax({
+      url: '/api/get-due-collection-records',
+      type: 'POST',
+      data: {
+        student_id: student_id,
+        admission_id: admission_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+
+        $('.view-modal-body').html(function () {
+          return (`<div><h4 class='text-center'>Viewing Payment Records of ${data.feeDueRows[0].name}</h4><br /><div id='year_wise_payments'></div><p>Year: ${data.feeDueRows[0].academic_year} | Class: ${data.feeDueRows[0].class_std} std- ${data.feeDueRows[0].medium} Med- ${data.feeDueRows[0].class_section} sec</p>
+          <table class='table table-light text-center'>
+          <thead> <tr><th scope='col'>S.No</th><th scope='200px'>Class Sec</th><th scope='200px'>Year</th><th scope='200px'>Course Fee</th><th scope='100px'>Paid</th><th scope='200px'>Due Status</th><th scope='100px'>Payment Mode</th><th scope='100px'>Paid Date</th><th width='200px'>Actions</th> </tr></thead>
+          <tbody class='view-due-records' id='view-due-records'>
+          <tr><th scope='row'>1</th><td>${data.feeDueRows[0].class_std} std- ${data.feeDueRows[0].medium} Med- ${data.feeDueRows[0].class_section} sec</td><td>${data.feeDueRows[0].academic_year}</td><td>${data.feeDueRows[0].actual_fee}</td><td id='admission_paid'></td><td id='first_payment_status'></td><td>${data.feeDueRows[0].admi_payment_mode}</td><td>${data.feeDueRows[0].admission_date}</td><td><button data-id='13' type='button' class='deleteSchedTemp btn btn-danger View' data-bs-toggle='modal'><i class='far fa-trash-alt' aria-hidden='true'></i></button></td></tr>
+          </tbody></table></div>`);
+        })
+
+        var due_total = 0;
+        if (data.feeDueRows[1]){
+          $.each(data.feeDueRows, function (key, value) {
+            due_total += value.currently_paying
+            $("#view-due-records").append(
+              `<tr><th scope='row'>${key+2}</th><td>${value.class_std} std- ${value.medium} Med- ${value.class_section} sec</td><td>${value.academic_year}</td><td>${value.actual_fee}</td><td>${value.currently_paying}</td><td>${value.due_status}</td><td>${value.payment_mode}</td><td>${value.duepaid_date}</td><td><button data-id='13' type='button' class='deleteSchedTemp btn btn-danger View' data-bs-toggle='modal'><i class='far fa-trash-alt' aria-hidden='true'></i></button></td></tr>`
+            );
+          });
+        }
+        var first_paid = data.feeDueRows[0].actual_fee - due_total
+        $('#admission_paid').append(first_paid);
+
+        if (first_paid == data.feeDueRows[0].actual_fee){
+          $('#first_payment_status').append('No Due');
+        } else {
+          $('#first_payment_status').append('Due');
+        }
+        $('#viewDueCollDataModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
 
 // Dynamic getting student data from fee-collection module
 $(document).ready(function () {
@@ -974,9 +1006,46 @@ $(document).ready(function(){
       },
       dataType: "Json",
       success: function (data) {
-        $(".edit-modal-body").html(function () {
-          return ("<p></p>");
+        $(".modal-body").html(function () {
+          return (
+            `<div class='container'>
+            <div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='${data.parMapData[0][0].id}' /><p><b>Let Ms./Mr. ${data.parMapData[0][0].username} to track following students</b></p></div>
+            <div class='row'>
+            <form id='editpar-form' action='../dashboard/parents/map/${data.parMapData[0][0].id}?_method=PUT' method='POST'>
+            <div class='mb-3' id='previously_mapped'><label for='status'>Earlier Mapped Students:</label>
+            <select id='mapped_students_edit' class='js-example-basic-multiple form-control' name='mapped_students_edit[]' multiple='multiple'></select></div>
+            <div class='mb-3' ><label for='status'>Add New Students:</label>
+            <select id='map_students_edit' class='js-example-basic-multiple form-control' name='map_students_edit[]' multiple='multiple'></select></div>
+            <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Update</button></div>
+            </form>
+            </div></div>`
+          );
         })
+        // showing previosuly mapped students here
+        if (data.parMapData[1].length > 0){
+          $.each(data.parMapData[1], function(key, value){
+            $('#mapped_students_edit').append(
+              `<option value='${value.ml_student_id}'>${value.student_name}</option>`
+            )
+          })
+        } else {
+          $('#previously_mapped').remove();
+        }
+        
+        if (data.parMapData[2].length > 0) {
+          $.each(data.parMapData[2], function(key, value){
+            $('#map_students_edit').append(
+              `<option value='${value.student_id}'>${value.student_name}</option>`
+            )
+          })
+        } else {
+          $('#map_students_edit').append(
+            `<option disabled value=''>No student found</option>`
+          )
+        }
+
+        // show data in the element.
+        $("#mapParAccModal").modal("show");
       }, error: function (err){
         console.log(err)
       }

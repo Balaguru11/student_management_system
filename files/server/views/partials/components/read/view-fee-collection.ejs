@@ -5,12 +5,12 @@
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th scope="col">Student Email</th>
-        <th scope="col">Mobile Number</th>
-        <th scope="col">Course Fee</th>
-        <th scope="col">Year</th>
-        <th scope="col">Fee Paid</th>
-        <th scope="col">Due Status</th>
+        <th scope="200px">Student Email</th>
+        <th scope="200px">Mobile No</th>
+        <th scope="100px">Fee</th>
+        <th scope="100px">Year</th>
+        <th scope="100px">Paid</th>
+        <th scope="100px">Due</th>
         <th width="200px">Actions</th>
       </tr>
     </thead>
@@ -26,11 +26,8 @@
         <td><%= locals.data[i].paying_amount %></td>
         <td><%= locals.data[i].payment_status %></td>
         <td>
-          <a
-            class="btn btn-info view"
-            href="../dashboard/fee-collection/view/<%= locals.data[i].id %>"
-            ><i class="far fa-eye"></i
-          ></a>
+          <button data-id="<%= locals.data[i].id %>"
+            data-st-id="<%= locals.data[i].student_id %>" type="button" class="viewDueCollData btn btn-primary View" data-toggle="modal" data-target=".bd-example-modal-xl"><i class="far fa-eye"></i></button>
           <a
             class="btn btn-warning edit"
             href="../dashboard/fee-collection/edit/<%= locals.data[i].id %>"
@@ -45,4 +42,29 @@
       <% } %>
     </tbody>
   </table>
+</div>
+
+<!-- view Due collection Modal -->
+<div
+  role="dialog"
+  class="modal fade bd-example-modal-xl"
+  id="viewDueCollDataModal"
+  tabindex="-1"
+  aria-labelledby="viewModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">View Due Payment Records</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="view-modal-body"></div>
+    </div>
+  </div>
 </div>

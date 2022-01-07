@@ -327,7 +327,8 @@ apiRouter.post('/get-parent-account-data', (req, res) => {
 
 // get parent account data and mapped date
 apiRouter.post('/get-parent-account-mapped-data', (req, res) => {
-var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.params.parent_id}' AND role_id_fk='5'; SELECT spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.params.parent_id}'`;
+  let session = req.session;
+var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.body.parent_id}' AND role_id_fk='5'; SELECT stu.school_id, spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.body.parent_id}'; SELECT stu.school_id, stu.name AS student_name, stu.student_id FROM school_student AS stu INNER JOIN school_main_login AS sml ON sml.id = stu.student_id WHERE sml.school_id='${session.schoolId}' AND sml.status='Active' AND sml.deleted_at IS NULL AND sml.role_id_fk = '1'`;
 dbcon.query(parentMapData, (err, parMapData) => {
   if(err) res.json({msg: 'error', err});
   else if(parMapData[0].length != 0){
@@ -380,4 +381,16 @@ apiRouter.post('/get-schedule-template-data', (req, res) => {
   })
 })
 
+// Individual student's Fee due collection record - for school 
+apiRouter.post('/get-due-collection-records', (req, res) => {
+  var feeDueData = `SELECT stu.name, sfs.class_std, sfs.medium, clr.class_section, ssa.academic_year, ssa.actual_fee, ssa.paying_amount, ssa.payment_status, ssa.payment_mode AS admi_payment_mode, ssa.created_at AS admission_date, due.currently_paying, due.payment_mode, due.due_status, due.created_at AS duepaid_date FROM school_student_admission AS ssa 
+  INNER JOIN school_classroom AS clr ON clr.id=ssa.class_section 
+  INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id 
+  LEFT JOIN school_student_feedue AS due ON due.admission_id=ssa.id 
+  INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.id='${req.body.admission_id}' AND ssa.student_id='${req.body.student_id}'`;
+  dbcon.query(feeDueData, (err, feeDueRows) => {
+    if(err) res.json({msg: 'error', err});
+    res.json({msg: 'success', feeDueRows: feeDueRows});
+  })
+})
 module.exports = apiRouter;
