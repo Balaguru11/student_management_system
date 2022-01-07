@@ -595,6 +595,41 @@ $(document).ready(function () {
   });
 });
 
+// cehck if the week schedule for a class section already added or not
+$(document).ready(function () {
+  $('#day, #class_sec').on('change', function () {
+    var class_sec_id = $("#class_sec").val();
+    var day = $('#day').val();
+    $.ajax({
+      url: '/api/get-week-schedule-added',
+      type: 'POST',
+      data: {
+        class_sec_id: class_sec_id,
+        day: day,
+      }, dataType: 'JSON',
+      success: function (data){
+        // DO THE PRECIOUS THING HERE
+        if (data.foundNos > 0) {
+          $("#day").after(function () {
+            $('#schedule_name').attr('disabled', 'disabled');
+            $('#add_week_schedule').attr('disabled', 'disabled');
+            $('#sched_warn').remove();
+            return (`<p id='sched_warn' class='m-2 alert alert-danger'>Schedule of this Class Section for the day is already added. </p>`)
+          })
+        } else {
+          $("#day").after(function () {
+            $('#schedule_name').removeAttr("disabled");
+            $('#add_week_schedule').removeAttr("disabled");
+            $('#sched_warn').remove();
+          })
+        }
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+  
+})
 // get No of periods from schedule_template
 $(document).ready(function () {
   $("#schedule_name").on("change", function () {
@@ -683,6 +718,7 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
   var staff = $('.subject_staff_hidden').val();
   var period_name = $(this).attr('name').match(/\d+/);
   var period_no = period_name[0];
+  console.log(period_no);
   $.ajax({
     url: '/api/insert-week-schedule-by-period',
     type: 'POST',
@@ -694,12 +730,22 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
       subject: subject,
       staff: staff,
     }, dataType: 'JSON',
-    reserved: function (data) {
-      $('#schedule_main_'+data.dataFound[0].period_no).addClass('alert alert-warning')
-    }, vacant: function () {
-      $('#schedule_main_'+something_here).addClass('alert alert-success')
-    },
-    error: function (err) {
+    success: function (data) {
+      if (data.dataFound.length > 0) {
+        $('#schedule_main_'+data.dataFound[0].period_no).addClass('alert alert-danger')
+      } else {
+        $('#schedule_main_'+period_no).addClass('alert alert-success')
+      }
+
+      $('#period_'+data.dataFound[0].period_no+'_sub').on('change', function () {
+        $('#schedule_main_'+data.dataFound[0].period_no).removeClass('alert alert-danger')
+      })
+
+      $('#period_'+period_no+'_sub').on('change', function () {
+        $('#schedule_main_'+period_no).removeClass('alert alert-danger')
+      })
+
+    }, error: function (err) {
       console.log(err)
     }
   })
@@ -1007,6 +1053,7 @@ $(document).ready(function(){
       dataType: "Json",
       success: function (data) {
         $(".modal-body").html(function () {
+          
           return (
             `<div class='container'>
             <div class='row'><input type='hidden' class='form-control' name='user_id_hidden' id='user_id_hidden' value='${data.parMapData[0][0].id}' /><p><b>Let Ms./Mr. ${data.parMapData[0][0].username} to track following students</b></p></div>
@@ -1021,6 +1068,7 @@ $(document).ready(function(){
             </div></div>`
           );
         })
+        
         // showing previosuly mapped students here
         if (data.parMapData[1].length > 0){
           $.each(data.parMapData[1], function(key, value){
@@ -1043,7 +1091,7 @@ $(document).ready(function(){
             `<option disabled value=''>No student found</option>`
           )
         }
-
+        $('.js-example-basic-multiple').select2();
         // show data in the element.
         $("#mapParAccModal").modal("show");
       }, error: function (err){
@@ -1124,4 +1172,3 @@ $(document).ready(function () {
     })
   })
 })
-

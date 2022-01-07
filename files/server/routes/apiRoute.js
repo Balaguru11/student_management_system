@@ -192,6 +192,15 @@ apiRouter.post("/delete-user-account", (req, res) => {
   });
 });
 
+// CHECK IF THE WEEK SCHEDULE ALREADY ADDED FOR CLASS SECTION
+apiRouter.post('/get-week-schedule-added', (req, res) => {
+  var dupeWeekSched = `SELECT EXISTS (SELECT * FROM school_week_schedule WHERE day = '${req.body.day}' AND class_sec_id = '${req.body.class_sec_id}') AS count`;
+  dbcon.query(dupeWeekSched, (err, foundSched) => {
+    if(err) res.json({msg: 'error', err});
+    res.json({msg: 'success', foundNos: foundSched[0].count});
+  })
+})
+
 // get Schedule Periods from schedule_template
 apiRouter.post("/get-periods-from-schedule-template", (req, res) => {
   var periods = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'`;
@@ -209,15 +218,14 @@ apiRouter.post("/get-periods-from-schedule-template", (req, res) => {
 
 //get subjects associated with the class section to add schedule
 apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
-  var subjects = `SELECT scs.subject_id, subj.subject_name, scs.staff_id_assigned, scs.classroom_id, sst.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id=scs.subject_id INNER JOIN school_staff AS sst ON sst.staff_id = scs.staff_id_assigned WHERE scs.classroom_id='${req.body.class_sec_id}' AND subj.id='${req.body.subject_id}'`;
+  var subjects = `SELECT scs.subject_id, subj.subject_name, scs.staff_id_assigned, scs.classroom_id, sst.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id=scs.subject_id INNER JOIN school_staff AS sst ON sst.staff_id = scs.staff_id_assigned WHERE scs.classroom_id='${req.body.class_sec_id}' AND subj.id='${req.body.subject_id}' AND subj.deleted_at IS NULL`;
 
   dbcon.query(subjects, (err, staffNames) => {
     if (err) res.json({ msg: "error", err });
     else if (subjects.length > 0) {
-      console.log(staffNames);
       res.json({ msg: "success", staff: staffNames });
     } else {
-      res.json({ msg: "No subjects found" });
+      res.json({ msg: "error" });
     }
   });
 });
@@ -230,10 +238,10 @@ apiRouter.post('/insert-week-schedule-by-period', (req, res) => {
     if(err) res.json({msg: 'error', err});
     else if(dataFound.length != 0){
       console.log(dataFound);
-      res.json({msg: 'reserved', text: 'Staff not available', dataFound: dataFound});
+      res.json({msg: 'success', text: 'Staff not available', dataFound: dataFound});
     } else {
       console.log(dataFound);
-      res.json({msg: 'vacant', text: 'Staff available', dataFound: dataFound});
+      res.json({msg: 'error', text: 'Staff available', dataFound: dataFound});
     }
   })
 })

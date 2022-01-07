@@ -485,7 +485,7 @@ exports.getStuAttendance = (req, res) => {
     var week_sched_id = req.params.week_sched_id;
     if (staff_id == session.staff_id) {
       // get data from school_student_attendance table
-      var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT ssa.date, ssa.period_no, ssa.on_duty, ssa.absent, ssa.leave_intimated FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.class_sec = '${class_sec_id}'; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}' AND ssa.academic_year = YEAR(CURDATE())`;
+      var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT ssa.date, ssa.period_no, ssa.attend_status, ssa.	student_affected FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.class_sec = '${class_sec_id}'; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}' AND ssa.academic_year = YEAR(CURDATE())`;
       dbcon.query(StuAttendance, (err, attendances) => {
         if (err) throw err;
         console.log(attendances);
@@ -514,9 +514,52 @@ exports.postStuAttendance = (req, res) => {
   res.locals.success_msg = success_msg;
   let staff_role = session.roleId;
   res.locals.staff_role = staff_role;
-  try {
+  var absent = req.body.absent_stu; // 1
+  var on_duty = req.body.on_duty_stu; // 2
+  var leave_intimated = req.body.leave_informed_stu;
+  
+  try { 
+    // for loop to construct a query - absent
+    var absentDataEntry = "";
+    var onDutyDataEntry = "";
+    var leaveDataEntry = "";
+
+    if (typeof absent !== 'undefined'){
+      for (let i = 0; i < absent.length; i++){
+        var absent_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent[i]}', '${session.staff_id}'),`;
+        absentDataEntry = absentDataEntry + absent_loop;
+      }
+    } else {
+      let absent_i = 'NULL';
+      absentDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent_i}', '${session.staff_id}'),`;
+    }
+    
+    if(typeof on_duty !== 'undefined') {
+      // for loop to construct a query - on_duty
+      for (let i = 0; i < on_duty.length; i++){
+        var onDuty_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','On_Duty','${on_duty[i]}', '${session.staff_id}'),`;
+        onDutyDataEntry = onDutyDataEntry + onDuty_loop;
+      }
+    } else {
+      let on_duty_i = 'NULL';
+      onDutyDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','On_Duty','${on_duty_i}', '${session.staff_id}'),`;
+    }
+    
+    if (typeof leave_intimated !== 'undefined') {
+      // for loop to construct a query - Leave_intimated
+      for (let i = 0; i < on_duty.length; i++){ // length 1 - 1 run
+        var leave_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated[i]}', '${session.staff_id}'),`;
+        leaveDataEntry = leaveDataEntry + leave_loop;
+        var leave_query = leaveDataEntry.slice(0, -1);
+      }
+    } else {
+      let leave_intimated_i = 'NULL';
+      leaveDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated_i}', '${session.staff_id}'),`;
+      var leave_query = leaveDataEntry.slice(0, -1);
+    }
+    
     // inserting attendance
-    var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, leave_intimated, absent, on_duty, entered_by) VALUES ('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','${req.body.leave_informed_stu}','${req.body.absent_stu}', '${req.body.on_duty_stu}', '${session.staff_id}')`;
+    var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${onDutyDataEntry} ${absentDataEntry} ${leave_query}`;
     dbcon.query(attendanceData, (err, attendanceAdded) => {
       if (err) throw err;
       console.log(attendanceAdded);
