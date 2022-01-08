@@ -246,6 +246,20 @@ apiRouter.post('/insert-week-schedule-by-period', (req, res) => {
   })
 })
 
+// view Subject - Staff for a specific Week Schedule on View button click
+apiRouter.post('/view-week-schedule-period-staff', (req, res) => {
+  let session = req.session;
+  var weekSchedFind = `SELECT week.day, week.period_no, week.period_subject_id, subj.subject_name, week.period_staff_id, staf.name FROM school_week_schedule AS week INNER JOIN school_subjects AS subj ON subj.id = week.period_subject_id INNER JOIN school_staff AS staf ON staf.staff_id = week.period_staff_id WHERE week.class_sec_id='${req.body.class_sec_id}' AND week.day = '${req.body.day_id}' AND week.school_id = '${session.schoolId}' AND week.schedule_tempid = '${req.body.sched_tempid}' ORDER BY ABS(week.period_no)`;
+  dbcon.query(weekSchedFind, (err, schedule) => {
+    if(err) res.json({msg: 'error', err});
+    else if (schedule.length > 0){
+      res.json({msg: 'success', schedule: schedule});
+    } else {
+      res.json({msg: 'success', schedule: schedule});
+    }
+  })
+})
+
 // OPEN EDIT MODAL for class section
 apiRouter.post("/edit-class-section", (req, res) => {
   var classSec = `SELECT clr.id AS classsec_id, clr.class_id AS std_id, sfs.class_std, sfs.medium, clr.class_section, clr.students_strength FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE clr.id='${req.body.section_id}'`;

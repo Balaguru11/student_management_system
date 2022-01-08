@@ -24,6 +24,18 @@
         <td><%= locals.data[2][i].schedule_name %></td>
 
         <td>
+          <button
+            data-id="<%= locals.data[2][i].id %>"
+            dayta-id="<%= locals.data[2][i].day %>"
+            sec-id = "<%= locals.data[2][i].class_sec_id %>"
+            template-id="<%= locals.data[2][i].schedule_tempid %>"
+            type="button"
+            class="viewWeekSched btn btn-warning View"
+            data-bs-toggle="modal"
+          >
+          <i class="far fa-eye">
+          </button>
+
           <a
             class="btn btn-info View"
             href="../dashboard/week-schedule/view/<%= locals.data[2][i].id %>"
@@ -48,4 +60,30 @@
       <% } %>
     </tbody>
   </table>
+</div>
+
+<!-- View Week schedule Modal -->
+<div
+  class="modal fade"
+  id="viewWeekSchedModal"
+  tabindex="-1"
+  aria-labelledby="viewModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          Viewing Week Schedule
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="view-modal-body"></div>
+    </div>
+  </div>
 </div>

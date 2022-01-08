@@ -753,18 +753,18 @@ exports.postMapSubStaff = async (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var checkmapping = `SELECT EXISTS(SELECT * FROM school_class_subjects WHERE school_id='${session.schoolId}' AND subject_id='${req.body.subject}' AND classroom_id='${req.body.class}') AS count`;
+    var checkmapping = `SELECT EXISTS (SELECT * FROM school_class_subjects WHERE school_id='${session.schoolId}' AND subject_id='${req.body.subject}' AND classroom_id='${req.body.class}' AND deleted_at IS NULL) AS count`;
 
     dbcon.query(checkmapping, (err, isMapped) => {
-      if (err) {
+      if (err) { 
+        console.log(err);
         return res.render("server-error", { title: "Server Error" });
       } else if (isMapped[0].count == 0) {
         var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
 
         dbcon.query(MapSubStaffSec, (err, bridgeData) => {
-          if (err) return res.render("server-error", { title: "Server Error" });
-          req.flash("success", "Subject and Staff Added to the classroom.");
-          return res.redirect("/school/dashboard/section-subject-staff");
+          if (err)     console.log(err);
+          // return res.render("server-error", { title: "Server Error" });
         });
       } else {
         req.flash(
@@ -775,6 +775,7 @@ exports.postMapSubStaff = async (req, res) => {
       }
     });
   } catch (err) {
+    console.log(err);
     return res.render("server-error", { title: "Server Error" });
   }
 };
@@ -1230,7 +1231,7 @@ exports.viewWeekSchedule = (req, res) => {
   let session = req.session;
   try {
     // viewing schedule created - view need to be distinct
-    var schedules = `SELECT DISTINCT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_class_subjects AS scs ON scs.classroom_id=clr.id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT week.id, sfs.class_std, sfs.medium, clr.class_section, week.day, temp.schedule_name FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_schedule_template AS temp ON temp.id = week.schedule_tempid WHERE week.period_subject_id IS NOT NULL AND week.period_staff_id IS NOT NULL AND week.school_id='${session.schoolId}' AND week.deleted_at IS NULL GROUP BY week.day, clr.class_section ORDER BY sfs.class_std, clr.class_section`;
+    var schedules = `SELECT DISTINCT sfs.class_std, sfs.medium, clr.class_section, clr.id AS clr_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_class_subjects AS scs ON scs.classroom_id=clr.id WHERE clr.school_id='${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_schedule_template WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT week.id, sfs.class_std, sfs.medium, week.class_sec_id, clr.class_section, week.day, week.schedule_tempid, temp.schedule_name FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_schedule_template AS temp ON temp.id = week.schedule_tempid WHERE week.period_subject_id IS NOT NULL AND week.period_staff_id IS NOT NULL AND week.school_id='${session.schoolId}' AND week.deleted_at IS NULL GROUP BY week.day, clr.class_section ORDER BY sfs.class_std, clr.class_section`;
 
     dbcon.query(schedules, (err, data) => {
       if (err) throw err;

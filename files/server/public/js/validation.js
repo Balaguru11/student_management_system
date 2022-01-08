@@ -749,6 +749,53 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
       console.log(err)
     }
   })
+});
+
+// viewing period wsie subject staff in modal from View Week schedule Table
+$(document).ready(function () {
+  $('.viewWeekSched').on('click', function () {
+    var weekSched_id = $(this).attr('data-id');
+    var day_id = $(this).attr('dayta-id');
+    var class_sec_id = $(this).attr('sec-id');
+    var sched_tempid = $(this).attr('template-id');
+    $.ajax({
+      url: '/api/view-week-schedule-period-staff',
+      type: 'POST',
+      data: {
+        weekSched_id: weekSched_id,
+        day_id: day_id,
+        class_sec_id: class_sec_id,
+        sched_tempid: sched_tempid,
+      }, dataType: 'JSON',
+      success: function (data) {
+        if (data.schedule.length > 0){
+          $('.view-modal-body').html(function () {
+            return (
+              `<table class='table table-light text-center'>
+              <thead> <tr><th scope='col'>Period No</th><th scope='200px'>Subject</th><th scope='200px'>Staff</th></tr></thead>
+              <tbody class='view-schedule-periods' id='view-schedule-periods'></tbody></table>`
+            );
+          })
+          $.each(data.schedule, function (key, value){
+            $('#view-schedule-periods').append(function () {
+              return (
+                `<tr><th scope='row'>${key+1}</th><td>${value.subject_name}</td><td>${value.name}</td></tr>`
+              )
+            })
+          })
+        } else {
+          $('.view-modal-body').html(function () {
+            return (
+              `<p>No Period found with this schedule. Click on the edit button to make changes.</p>`
+            );
+          })
+        }
+        $('#viewWeekSchedModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
 })
 
 // OPEN edit Class section Modal
