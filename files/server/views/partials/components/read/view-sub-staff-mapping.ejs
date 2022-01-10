@@ -5,10 +5,11 @@
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th width="300px">Class-Section - Medium</th>
-        <th width="150px">Subjects</th>
-        <th width="150px">Faculty</th>
-        <th width="200px">Actions</th>
+        <th width="250px">Class-Section - Medium</th>
+        <th width="100px">Subjects</th>
+        <th width="150px">Staff</th>
+        <th width="150px">Alternate Staff</th>
+        <th width="120px">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -23,6 +24,7 @@
           Medium - <b><%= locals.result[i].class_section %></b> Sec
         </td>
         <td><%= locals.result[i].subject_name %></td>
+        <td><%= locals.result[i].username %></td>
         <td><%= locals.result[i].username %></td>
         <td>
           <button
@@ -45,7 +47,7 @@
       </tr>
       <% } } else { %>
       <tr>
-        <td colspan="5" class="text-center">
+        <td colspan="6" class="text-center">
           <mark>No Class / Sections / Staff assigned.</mark>
         </td>
       </tr>

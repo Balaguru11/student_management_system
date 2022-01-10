@@ -210,7 +210,7 @@ exports.postAddClassroom = async (req, res) => {
     if (session.logged_in && session.schoolStatus == "Active") {
       const schoolId = session.schoolId;
 
-      var classCheck = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${req.body.class}' AND class_section='${req.body.section}' AND deleted_at IS NULL AND school_id='${schoolId}' ) AS count`;
+      var classCheck = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${req.body.class}' AND class_section='${req.body.section}' AND deleted_at IS NULL AND school_id='${schoolId}') AS count`;
 
       dbcon.query(classCheck, (err, data) => {
         if (err) {
@@ -259,7 +259,6 @@ exports.postAddClassroom = async (req, res) => {
     }
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
-    return res.status(500).send(err);
   }
 };
 
@@ -561,17 +560,31 @@ exports.deleteFeeStructure = (req, res) => {
   let session = req.session;
   let id = req.params.id;
   try {
-    // deleting a fee structure 
-    var deleteFee = `UPDATE school_feestructure SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
-    dbcon.query(deleteFee, (err, deletedFee) => {
-      if (err) throw err;
-      req.flash("err_msg", "Class standard deleted successfully.");
-      return res.redirect("/school/dashboard/fee-structure");
-    });
+    // deleting a fee structure cehck is section added to this
+    var checkSection = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${id}' AND school_id='${session.schoolId}' AND deleted_at IS NULL) AS count`;
+    dbcon.query(checkSection, (err, foundSections) => {
+      if(err) throw err;
+      else if(foundSections[0].count != 0) {
+        console.log(foundSections);
+        req.flash('err_msg', `We cant delete this class std. As there are ${foundSections[0].count} section(s) active with this Class std.`);
+        return res.redirect('/school/dashboard/fee-structure');
+      } else {
+        console.log(foundSections);
+        // deleting if no sec linked to this class std
+        var deleteFee = `UPDATE school_feestructure SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+        dbcon.query(deleteFee, (err, deletedFee) => {
+          if (err) throw err;
+          console.log(deletedFee);
+          req.flash("success", "Class standard deleted successfully.");
+          return res.redirect("/school/dashboard/fee-structure");
+        });
+      }
+    })
   } catch (err) {
     console.log(err);
   }
 };
+
 // view User Accounts
 exports.viewUserAccounts = (req, res) => {
   //flashing err_msg
@@ -656,13 +669,11 @@ exports.viewClassSections = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    // var classSecData = `SELECT * FROM school_classroom WHERE school_id='${session.schoolId}'`;
-    var classSecData = `SELECT clr.id AS sec_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' AND clr.deleted_at IS NULL`;
-
+    var classSecData = `SELECT clr.id AS sec_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' AND clr.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
     dbcon.query(classSecData, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
 
-      var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' ORDER BY ABS(class_std);`;
+      var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' AND deleted_at IS NULL ORDER BY ABS(class_std);`;
       dbcon.query(classDrop, (err, classOptions) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.classOptions = classOptions;
@@ -721,16 +732,17 @@ exports.getMapSubStaff = (req, res) => {
 
   try {
     // fetching class_id, section from classroom
-    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
+    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) return res.render("server-error", { title: "Server Error" });
       var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
       INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
-      INNER JOIN school_main_login AS sml ON sml.id = scs.staff_id_assigned AND sml.status='Active'
-      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL`;
+      INNER JOIN school_main_login AS sml ON scs.staff_id_assigned = sml.id OR scs.secondary_staff_assigned = sml.id
+      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) return res.render("server-error", { title: "Server Error" });
+        console.log(result);
         res.locals.tableData = tableData;
         res.locals.result = result;
         return res.render("schoolLevel/school-map-subject-staff", {
@@ -743,7 +755,7 @@ exports.getMapSubStaff = (req, res) => {
   }
 };
 
-// post Map Subject Staff
+// post Map Subject Staff - HAVING ISSUE HERE
 exports.postMapSubStaff = async (req, res) => {
   //flashing err_msg
   let err_msg = req.flash("err_msg");
@@ -760,12 +772,17 @@ exports.postMapSubStaff = async (req, res) => {
         console.log(err);
         return res.render("server-error", { title: "Server Error" });
       } else if (isMapped[0].count == 0) {
-        var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
+        if (req.body.staff !== req.body.sec_staff){
+          var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned, secondary_staff_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}', '${req.body.sec_staff}')`;
 
-        dbcon.query(MapSubStaffSec, (err, bridgeData) => {
-          if (err)     console.log(err);
-          // return res.render("server-error", { title: "Server Error" });
-        });
+          dbcon.query(MapSubStaffSec, (err, bridgeData) => {
+            if (err)  console.log(err);
+            // return res.render("server-error", { title: "Server Error" });
+          });
+        } else {
+          req.flash("err_msg", "Staff and Alternate staff cannot be the same");
+          return res.redirect("/school/dashboard/section-subject-staff");
+        }
       } else {
         req.flash(
           "err_msg",
@@ -1264,7 +1281,6 @@ exports.addWeekScheduleForm = (req, res) => {
         );
         return res.redirect("/school/dashboard/week-schedule");
       } else {
-        // working here. need to add null to period_nos
         let p1_no = req.body.period_no_1 || "NULL";
         let p2_no = req.body.period_no_2 || "NULL";
         let p3_no = req.body.period_no_3 || "NULL";

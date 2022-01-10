@@ -10,6 +10,7 @@
               <div class="mb-3">
                 <label for="class">Class & Medium:</label>
                 <select id="class" class="form-control" name="class" required>
+                  <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[0].length; i++) { %>
                       <option value="<%= locals.tableData[0][i].clr_id %>"><%= locals.tableData[0][i].class_std %> std - <%= locals.tableData[0][i].medium %> Medium - <%= locals.tableData[0][i].class_section %> Section</option>
@@ -23,6 +24,7 @@
               <div class="mb-3">
                 <label for="subject">Choose Subject: </label>
                 <select id="subject" class="form-control" name="subject" required>
+                  <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[1].length; i++) { %>
                       <option value="<%= locals.tableData[1][i].id %>"><%= locals.tableData[1][i].subject_name %></option>
@@ -32,10 +34,11 @@
                   >Please Select a Subject.</span
                 >
               </div>
-      <!-- staff -->
+      <!-- primary staff -->
               <div class="mb-3">
                 <label for="staff">Choose Faculty: </label>
                 <select id="staff" class="form-control" name="staff" required>
+                  <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[2].length; i++) { %>
                       <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].id %> - <%= locals.tableData[2][i].username %> </option>
@@ -45,7 +48,19 @@
                   >Please assign a Staff.</span
                 >
               </div>
-              
+              <div class="mb-3">
+                <label for="sec_staff">Alternate Faculty: </label>
+                <select id="sec_staff" class="form-control" name="sec_staff" required>
+                  <option value="">Select One</option>
+                  <% if(locals.tableData) {
+                    for (let i=0; i < locals.tableData[2].length; i++) { %>
+                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].id %> - <%= locals.tableData[2][i].username %> </option>
+                    <% } } %>
+                </select>
+                <span class="error" id="sec_staff_error"
+                  >Please assign an alternate Staff.</span
+                >
+              </div>
               <div class="mb-3">
                 <button class="btn btn-secondary" type="submit" value="submit">
                   Submit Assignment

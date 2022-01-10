@@ -459,9 +459,6 @@ $(document).ready(function () {
         $(".modal-body").html(function () {
           var fetched_medium = data.feeRow[0].medium;
           $("#medium_edit").val(fetched_medium);
-          // $(
-          //   "#medium_edit select > option[value='" + fetched_medium + "']"
-          // ).attr("selected", true);
 
           return (
             "<form id='editclass-form' action='../dashboard/fee-structure/edit/" +
@@ -534,24 +531,11 @@ $(document).ready(function () {
       success: function (data) {
         $(".modal-body").html(function () {
           var role_fetched = data.userData[0].role_id_fk;
-          var status = data.userData[0].status;
-          $("#status_edit").val(status);
           return (
-            "<form id='edituseracc-form' action='../dashboard/users/edit/" +
-            data.userData[0].id +
-            "?_method=PUT' method='POST'><input type='hidden' class='form-control' name='staff_edit_id' id='staff_edit_id' value='" +
-            data.userData[0].id +
-            "' /><div class='mb-3'><label for='select'>Role:</label><select id='role_update' name='role_update' class='form-control'><option value='" +
-            role_fetched +
-            "' selected >" +
-            data.userData[0].role_name +
-            "</option><option value='9'>Admin</option> <option value='4'>Head Master</option><option value='8'>Teaching Faculty</option><option value='2'>Non-teaching Faculty</option></select></div><div class='mb-3'><label for='username'>Username:</label><input type='text' class='form-control' name='username' placeholder='Username' id='username' value='" +
-            data.userData[0].username +
-            "' disabled/><span class='error' id='username-error' >Username should be at least 3 characters long.</span ></div><div class='mb-3'><label for='email'>Email:</label><input type='email' class='form-control' name='email' placeholder='Type your email here' id='email' value='" +
-            data.userData[0].email +
-            "' disabled /><span class='error' id='email-error'>Email is invalid.</span></div><div class='mb-3'> <label for='status_edit'>Account Status:</label> <select id='status_edit' name='status_edit' class='form-control'> <option value='Active'>Active</option><option value='Inactive'>Inactive</option></select> </div><div class='login'><button class='btn btn-secondary' type='submit'>Update User</button></div></form>"
+            `<form id='edituseracc-form' action='../dashboard/users/edit/${staff_id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='staff_edit_id' id='staff_edit_id' value='${staff_id}' /><div class='mb-3'><label for='select'>Role:</label><select id='role_update' name='role_update' class='form-control'><option value='${role_fetched}' selected >${data.userData[0].role_name}</option><option value='9'>Admin</option> <option value='4'>Head Master</option><option value='8'>Teaching Faculty</option><option value='2'>Non-teaching Faculty</option></select></div><div class='mb-3'><label for='username'>Username:</label><input type='text' class='form-control' name='username' placeholder='Username' id='username' value='${data.userData[0].username}' disabled/><span class='error' id='username-error' >Username should be at least 3 characters long.</span ></div><div class='mb-3'><label for='email'>Email:</label><input type='email' class='form-control' name='email' placeholder='Type your email here' id='email' value='${data.userData[0].email}' disabled /><span class='error' id='email-error'>Email is invalid.</span></div><div class='mb-3'> <label for='status_edit'>Account Status:</label> <select id='status_edit' name='status_edit' class='form-control'><option value='${data.userData[0].status}' selected >${data.userData[0].status}</option><option value='Active'>Active</option><option value='Inactive'>Inactive</option></select> </div><div class='login'><button class='btn btn-secondary' type='submit'>Update User</button></div></form>`
           );
         });
+
         // show data in the element.
         $("#editUserAccModal").modal("show");
       },
@@ -1107,7 +1091,7 @@ $(document).ready(function(){
             <div class='row'>
             <form id='editpar-form' action='../dashboard/parents/map/${data.parMapData[0][0].id}?_method=PUT' method='POST'>
             <div class='mb-3' id='previously_mapped'><label for='status'>Earlier Mapped Students:</label>
-            <select id='mapped_students_edit' class='js-example-basic-multiple form-control' name='mapped_students_edit[]' multiple='multiple'></select></div>
+            <select id='mapped_students_edit' class='js-example-basic-multiple form-control' name='mapped_students_edit[]' multiple='multiple'><option>somethong</option></select></div>
             <div class='mb-3' ><label for='status'>Add New Students:</label>
             <select id='map_students_edit' class='js-example-basic-multiple form-control' name='map_students_edit[]' multiple='multiple'></select></div>
             <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Update</button></div>
@@ -1123,6 +1107,7 @@ $(document).ready(function(){
               `<option value='${value.ml_student_id}'>${value.student_name}</option>`
             )
           })
+          $('.js-example-basic-multiple').select2();
         } else {
           $('#previously_mapped').remove();
         }
@@ -1138,7 +1123,7 @@ $(document).ready(function(){
             `<option disabled value=''>No student found</option>`
           )
         }
-        $('.js-example-basic-multiple').select2();
+        
         // show data in the element.
         $("#mapParAccModal").modal("show");
       }, error: function (err){

@@ -30,17 +30,12 @@
             sec-id = "<%= locals.data[2][i].class_sec_id %>"
             template-id="<%= locals.data[2][i].schedule_tempid %>"
             type="button"
-            class="viewWeekSched btn btn-warning View"
+            class="viewWeekSched btn btn-warning"
             data-bs-toggle="modal"
           >
-          <i class="far fa-eye">
+          <i class="far fa-eye"></i
+          >
           </button>
-
-          <a
-            class="btn btn-info View"
-            href="../dashboard/week-schedule/view/<%= locals.data[2][i].id %>"
-            ><i class="far fa-eye"></i
-          ></a>
           <a
             class="btn btn-warning edit"
             href="../dashboard/week-schedule/edit/<%= locals.data[2][i].id %>"
