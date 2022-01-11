@@ -612,8 +612,8 @@ $(document).ready(function () {
       }
     })
   })
-  
 })
+
 // get No of periods from schedule_template
 $(document).ready(function () {
   $("#schedule_name").on("change", function () {
@@ -638,7 +638,7 @@ $(document).ready(function () {
             $("#schedule_list").html("<p>Schedule Plan</p> <hr />");
             $.each(foo, (key, value) => {
               $("#schedule_list").append(
-                `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub'><option value=''>Choose a Subject</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden'></div></div>`
+                `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub' required><option value=''>Choose a Subject</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden'></div></div>`
               );
               counter++;
             });
@@ -763,7 +763,7 @@ $(document).ready(function () {
           $.each(data.schedule, function (key, value){
             $('#view-schedule-periods').append(function () {
               return (
-                `<tr><th scope='row'>${key+1}</th><td>${value.subject_name}</td><td>${value.name}</td></tr>`
+                `<tr><th scope='row'>${value.period_no}</th><td>${value.subject_name}</td><td>${value.name}</td></tr>`
               )
             })
           })
@@ -780,6 +780,107 @@ $(document).ready(function () {
       }
     })
   })
+})
+
+// edit class Schedule modal from week schedule list - HAVING ISSUE
+$(document).ready(function () {
+  $('#editWeekSched').on('click', function () {
+    var weekSched_id = $(this).attr('data-id');
+    var day_id = $(this).attr('dayta-id');
+    var class_sec_id = $(this).attr('sec-id');
+    // var class_Sec_name = $(this).text();
+    var sched_temp_id = $(this).attr('template-id');
+    $.ajax({
+      url: '/api/edit-week-schedule-preiods',
+      type: 'POST',
+      data: {
+        weekSched_id: weekSched_id,
+        day_id: day_id,
+        class_sec_id: class_sec_id,
+        sched_temp_id: sched_temp_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        if (data.scheduleData[2].length > 0){
+          $('.edit-modal-body').html(
+              `<form id='editweeksched-form' action='../dashboard/week-schedule/edit/${day_id}/${class_sec_id}?_method=PUT' method='POST'> <div class='mb-3'> <label for='class'>Class & Medium:</label> 	<input type='text' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' disabled/> 	<input type='hidden' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' /> <span class='error' id='class_error'>Class should not be empty.</span> </div> <div class='mb-3'> <label for='day'>Schedule Day </label> 	<input type='text' id='day_edit' class='day form-control' name='day_edit' value='${day_id}' disabled /> 	<input type='hidden' id='day_edit' class='day form-control' name='day_edit' value='${day_id}' /> <span class='error' id='day_error'>Please Select a Day.</span> </div> <div class='mb-3'> <label for='schedule_name'>Schedule Template: </label> 	<input type='text' id='schedule_name_edit' class='day form-control' name='schedule_name_edit' value='${data.scheduleData[0].schedule_name}' disabled /> 	<input type='hidden' id='schedule_name_edit' class='day form-control' name='schedule_name_edit' value='${data.scheduleData[0].schedule_name}' /> <span class='error' id='subject_error'>Please Select a Schedule Template.</span> </div> <div class='mb-3' id='schedule_list'></div> <div class='mb-3'> <button id='edit_week_schedule' class='btn btn-secondary' type='submit' value='submit'> Update Schedule </button> </div> </form> `
+            )
+            var counter = 1;
+            var period = data.scheduleData[2].no_of_periods;
+            var foo = [];
+            for (var i = 1; i <= period; i++){
+              foo.push(i);
+              $.each(foo, (key, value) => {
+                $('#schedule_list').append(
+                  `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub' required><option value='${data.scheduleData[2][value].period_subject_id}'>${data.scheduleData[2][value].subject_name}</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff' value='${data.scheduleData[2][value].name}'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden' value='${data.scheduleData[2][value].period_staff_id}'></div></div>`
+                );
+                counter++;
+              });
+            }
+
+            var subject_name = [];
+            for (var s = 0; s < data.scheduleData[1].length; s++) {
+              subject_name.push(data.scheduleData[1].subject_name);
+            }
+            $.each(subject_name, (key, value) => {
+              $(".subject_option").append(
+                "<option value='" +
+                  data.scheduleData[1][key].subject_id +
+                  "'>" +
+                  data.scheduleData[1][key].subject_name +
+                  "</option>"
+              );
+            })
+        } else {
+          $('.edit-modal-body').html(function () {
+            $('#edit_week_schedule').attr("disabled", 'disabled');
+            return (
+              `<p>No Period found with this schedule. Click on the edit button to make changes.</p>`
+            );
+          })
+        }
+        $('#editWeekSchedModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
+
+// DELETING WEEK SCHEDULE FROM WEEK SCHEDULE LIST - having issue
+$(document).ready(function () {
+  $('#deleteWeekSched').on('click', function () {
+    // var weekSched_id_d = $(this).attr('data-id');
+    var day_id_d = $(this).attr('dayta-id');
+    var class_sec_id_d = $(this).attr('sec-id');
+    // var sched_temp_id_d = $(this).attr('template-id');
+    $.ajax({
+      url: '/api/delete-week-schedule-preiods',
+      type: 'POST',
+      data: {
+        // weekSched_id_d: weekSched_id_d,
+        day_id_d: day_id_d,
+        class_sec_id_d: class_sec_id_d,
+        // sched_temp_id_d: sched_temp_id_d,
+      }, dataType: 'JSON',
+      success: function (data) {
+        if(data.selectedSched.length > 0){
+          $('.delete-modal-body').html(function () {
+            return (
+              `<div class='container'><div class='row'><input type='hidden' class='form-control' name='sec_id_hidden' id='sec_id_hidden' value='${data.selectedSched[0].id}' /><p><b>Do you want to delete, '${data.selectedSched[0].day} Schedule of '${data.selectedSched[0].class_std} Std - ${data.selectedSched[0].medium} Medium ${data.selectedSched[0].class_section} section'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/week-schedule/delete/${data.secData[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
+            )
+          })
+        } else {
+          $('.delete-modal-body').html(function () {
+            return (
+              `<p>No schedule found</p>`
+            )
+          })
+        }
+      }, error: function (err){
+        console.log(err);
+      }
+  })
+})
 })
 
 // OPEN edit Class section Modal
@@ -821,17 +922,7 @@ $(document).ready(function () {
       success: function (data) {
         $(".modal-body").html(function () {
           return (
-            "<div class='container'><div class='row'><input type='hidden' class='form-control' name='sec_id_hidden' id='sec_id_hidden' value='" +
-            data.secData[0].id +
-            "' /><p><b>Do you want to delete '" +
-            data.secData[0].class_std +
-            " Std - " +
-            data.secData[0].medium +
-            " Medium " +
-            data.secData[0].class_section +
-            " section'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/sections/delete/" +
-            data.secData[0].id +
-            "?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>"
+            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='sec_id_hidden' id='sec_id_hidden' value='${data.secData[0].id}' /><p><b>Do you want to delete '${data.secData[0].class_std} Std - ${data.secData[0].medium} Medium ${data.secData[0].class_section} section'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/sections/delete/${data.secData[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
           );
         });
         // show data in the element.

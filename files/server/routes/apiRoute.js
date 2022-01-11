@@ -260,6 +260,28 @@ apiRouter.post('/view-week-schedule-period-staff', (req, res) => {
   })
 })
 
+// edit Week schedule from View list
+apiRouter.post('/edit-week-schedule-preiods', (req, res) => {
+  let session = req.session;
+  var editSched = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'; SELECT week.day, week.period_no, week.period_subject_id, subj.subject_name, week.period_staff_id, staf.name FROM school_week_schedule AS week INNER JOIN school_subjects AS subj ON subj.id = week.period_subject_id INNER JOIN school_staff AS staf ON staf.staff_id = week.period_staff_id WHERE week.class_sec_id='${req.body.class_sec_id}' AND week.day = '${req.body.day_id}' AND week.school_id = '${session.schoolId}' AND week.schedule_tempid = '${req.body.sched_temp_id}' ORDER BY ABS(week.period_no)`;
+  dbcon.query(editSched, (err, scheduleData) => {
+    if(err) res.json({msg: 'error', err})
+    console.log(scheduleData);
+    res.json({msg: 'success', scheduleData: scheduleData});
+  })
+})
+
+// delete week shcdule for a class section 
+apiRouter.post('/delete-week-schedule-preiods', (req, res) => {
+  let session = req.session;
+  var deleteSched = `SELECT week.day, clr.class_Section, sfs.class_std, sfs.medium FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE week.day='${req.body.day_id_d}' AND week.class_sec_id='${req.body.class_sec_id_d}'`;
+  console.log(deleteSched);
+  dbcon.query(deleteSched, (err, selecetdSched) => {
+    if(err) res.json({msg: 'error', err});
+    res.json({msg: 'success', selecetdSched: selecetdSched});
+  })
+})
+
 // OPEN EDIT MODAL for class section
 apiRouter.post("/edit-class-section", (req, res) => {
   var classSec = `SELECT clr.id AS classsec_id, clr.class_id AS std_id, sfs.class_std, sfs.medium, clr.class_section, clr.students_strength FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE clr.id='${req.body.section_id}'`;

@@ -42,7 +42,7 @@ const {
   getSchedulePlanForm,
   postSchedulePlanForm, deleteSchedulePlan, 
   viewWeekSchedule,
-  addWeekScheduleForm,
+  addWeekScheduleForm, editWeekSchedule, 
   allChangePwd,
   allDueCollection, viewDueCollectionData
 } = require("../controllers/schoolController");
@@ -160,6 +160,9 @@ schoolRouter.delete('/dashboard/schedule-plan/delete/:sched_tempid', isSchool, d
 // Week Schedule for class sections with schedule plan integrated
 schoolRouter.get("/dashboard/week-schedule", isSchool, viewWeekSchedule);
 schoolRouter.post("/dashboard/week-schedule", isSchool, addWeekScheduleForm);
+schoolRouter.put('/dashboard/week-schedule/edit/:day_id/:section_id', isSchool, editWeekSchedule);
+
+
 
 // not completed yet
 // Announcements

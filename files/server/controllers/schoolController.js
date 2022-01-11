@@ -1341,6 +1341,22 @@ exports.addWeekScheduleForm = (req, res) => {
   }
 };
 
+// edit week schedule form
+exports.editWeekSchedule = (req, res) => {
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  let day_id = req.params.day_id;
+  let class_sec_id = req.params.section_id;
+  try {
+    // do
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // change password
 exports.allChangePwd = (req, res) => {
   let success_msg = req.flash("success");
