@@ -947,10 +947,40 @@ $(document).ready(function () {
       },
       dataType: "Json",
       success: function (data) {
+        if(data.mapData.length > 0) {
         $(".modal-body").html(function () {
-          return `<form id='edimapping-form' action='../dashboard/section-subject-staff/edit/${data.mapData[0].id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='school_id' id='school_id' value='${data.mapData[0].school_id}' /><input type='hidden' class='form-control' name='map_id' id='map_id' value='${data.mapData[0].id}' /><div class='mb-3'><label for='class_std'>Class Std & Medium :</label><select  class='class_std_sec_edit form-control' name='class_std_sec_edit' id='class_std_sec_edit'><option value='${data.mapData[0].classsec_id}' selected >${data.mapData[0].class_std} std - ${data.mapData[0].medium} medium - ${data.mapData[0].class_section} sec</option></select></div><div class='mb-3'><label for='subject_edit'>Subject: </label><select class='form-control' name='subject_edit' id='strength_edit' ><option selected value='${data.mapData[0].subject_id}'>${data.mapData[0].subject_name}</option></select></div><div class='mb-3'><label for='staff_edit'>Select A Staff:</label><input type='hidden' class='form-control' name='staff_edit_id' id='staff_edit_id' value='${data.mapData[0].staff_id}' /><select id='staff_edit' class='form-control' name='staff_edit'> <option selected value='${data.mapData[0].staff_id}'>${data.mapData[0].name}</option></select></div><div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>`;
+          return `<form id='edimapping-form' action='../dashboard/section-subject-staff/edit/${mapping_id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='map_id' id='map_id' value='${mapping_id}' /><div class='mb-3'><label for='class_std'>Class Std & Medium :</label><select disabled class='class_std_sec_edit form-control' name='class_std_sec_edit' id='class_std_sec_edit'><option value='${data.mapData[0][0].classsec_id}' selected >${data.mapData[0][0].class_std} std - ${data.mapData[0][0].medium} medium - ${data.mapData[0][0].class_section} sec</option></select></div><div class='mb-3'><label for='subject_edit'>Subject: </label><input type='text' class='form-control' name='subject_edit' id='strength_edit' value='${data.mapData[0][0].subject_name}' disabled /><input type='hidden' class='form-control' name='subject_edit_hide' id='strength_edit_hide' value='${data.mapData[0][0].subject_id}' /></div><div class='mb-3'><label for='staff_edit'>Select A Staff:</label><select id='staff_edit' class='form-control' name='staff_edit'><option value='${data.mapData[0][0].prim_id}'>${data.mapData[0][0].primary_staff}</option></select></div>
+          <div id='seco_alert' class='mb-3'><label for='sec_staff_edit'>Select Alternative Staff:</label><select id='sec_staff_edit' class='form-control' name='sec_staff_edit'> <option value='${data.mapData[0][0].sec_id}'>${data.mapData[0][0].secondary_staff}</option></select></div>
+          <div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>`;
         });
-        // show data in the element.
+
+        var staffs = [];
+        for (let i = 0; i < data.mapData[1].length; i++ ) {
+          staffs.push(data.mapData[1][i].username);
+        }
+
+        $.each(staffs, (key, value) => {
+          $('#staff_edit, #sec_staff_edit').append(
+            `<option value='${data.mapData[1][key].id}'>${data.mapData[1][key].username}</option>`
+          )
+        })
+
+        // $('#staff_edit').on('change', 'select', function (){
+        //   var primary = $(this).val();
+        //   $(this).find('option[value="' + primary + '"]').attr("selected", "selected");
+        // })
+        // $('#sec_staff_edit').on('change', 'select', function (){
+        //   var secondary = $(this).val();
+        //   $(this).find('option[value="' + secondary + '"]').attr("selected", "selected");
+        // })
+
+      } else {
+        $(".modal-body").html(function () {
+          return (
+            `<p>No data found</p>`
+          )
+        })
+      }
         $("#editMappingModal").modal("show");
       },
       error: function (err) {
@@ -959,6 +989,19 @@ $(document).ready(function () {
     });
   });
 });
+
+// edit mapping modal on change of staff = sec_staff alert warning
+// $(document).on('change', '#staff_edit, #sec_staff_edit', function () {
+//   var primary = $('#staff_edit').find('option:selected').val();
+//   var secondary = $('#sec_staff_edit').find('option:selected').val();
+//   if(primary == secondary){
+//     $('#seco_alert').addClass('alert alert-warning');
+//     $('#seco_alert').append(`<p id='error_staff'>Primary and secondary staff can not be the same.</p>`);
+//   } else {
+//     $('#seco_alert').removeClass('alert alert-warning');
+//     $('#error_staff').remove();
+//   }
+// })
 
 // fetching staff and subject for chosen class section - mapping edit - having issue
 $(document).on("click", ".class_std_sec_edit", function () {
@@ -1182,7 +1225,7 @@ $(document).ready(function(){
             <div class='row'>
             <form id='editpar-form' action='../dashboard/parents/map/${data.parMapData[0][0].id}?_method=PUT' method='POST'>
             <div class='mb-3' id='previously_mapped'><label for='status'>Earlier Mapped Students:</label>
-            <select id='mapped_students_edit' class='js-example-basic-multiple form-control' name='mapped_students_edit[]' multiple='multiple'><option>somethong</option></select></div>
+            <select id='mapped_students_edit' class='js-example-basic-multiple js-example-responsive form-control' name='mapped_students_edit[]' multiple='multiple'></select></div>
             <div class='mb-3' ><label for='status'>Add New Students:</label>
             <select id='map_students_edit' class='js-example-basic-multiple form-control' name='map_students_edit[]' multiple='multiple'></select></div>
             <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Update</button></div>
@@ -1193,12 +1236,13 @@ $(document).ready(function(){
         
         // showing previosuly mapped students here
         if (data.parMapData[1].length > 0){
+          var full_data = [];
+          var mapped = "";
           $.each(data.parMapData[1], function(key, value){
             $('#mapped_students_edit').append(
-              `<option value='${value.ml_student_id}'>${value.student_name}</option>`
+              `<option value='${value.ml_student_id}' selected="selected" >${value.student_name}</option>`
             )
           })
-          $('.js-example-basic-multiple').select2();
         } else {
           $('#previously_mapped').remove();
         }
@@ -1217,12 +1261,24 @@ $(document).ready(function(){
         
         // show data in the element.
         $("#mapParAccModal").modal("show");
+        $("#mapped_students_edit").select2({
+          dropdownParent: $('#mapParAccModal'), width: '100%'
+        });
+        $("#map_students_edit").select2({
+          dropdownParent: $('#mapParAccModal'), width: '100%'
+        });
       }, error: function (err){
         console.log(err)
       }
     })
   })
 })
+
+// $(document).ready(function() {
+//   $('#mapped_students_edit').select2({
+//       dropdownParent: $('#mapParAccModal')
+//   });
+// });
 
 // get Delete Modal for PARENT ACCOUNTS by School
 $(document).ready(function () {

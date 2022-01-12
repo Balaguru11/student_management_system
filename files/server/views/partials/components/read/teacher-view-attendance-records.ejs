@@ -8,9 +8,9 @@
         <th width="200px">Date</th>
         <th width="200px">Class Section</th>
         <th width="150px">Period No</th>
-        <th width="150px">Leave</th>
-        <th width="200px">Absent</th>
-        <th width="100px">On Duty</th>
+        <th width="150px">Students</th>
+        <!-- <th width="200px">Absent</th>
+        <th width="100px">On Duty</th> -->
         <th width="200px">Actions</th>
       </tr>
     </thead>
@@ -20,11 +20,30 @@
       <tr>
         <th scope="row"><%= (i+1) %></th>
         <td><%= locals.attendances[1][i].date %></td>
-        <td><%= locals.attendances[1][i].class_sec %></td>
+        <td><%= locals.attendances[1][i].class_std %>-<%= locals.attendances[1][i].medium %> - <%= locals.attendances[1][i].class_section %> sec</td>
         <td><%= locals.attendances[1][i].period_no %></td>
-        <td><%= locals.attendances[1][i].leave_intimated %></td>
-        <td><%= locals.attendances[1][i].absent %></td>
-        <td><%= locals.attendances[1][i].on_duty %></td>
+        <td><%= locals.attendances[1][i].student_affect %></td>
+        <!-- <td>
+        <% if (locals.attendances[1][i].attend_status == 'Leave_Intimated') { %>
+          
+        <% } else { %>
+          -
+          <% } %>
+        </td>
+        <td>
+          <% if (locals.attendances[1][i].attend_status == 'Absent') { %>
+            <%= locals.attendances[1][i].student_affect %>
+          <% } else { %>
+            -
+            <% } %>
+          </td>
+          <td>
+            <% if (locals.attendances[1][i].attend_status == 'On_Duty') { %>
+              <%= locals.attendances[1][i].student_affect %>
+            <% } else { %>
+              -
+              <% } %>
+            </td> -->
         <td>
           <a
             class="btn btn-warning edit"

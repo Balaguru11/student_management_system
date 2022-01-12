@@ -734,15 +734,17 @@ exports.getMapSubStaff = (req, res) => {
     // fetching class_id, section from classroom
     var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
     dbcon.query(class_med_sec, (err, tableData) => {
-      if (err) return res.render("server-error", { title: "Server Error" });
-      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
-      INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
+      if (err) console.log(err);
+      // return res.render("server-error", { title: "Server Error" });
+      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username AS staff_primary, sml2.username AS staff_secondary FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
-      INNER JOIN school_main_login AS sml ON scs.staff_id_assigned = sml.id OR scs.secondary_staff_assigned = sml.id
-      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
+      INNER JOIN school_main_login AS sml ON scs.staff_id_assigned = sml.id 
+      INNER JOIN school_main_login AS sml2 ON scs.secondary_staff_assigned = sml2.id
+      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id WHERE sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(bridgeTableQuery, (err, result) => {
-        if (err) return res.render("server-error", { title: "Server Error" });
+        if (err) console.log(err);
         console.log(result);
+        // return res.render("server-error", { title: "Server Error" });
         res.locals.tableData = tableData;
         res.locals.result = result;
         return res.render("schoolLevel/school-map-subject-staff", {
@@ -772,12 +774,14 @@ exports.postMapSubStaff = async (req, res) => {
         console.log(err);
         return res.render("server-error", { title: "Server Error" });
       } else if (isMapped[0].count == 0) {
-        if (req.body.staff !== req.body.sec_staff){
-          var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned, secondary_staff_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}', '${req.body.sec_staff}')`;
+        if (req.body.staff != req.body.sec_staff){
+          var MapSubStaffSec = `INSERT INTO school_class_subjects (school_id, subject_id, classroom_id, staff_id_assigned, secondary_staff_assigned) VALUES ('${session.schoolId}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}', '${req.body.sec_staff}')`;
 
           dbcon.query(MapSubStaffSec, (err, bridgeData) => {
-            if (err)  console.log(err);
+            if (err) console.log(err);
             // return res.render("server-error", { title: "Server Error" });
+            req.flash('success', 'Mapping created successfully');
+            return res.redirect('/school/dashboard/section-subject-staff');
           });
         } else {
           req.flash("err_msg", "Staff and Alternate staff cannot be the same");
@@ -799,17 +803,25 @@ exports.postMapSubStaff = async (req, res) => {
 
 // edit Map Subject STaff
 exports.editMapSubStaff = (req, res) => {
-  //flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
-  // flashing success_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   let map_id = req.params.id;
   try {
-    var getEditMap = `SELECT * FROM school_class_subjects WHERE id='${map_id}'`;
-    bdcon.query(getEditMap);
+    if (req.body.staff_edit == req.body.sec_staff_edit) {
+      req.flash('err_msg', 'Primary & Secondary faculties should not be the same');
+      return res.redirect('/school/dashboard/section-subject-staff');
+    } else {
+      var editMapped = `UPDATE school_class_subjects SET staff_id_assigned = '${req.body.staff_edit}', secondary_staff_assigned='${req.body.sec_staff_edit}' WHERE id='${map_id}' AND school_id='${session.schoolId}'`;
+      dbcon.query(editMapped, (err, edited) => {
+        if(err) throw err;
+        console.log(edited);
+        req.flash('success', 'Mapped Faculties modified.');
+        return res.redirect('/school/dashboard/section-subject-staff');
+      });
+    }
   } catch (err) {
     console.log(err);
   }
@@ -817,17 +829,15 @@ exports.editMapSubStaff = (req, res) => {
 
 // delete Map Subject Staff
 exports.deleteMapSubStaff = (req, res) => {
-  //flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
-  // flashing success_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   let id = req.params.id;
   try {
     // delete here
-    var deleteMapp = `UPDATE school_class_subjects SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
+    var deleteMapp = `UPDATE school_class_subjects SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}' AND school_id = '${session.schoolId}'`;
     dbcon.query(deleteMapp, (err) => {
       if (err) throw err;
       req.flash("success", "Bonding deleted successfully.");
@@ -1618,6 +1628,7 @@ exports.mapParStudent = (req, res) => {
   let err_msg = req.flash('err_msg');
   res.locals.err_msg = err_msg;
   let success_msg = req.flash('success');
+  let session = req.session;
   res.locals.success_msg = success_msg;
   let parent_id = req.params.parent_id;
   try {
