@@ -418,7 +418,7 @@ exports.getClassAssigned = (req, res) => {
       INNER JOIN school_classroom AS clr ON scs.classroom_id = clr.id
       INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id
       INNER JOIN school_subjects AS sub ON scs.subject_id=sub.id
-      WHERE scs.school_id='${session.school_id}'`;
+      WHERE scs.school_id='${session.school_id}' ORDER BY ABS(sfs.class_std)`;
       dbcon.query(classAssigned, (err, assignedClasses) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.assignedClasses = assignedClasses;
@@ -519,53 +519,64 @@ exports.postStuAttendance = (req, res) => {
   var leave_intimated = req.body.leave_informed_stu;
   
   try { 
-    // for loop to construct a query - absent
-    var absentDataEntry = "";
-    var onDutyDataEntry = "";
-    var leaveDataEntry = "";
 
-    if (typeof absent !== 'undefined'){
-      for (let i = 0; i < absent.length; i++){
-        var absent_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent[i]}', '${session.staff_id}'),`;
-        absentDataEntry = absentDataEntry + absent_loop;
+    // check for records dupe
+    var dupeAttendance = `SELECT * FROM school_student_attendance WHERE school_id = '${session.school_id}' AND class_sec = '${req.body.class_sec_id_hide}' AND period_no = '${req.body.period_no}'`;
+    dbcon.query(dupeAttendance, (err, duplicate) => {
+      if(err) throw err
+      else if (duplicate.length > 0) {
+        req.flash('err_msg', 'Attendance for this Class Period added already');
+        return res.redirect("/staff/dashboard/my-schedule");
+      } else {
+        // for loop to construct a query - absent
+        var absentDataEntry = "";
+        var onDutyDataEntry = "";
+        var leaveDataEntry = "";
+
+        if (typeof absent !== 'undefined'){
+          for (let i = 0; i < absent.length; i++){
+            var absent_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent[i]}', '${session.staff_id}'),`;
+            absentDataEntry = absentDataEntry + absent_loop;
+          }
+        } else {
+          let absent_i = 'NULL';
+          absentDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent_i}', '${session.staff_id}'),`;
+        }
+        
+        if(typeof on_duty !== 'undefined') {
+          // for loop to construct a query - on_duty
+          for (let i = 0; i < on_duty.length; i++){
+            var onDuty_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','On_Duty','${on_duty[i]}', '${session.staff_id}'),`;
+            onDutyDataEntry = onDutyDataEntry + onDuty_loop;
+          }
+        } else {
+          let on_duty_i = 'NULL';
+          onDutyDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','On_Duty','${on_duty_i}', '${session.staff_id}'),`;
+        }
+        
+        if (typeof leave_intimated !== 'undefined') {
+          // for loop to construct a query - Leave_intimated
+          for (let i = 0; i < leave_intimated.length; i++){ // length 1 - 1 run
+            var leave_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated[i]}', '${session.staff_id}'),`;
+            leaveDataEntry = leaveDataEntry + leave_loop;
+            var leave_query = leaveDataEntry.slice(0, -1);
+          }
+        } else {
+          let leave_intimated_i = 'NULL';
+          leaveDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated_i}', '${session.staff_id}'),`;
+          var leave_query = leaveDataEntry.slice(0, -1);
+        }
+        
+        // inserting attendance
+        var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${onDutyDataEntry} ${absentDataEntry} ${leave_query}`;
+        dbcon.query(attendanceData, (err, attendanceAdded) => {
+          if (err) throw err;
+          console.log(attendanceAdded);
+          req.flash("success", "Attendance added successfully.");
+          return res.redirect("/staff/dashboard/my-schedule");
+        });
       }
-    } else {
-      let absent_i = 'NULL';
-      absentDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent_i}', '${session.staff_id}'),`;
-    }
-    
-    if(typeof on_duty !== 'undefined') {
-      // for loop to construct a query - on_duty
-      for (let i = 0; i < on_duty.length; i++){
-        var onDuty_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','On_Duty','${on_duty[i]}', '${session.staff_id}'),`;
-        onDutyDataEntry = onDutyDataEntry + onDuty_loop;
-      }
-    } else {
-      let on_duty_i = 'NULL';
-      onDutyDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','On_Duty','${on_duty_i}', '${session.staff_id}'),`;
-    }
-    
-    if (typeof leave_intimated !== 'undefined') {
-      // for loop to construct a query - Leave_intimated
-      for (let i = 0; i < on_duty.length; i++){ // length 1 - 1 run
-        var leave_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated[i]}', '${session.staff_id}'),`;
-        leaveDataEntry = leaveDataEntry + leave_loop;
-        var leave_query = leaveDataEntry.slice(0, -1);
-      }
-    } else {
-      let leave_intimated_i = 'NULL';
-      leaveDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated_i}', '${session.staff_id}'),`;
-      var leave_query = leaveDataEntry.slice(0, -1);
-    }
-    
-    // inserting attendance
-    var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${onDutyDataEntry} ${absentDataEntry} ${leave_query}`;
-    dbcon.query(attendanceData, (err, attendanceAdded) => {
-      if (err) throw err;
-      console.log(attendanceAdded);
-      req.flash("success", "Attendance added successfully.");
-      return res.redirect("/staff/dashboard/my-schedule");
-    });
+    })
   } catch (err) {
     console.log(err);
   }

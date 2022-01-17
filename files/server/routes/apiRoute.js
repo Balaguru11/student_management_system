@@ -375,16 +375,14 @@ apiRouter.post('/get-parent-account-data', (req, res) => {
 apiRouter.post('/get-parent-account-mapped-data', (req, res) => {
   let session = req.session;
 var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.body.parent_id}' AND role_id_fk='5'; SELECT stu.school_id, spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.body.parent_id}'; SELECT stu.school_id, stu.name AS student_name, stu.student_id FROM school_student AS stu INNER JOIN school_main_login AS sml ON sml.id = stu.student_id WHERE sml.school_id='${session.schoolId}' AND sml.status='Active' AND sml.deleted_at IS NULL AND sml.role_id_fk = '1'`;
-dbcon.query(parentMapData, (err, parMapData) => {
-  if(err) res.json({msg: 'error', err});
-  else if(parMapData[0].length != 0){
-    res.json({msg: 'success', parMapData: parMapData});
-  } else {
-    res.json({msg: 'zero', text: 'Not a Parent account'});
-  }
-})
-
- 
+  dbcon.query(parentMapData, (err, parMapData) => {
+    if(err) res.json({msg: 'error', err});
+    else if(parMapData[0].length != 0){
+      res.json({msg: 'success', parMapData: parMapData});
+    } else {
+      res.json({msg: 'zero', text: 'Not a Parent account'});
+    }
+  })
 })
 
 // get EDIT Student ACCOUNT Modal for Admin and School
@@ -439,4 +437,14 @@ apiRouter.post('/get-due-collection-records', (req, res) => {
     res.json({msg: 'success', feeDueRows: feeDueRows});
   })
 })
+
+// student asking doubt to his / her staff - modal open
+apiRouter.post('/student-ask-doubt', (req, res) => {
+  var staffData = `SELECT * FROM school_staff WHERE staff_id='${req.body.staff_selected}'`;
+  dbcon.query(staffData, (err, staff) => {
+    if(err) res.json({msg: 'error', err})
+    res.json({msg: 'success', staff: staff});
+  })
+})
+
 module.exports = apiRouter;

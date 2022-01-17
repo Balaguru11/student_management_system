@@ -1351,3 +1351,38 @@ $(document).ready(function () {
     })
   })
 })
+
+// student asking doubt to his / her staff
+$(document).ready(function() {
+  $('.chatbutton').on('click', function () {
+    var staff_selected = $(this).attr('data-id');
+    $.ajax({
+      url: '/api/student-ask-doubt',
+      type: 'POST',
+      data: {
+        staff_selected: staff_selected,
+      }, dataType: 'JSON',
+      success: function (data) {
+        $('.chat-modal-body').html(function () {
+          return (
+            `<div class='container'>
+            <div class='row'><p><b>Sending Message to: ${data.staff[0].name}</b></p></div>
+            <div class='row'>
+            <form id='editpar-form' action='../dashboard/ask-my-staff/new-doubt/${data.staff[0].staff_id}' method='POST'>
+            <div class='mb-3'><label for='status'>Doubt Title:</label>
+            <input type='text' class='form-control' name='doubt_title' id='doubt_title' />
+            <div class='mt-3 mb-3'><label for='status'>Describe it:</label>
+            <textarea class='form-control' name='doubt_desc' id='doubt_desc' rows='5'></textarea>
+            </div>
+            <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Send</button></div>
+            </form>
+            </div></div>`
+          )
+        })
+        $('#chatbuttonModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})

@@ -36,7 +36,6 @@ exports.postStuLogin = async (req, res) => {
           session.school_id = result[0].school_id;
           session.stuPass = result[0].password;
           session.logged_in = true;
-
           req.flash(
             "welcome",
             `Hi ${session.username}, It is good to see you again !`
@@ -71,11 +70,18 @@ exports.viewStuDashboard = (req, res) => {
   try {
     let session = req.session;
     if (session.logged_in && session.roleId == "1") {
-      res.locals.student_status = session.studentStatus;
-      res.locals.username = session.username;
-      return res.render("studentLevel/student-dashboard", {
-        title: "Student Dashboard",
-      });
+
+      var getAttendance = `SELECT attend_status, COUNT(*) AS total FROM school_student_attendance WHERE student_affected = '${session.student_id}' GROUP BY attend_status`;
+      dbcon.query(getAttendance, (err, attRec) => {
+        if(err) throw err;
+        console.log(attRec);
+        res.locals.attRec = attRec;
+        res.locals.student_status = session.studentStatus;
+        res.locals.username = session.username;
+        return res.render("studentLevel/student-dashboard", {
+          title: "Student Dashboard",
+        });
+      })
     } else {
       req.flash(
         "err_msg",
@@ -301,6 +307,7 @@ exports.getStuProfileEdit = (req, res) => {
     return res.render("server-error", { title: "Server Error" });
   }
 };
+
 // Post Edit Profile Screen
 exports.postEditStuProfile = (req, res) => {
   let session = req.session;
@@ -331,6 +338,7 @@ exports.postEditStuProfile = (req, res) => {
   }
 };
 
+// admission due collection - payment by stduent
 exports.allAdmissionDue = (req, res) => {
   let session = req.session;
   // flashing err_msg
@@ -424,3 +432,68 @@ exports.allChangePwd = (req, res) => {
     return res.render("server-error", { title: "Server Error" });
   }
 };
+
+// get my attendance
+exports.getMyAttendance = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  try {
+    var getMyAtt = `SELECT DATE_FORMAT(att.date, '%d-%c-%Y') AS date, att.period_no, att.attend_status FROM school_student_attendance AS att INNER JOIN school_classroom AS clr ON clr.id = att.class_sec WHERE student_affected = '${session.student_id}' OR student_affected = '0' AND att.school_id='${session.school_id}' AND att.deleted_at IS NULL`;
+    dbcon.query(getMyAtt, (err, attendance) => {
+      if (err) throw err;
+      console.log(attendance);
+      res.locals.student_id = session.student_id;
+      res.locals.attendance = attendance;
+      return res.render('studentLevel/student-attendance', { title: 'Student Attendance'});
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+// student seeing their staff profile for contact purpose
+exports. getStaffProfile = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  try {
+    // do - Sl.No | Subject | Staff Name | Staff Type | View profile & Chat Button 
+    var staffDetails = `SELECT stad.class_section, subj.subject_name, clsu.staff_id_assigned, clsu.secondary_staff_assigned, staf1.name AS p_name, staf1.mobile_number AS p_mob, staf1.email As p_email, staf2.name AS s_name, staf2.mobile_number AS s_mob, staf2.email AS s_email  FROM school_student_admission AS stad INNER JOIN school_class_subjects AS clsu ON clsu.classroom_id = stad.class_section INNER JOIN school_subjects AS subj ON subj.id = clsu.subject_id INNER JOIN school_staff AS staf1 ON staf1.staff_id = clsu.staff_id_assigned INNER JOIN school_staff AS staf2 ON staf2.staff_id = clsu.secondary_staff_assigned WHERE stad.student_id = '${session.student_id}' AND stad.academic_year = YEAR(CURDATE())`;
+    dbcon.query(staffDetails, (err, staffRecords) => {
+      if(err) throw err;
+      res.locals.staffRecords = staffRecords;
+      return res.render('studentLevel/student-view-staff-profile', {title: 'Contact My Staff'});
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// student asking doubts to his staff (POST Modal)
+exports.askMyStaff = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let staff_id = req.params.staff_id;
+  try {
+  var newDoubt = `INSERT INTO school_student_doubts(school_id, asked_by, asked_to, doubt_title, doubt_desc, status) VALUES ('${session.school_id}', '${session.student_id}', '${staff_id}', '${req.body.doubt_title}', '${req.body.doubt_desc}', 'open')`;
+  dbcon.query(newDoubt, (err, addDoubt) => {
+    if(err) throw err;
+    else if (addDoubt.affectedRows == 1) {
+      req.flash('success', 'Your doubt has been successfully sent to the staff. Expect a quick reply anytime soon.');
+      return res.redirect('/student/dashboard/my-staff');
+    } else {
+      req.flash('err_msg', 'There is an error while processing your request. PTA.');
+      return res.redirect('/student/dashboard/my-staff');
+    }
+  })
+  } catch (err) {
+    console.log(err);
+  }
+}

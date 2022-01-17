@@ -13,7 +13,7 @@ const {
   getStuProfileEdit,
   postEditStuProfile,
   allAdmissionDue,
-  allChangePwd,
+  allChangePwd, getMyAttendance, getStaffProfile, askMyStaff
 } = require("../controllers/studentController");
 
 //middlewares - isStudent
@@ -30,9 +30,16 @@ studentRouter.put("/profile-edit", isStudent, postEditStuProfile);
 
 // Viewing Student Dasboard after Login
 studentRouter.get("/dashboard", isStudent, viewStuDashboard);
-studentRouter.all("/dashboatrd/change-passsword", isStudent, allChangePwd);
+studentRouter.all("/dashboard/change-passsword", isStudent, allChangePwd);
+
+// student seeing his / her staff profile
+studentRouter.get('/dashboard/my-staff', isStudent, getStaffProfile);
+studentRouter.post('/dashboard/ask-my-staff/new-doubt/:staff_id', isStudent, askMyStaff);
 
 // student making paymnent for his own
 studentRouter.all("/admission-fee-payment", isStudent, allAdmissionDue);
+
+// attendance show for student
+studentRouter.get('/dashboard/my-attendance', isStudent, getMyAttendance);
 
 module.exports = studentRouter;

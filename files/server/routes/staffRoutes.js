@@ -68,7 +68,7 @@ staffRouter.get(
 // view classes handled by this staff
 staffRouter.get("/dashboard/class-assigned", isStaff, getClassAssigned); // Not working
 
-//view my schedule for teacbhing staff
+//view my schedule for teaching staff
 staffRouter.get('/dashboard/my-schedule', isStaff, isTeacher, getMyScheduleStaff);
 
 // Students Attendance by Teaching Staff
