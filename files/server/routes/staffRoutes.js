@@ -21,7 +21,7 @@ const {
   getStudentsList,
   getClassAssigned, getMyScheduleStaff, 
   getStuAttendance,
-  postStuAttendance,
+  postStuAttendance, getStudentDoubts, addThreadMsg, 
   allChangePwd,
   viweFeeStructure,
   viewUserAccounts,
@@ -85,6 +85,10 @@ staffRouter.post(
   isTeacher,
   postStuAttendance
 );
+
+// teaching staff gets doubts ffrom students
+staffRouter.get('/dashboard/student-doubts', isStaff, isTeacher, getStudentDoubts);
+staffRouter.post('/dashboard/add-doubt-thread-message', isStaff, isTeacher, addThreadMsg);
 
 // exams conducted for Students by Teaching Staffs
 // staffRouter.get('/dashboard/exams', isStaff, getExams);

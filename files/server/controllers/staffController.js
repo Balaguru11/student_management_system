@@ -505,10 +505,8 @@ exports.getStuAttendance = (req, res) => {
 // post Class Attendance by Teaching staff
 exports.postStuAttendance = (req, res) => {
   let session = req.session;
-  // flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
-  // flashing sucecss_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let staff_role = session.roleId;
@@ -516,9 +514,7 @@ exports.postStuAttendance = (req, res) => {
   var absent = req.body.absent_stu; // 1
   var on_duty = req.body.on_duty_stu; // 2
   var leave_intimated = req.body.leave_informed_stu;
-  
   try { 
-
     // check for records dupe
     var dupeAttendance = `SELECT * FROM school_student_attendance WHERE school_id = '${session.school_id}' AND class_sec = '${req.body.class_sec_id_hide}' AND period_no = '${req.body.period_no}'`;
     dbcon.query(dupeAttendance, (err, duplicate) => {
@@ -580,6 +576,56 @@ exports.postStuAttendance = (req, res) => {
     console.log(err);
   }
 };
+
+// staff viewing student doubts
+exports.getStudentDoubts = (req, res) => {
+  let session = req.session;
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  try {
+    // do here
+    var askedToMe = `SELECT doubt.id, doubt.asked_by, stu.name, doubt.doubt_title, doubt.doubt_desc, doubt.status FROM school_student_doubts AS doubt INNER JOIN school_student AS stu ON stu.student_id = doubt.asked_by WHERE doubt.asked_to = '${session.staff_id}'`;
+    dbcon.query(askedToMe, (err, studentAsked) => {
+      if(err) throw err;
+      res.locals.studentAsked = studentAsked;
+      return res.render('staffLevel/student-doubt-to-staff', {title: 'Students Doubts'});
+    })
+  } catch(err) {
+    console.log(err);
+  }
+}
+
+// adding new thread message by staff
+exports.addThreadMsg = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let doubt_status = req.body.doubt_status;
+  try {
+    // do
+    var addThread = `INSERT INTO school_doubt_thread (school_id, doubt_ref_id, message, message_by) VALUES ('${session.school_id}', '${req.body.doubt_id}', '${req.body.reply_msg}', '${session.staff_id}')`;
+    dbcon.query(addThread, (err, addedNewMsg) => {
+      if(err) throw err;
+      else if (addedNewMsg.affectedRows == 1){
+        var updateDoubtStatus = `UPDATE school_student_doubts SET status = '${doubt_status}' WHERE id='${req.body.doubt_id}'`;
+        dbcon.query(updateDoubtStatus, (err, doubtUpdate) => {
+          if(err) throw err;
+          req.flash('success', 'Your message has been sent successfully');
+          return res.redirect('/dashboard/student-doubts');
+        })
+      } else {
+        req.flash('err_msg', 'We couldnt catch your message. Please try again.');
+        return res.redirect('/dashboard/student-doubts');
+      }
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
 // ******** STAFF_ROLE = TEACHING STAFF ********
 
 // ******** STAFF_ROLE = ADMIN ********

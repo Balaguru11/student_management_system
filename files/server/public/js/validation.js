@@ -1387,20 +1387,24 @@ $(document).ready(function() {
   })
 })
 
+// student / staff replying to the doubt and creating thread.
+$(document).on('click', '.replybutton', function () {
+  var doubt_ref = $(this).attr('data-id');
+  $('#doubt_'+doubt_ref).after(function () {
+    $('#new-doubt-thread-form').remove();
+    return (
+      `<div class='row alert alert-secondary' id='new-doubt-thread-form'> <form id='doubtthread-form' method='POST' action='../add-doubt-thread-message'> <input type='hidden' class='form-control' name='doubt_id' id='doubt_id' value='${doubt_ref}' /><p>Replying</p> <hr /> <div class='mt-3 mb-3'> <textarea class='form-control' name='reply_msg' placeholder='Type your reply' id='reply_msg' rows='2' ></textarea> <span class='error' id='reply_msg' >Reply message should not be blank.</span > </div> <div class='mb-3'> <label for='doubt_status'>Make the thread:</label> <select id='doubt_status' name='doubt_status' class='form-control' required> <option value=''>Select an Option</option> <option value='open'>Open</option> <option value='closed'>Closed</option> </select> </div> <div class='login'> <button class='btn btn-secondary' type='submit'> Send </button> </div> </form> </div>`
+    )
+  })
+})
+
 // Add attendance - Dynamically removing students from options
 $(document).ready(function () {
   $('#absent_stu').on('change', function () {
     var absentees = $(this).val(); // array
-    let absentees_length = absentees.length;
-    var on_duties = $('#on_duty_stu').val();
-    var leave_informed = $('#leave_informed_stu').val();
-    if (absentees_length = absentees_length + 1) {
+    if (absentees.length > 0) {
       $.each(absentees, function (key, value){
         $('#leave_informed_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
-      })
-    } else if (absentees_length = absentees_length - 1){
-      $.each(absentees, fucntion (key, value) {
-        // working here.
       })
     } else {
       $('#leave_informed_stu, #on_duty_stu').find("option").removeAttr('disabled');
@@ -1417,8 +1421,6 @@ $(document).on('change', '#leave_informed_stu', function () {
   } else {
     $('#absent_stu, #on_duty_stu').find("option").removeAttr('disabled');
   }
-  // on_duty 
-  
 })
 
 $(document).on('change', '#on_duty_stu', function () {

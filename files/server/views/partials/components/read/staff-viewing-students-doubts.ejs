@@ -1,0 +1,31 @@
+<div class="pt-5">
+  <h4 class="text-center">Students Doubts</h4>
+  <br />
+  <% if (locals.studentAsked.length > 0) { %>
+    <% for (let i = 0; i < locals.studentAsked.length; i++) { %>
+      <div class="card p-3 m-2">
+        <div class="row" id="doubt_<%= locals.studentAsked[i].id %>">
+          <div class="col-10">
+            <h5><%= locals.studentAsked[i].doubt_title %></h5>
+            <p><%= locals.studentAsked[i].doubt_desc %></p>
+            <small>Asked by: <b><%= locals.studentAsked[i].name %></b></small><br>
+            <div class="mt-2">
+              <button data-id="<%= locals.studentAsked[i].id %>" type="button" class="seeThreadButton btn btn-secondary View"><i class="fas fa-stream"></i> Thread</button> <button data-id="<%= locals.studentAsked[i].id %>" type="button" class="replybutton btn btn-info View">
+                Reply</button>
+            </div>
+          </div>
+          <div class="col-2 text-center">
+            <% if(locals.studentAsked[i].status == 'open') { %>
+              <p><span style="font-size: 1.6em; color: green;"><i class="fas fa-lock-open"></i></span></p>
+            <% } else { %>
+              <p><span style="font-size: 1.6em; color: gray;"><i class="fas fa-lock"></i></span></p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    <% } %>
+  <% } %>
+  
+</div>
+
+

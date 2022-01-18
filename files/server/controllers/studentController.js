@@ -497,3 +497,53 @@ exports.askMyStaff = (req, res) => {
     console.log(err);
   }
 }
+
+// my doubts of a student
+exports.myDoubtsList = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  try {
+    // do here
+    var myDoubts = `SELECT doubt.id, doubt.asked_to, staf.name, doubt.doubt_title, doubt.doubt_desc, doubt.status FROM school_student_doubts AS doubt INNER JOIN school_staff AS staf ON staf.staff_id = doubt.asked_to WHERE doubt.asked_by='${session.student_id}}' ORDER BY doubt.id DESC`;
+    dbcon.query(myDoubts, (err, myDoubtsList) => {
+      if(err) throw err;
+      res.locals.myDoubtsList = myDoubtsList;
+      return res.render('studentLevel/doubts-by-student', {title: 'Doubts asked by me'});
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// adding new thread message by student
+exports.addThreadMsg = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let doubt_status = req.body.doubt_status;
+  try {
+    // do
+    var addThread = `INSERT INTO school_doubt_thread (school_id, doubt_ref_id, message, message_by) VALUES ('${session.school_id}', '${req.body.doubt_id}', '${req.body.reply_msg}', '${session.student_id}')`;
+    dbcon.query(addThread, (err, addedNewMsg) => {
+      if(err) throw err;
+      else if (addedNewMsg.affectedRows == 1){
+        var updateDoubtStatus = `UPDATE school_student_doubts SET status = '${doubt_status}' WHERE id='${req.body.doubt_id}'`;
+        dbcon.query(updateDoubtStatus, (err, doubtUpdate) => {
+          if(err) throw err;
+          req.flash('success', 'Your message has been sent successfully');
+          return res.redirect('/student/dashboard/ask-my-staff/my-doubts');
+        })
+      } else {
+        req.flash('err_msg', 'We couldnt catch your message. Please try again.');
+        return res.redirect('/student/dashboard/ask-my-staff/my-doubts');
+      }
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
