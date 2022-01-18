@@ -1386,3 +1386,48 @@ $(document).ready(function() {
     })
   })
 })
+
+// Add attendance - Dynamically removing students from options
+$(document).ready(function () {
+  $('#absent_stu').on('change', function () {
+    var absentees = $(this).val(); // array
+    let absentees_length = absentees.length;
+    var on_duties = $('#on_duty_stu').val();
+    var leave_informed = $('#leave_informed_stu').val();
+    if (absentees_length = absentees_length + 1) {
+      $.each(absentees, function (key, value){
+        $('#leave_informed_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+      })
+    } else if (absentees_length = absentees_length - 1){
+      $.each(absentees, fucntion (key, value) {
+        // working here.
+      })
+    } else {
+      $('#leave_informed_stu, #on_duty_stu').find("option").removeAttr('disabled');
+    }
+  })
+})
+
+$(document).on('change', '#leave_informed_stu', function () {
+  var leave_today = $('#leave_informed_stu').val();
+  if(leave_today.length > 0) {
+    $.each(leave_today, function (key, value) {
+      $('#absent_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+    })
+  } else {
+    $('#absent_stu, #on_duty_stu').find("option").removeAttr('disabled');
+  }
+  // on_duty 
+  
+})
+
+$(document).on('change', '#on_duty_stu', function () {
+  var on_duty = $('#on_duty_stu').val();
+  if(on_duty.length > 0){
+    $.each(on_duty, function (key, value) {
+      $('#absent_stu, #leave_informed_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+    })
+  }else {
+    $('#absent_stu, #leave_informed_stu').find("option").removeAttr('disabled');
+  }
+})

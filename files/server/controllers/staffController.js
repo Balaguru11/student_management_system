@@ -488,7 +488,6 @@ exports.getStuAttendance = (req, res) => {
       var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT DATE_FORMAT(ssa.date, '%d-%c-%Y') AS date, clr.class_section, sfs.class_std, sfs.medium, ssa.period_no, ssa.attend_status, CONCAT(ssa.attend_status, ': ',  GROUP_CONCAT(ssa.student_affected ORDER BY ssa.attend_status SEPARATOR ', ')) AS student_affect FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.entered_by = '${session.staff_id}' AND ssa.deleted_at IS NULL AND ssa.student_affected != '0' GROUP BY ssa.date, ssa.entered_by, ssa.period_no, ssa.attend_status; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}' AND ssa.academic_year = YEAR(CURDATE())`;
       dbcon.query(StuAttendance, (err, attendances) => {
         if (err) throw err;
-        console.log(attendances);
         res.locals.attendances = attendances;
         return res.render("staffLevel/teacher-add-attendance", {
           title: "Student Attendance Records",
