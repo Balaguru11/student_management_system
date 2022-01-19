@@ -78,8 +78,8 @@ app.get("/", (req, res) => {
   // flashing success_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
+  let session = req.session;
   try {
-    let session = req.session;
     if (!session.logged_in) {
       const fetch_role = `SELECT * FROM school_role`;
       dbcon.query(fetch_role, (err, data) => {
@@ -92,8 +92,12 @@ app.get("/", (req, res) => {
       });
     } else if (session.schoolUserName) {
       return res.redirect("/school/dashboard");
-    } else {
+    } else if (session.staff_id) {
       return res.redirect("/staff/dashboard");
+    } else if(session.parent_id) {
+      return res.redirect("/parent/dashboard");
+    } else {
+      return res.redirect("/student/dashboard");
     }
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });

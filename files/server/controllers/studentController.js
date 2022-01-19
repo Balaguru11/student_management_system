@@ -70,11 +70,9 @@ exports.viewStuDashboard = (req, res) => {
   try {
     let session = req.session;
     if (session.logged_in && session.roleId == "1") {
-
       var getAttendance = `SELECT attend_status, COUNT(*) AS total FROM school_student_attendance WHERE student_affected = '${session.student_id}' GROUP BY attend_status`;
       dbcon.query(getAttendance, (err, attRec) => {
         if(err) throw err;
-        console.log(attRec);
         res.locals.attRec = attRec;
         res.locals.student_status = session.studentStatus;
         res.locals.username = session.username;
@@ -507,10 +505,11 @@ exports.myDoubtsList = (req, res) => {
   res.locals.err_msg = err_msg;
   try {
     // do here
-    var myDoubts = `SELECT doubt.id, doubt.asked_to, staf.name, doubt.doubt_title, doubt.doubt_desc, doubt.status FROM school_student_doubts AS doubt INNER JOIN school_staff AS staf ON staf.staff_id = doubt.asked_to WHERE doubt.asked_by='${session.student_id}}' ORDER BY doubt.id DESC`;
+    var myDoubts = `SELECT doubt.id, doubt.asked_by, doubt.asked_to, staf.name, doubt.doubt_title, doubt.doubt_desc, doubt.status FROM school_student_doubts AS doubt INNER JOIN school_staff AS staf ON staf.staff_id = doubt.asked_to WHERE doubt.asked_by='${session.student_id}}' ORDER BY doubt.id DESC`;
     dbcon.query(myDoubts, (err, myDoubtsList) => {
       if(err) throw err;
       res.locals.myDoubtsList = myDoubtsList;
+      res.locals.who_logged_in = session.student_id;
       return res.render('studentLevel/doubts-by-student', {title: 'Doubts asked by me'});
     })
   } catch (err) {
@@ -528,7 +527,7 @@ exports.addThreadMsg = (req, res) => {
   let doubt_status = req.body.doubt_status;
   try {
     // do
-    var addThread = `INSERT INTO school_doubt_thread (school_id, doubt_ref_id, message, message_by) VALUES ('${session.school_id}', '${req.body.doubt_id}', '${req.body.reply_msg}', '${session.student_id}')`;
+    var addThread = `INSERT INTO school_doubt_thread (school_id, doubt_ref_id, message, message_by, view_status) VALUES ('${session.school_id}', '${req.body.doubt_id}', '${req.body.reply_msg}', '${session.student_id}', 'unread')`;
     dbcon.query(addThread, (err, addedNewMsg) => {
       if(err) throw err;
       else if (addedNewMsg.affectedRows == 1){
@@ -536,11 +535,11 @@ exports.addThreadMsg = (req, res) => {
         dbcon.query(updateDoubtStatus, (err, doubtUpdate) => {
           if(err) throw err;
           req.flash('success', 'Your message has been sent successfully');
-          return res.redirect('/student/dashboard/ask-my-staff/my-doubts');
+          return res.redirect('/student/dashboard/my-doubts');
         })
       } else {
         req.flash('err_msg', 'We couldnt catch your message. Please try again.');
-        return res.redirect('/student/dashboard/ask-my-staff/my-doubts');
+        return res.redirect('/student/dashboard/my-doubts');
       }
     })
   } catch (err) {

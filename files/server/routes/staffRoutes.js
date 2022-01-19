@@ -86,7 +86,7 @@ staffRouter.post(
   postStuAttendance
 );
 
-// teaching staff gets doubts ffrom students
+// teaching staff gets doubts from students
 staffRouter.get('/dashboard/student-doubts', isStaff, isTeacher, getStudentDoubts);
 staffRouter.post('/dashboard/add-doubt-thread-message', isStaff, isTeacher, addThreadMsg);
 

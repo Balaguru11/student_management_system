@@ -31,10 +31,9 @@ studentRouter.all("/dashboard/change-passsword", isStudent, allChangePwd);
 
 // student seeing his / her staff profile and asking doubts
 studentRouter.get('/dashboard/my-staff', isStudent, getStaffProfile);
-studentRouter.post('/dashboard/ask-my-staff/new-doubt/:staff_id', isStudent, askMyStaff);
-studentRouter.get('/dashboard/ask-my-staff/my-doubts', isStudent, myDoubtsList);
+studentRouter.post('/dashboard/ask-new-doubt/:staff_id', isStudent, askMyStaff);
+studentRouter.get('/dashboard/my-doubts', isStudent, myDoubtsList);
 studentRouter.post('/dashboard/add-doubt-thread-message', isStudent, addThreadMsg);
-
 
 
 // student making paymnent for his own

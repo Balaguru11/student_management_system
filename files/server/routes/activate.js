@@ -15,6 +15,10 @@ schoolActivate.get("/school", (req, res) => {
   // flashing sucecss_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
+  //for header menu
+  res.locals.schoolUserName = session.schoolUserName;
+  res.locals.schoolStatus = session.schoolStatus;
+  res.locals.logged_in = session.logged_in;
   return res.render("partials/components/school-inactive", {
     title: "Product Activation",
     layout: "./layouts/home_layout",

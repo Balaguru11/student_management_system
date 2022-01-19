@@ -20,8 +20,8 @@
         <th scope="row"><%= (i+1) %></th>
         <td><%= locals.staffRecords[i].subject_name %></td>
         <td><%= locals.staffRecords[i].p_name %></td>
-        <td><a href="mailto:<%= locals.staffRecords[i].email %>"><%= locals.staffRecords[i].p_email %></a></td>
-        <td><a href="tel:<%= locals.staffRecords[i].mobile_number %>"><%= locals.staffRecords[i].p_mob %></a></td>
+        <td><a class="text-decoration-none" href="mailto:<%= locals.staffRecords[i].email %>"><%= locals.staffRecords[i].p_email %></a></td>
+        <td><a class="text-decoration-none" href="tel:<%= locals.staffRecords[i].mobile_number %>"><%= locals.staffRecords[i].p_mob %></a></td>
         <td>
           <button data-id="<%= locals.staffRecords[i].staff_id_assigned %>" type="button" class="chatbutton btn btn-dark View" data-bs-toggle="modal">
             <i class="far fa-comment-dots"></i></button>
@@ -56,8 +56,8 @@
         <th scope="row"><%= (i+1) %></th>
         <td><%= locals.staffRecords[i].subject_name %></td>
         <td><%= locals.staffRecords[i].s_name %></td>
-        <td><a href="mailto:<%= locals.staffRecords[i].email %>"><%= locals.staffRecords[i].s_email %></a></td>
-        <td><a href="tel:<%= locals.staffRecords[i].mobile_number %>"><%= locals.staffRecords[i].s_mob %></a></td>
+        <td><a class="text-decoration-none" href="mailto:<%= locals.staffRecords[i].email %>"><%= locals.staffRecords[i].s_email %></a></td>
+        <td><a class="text-decoration-none" href="tel:<%= locals.staffRecords[i].mobile_number %>"><%= locals.staffRecords[i].s_mob %></a></td>
         <td>
           <button data-id="<%= locals.staffRecords[i].secondary_staff_assigned %>" type="button" class="chatbutton btn btn-dark View" data-bs-toggle="modal">
             <i class="far fa-comment-dots"></i></button>

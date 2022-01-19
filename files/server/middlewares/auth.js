@@ -5,8 +5,9 @@ const flash = require("connect-flash");
 
 exports.isSchool = async (req, res, next) => {
   let session = req.session;
-  res.locals.loggedin = session.logged_in;
+  res.locals.logged_in = session.logged_in;
   res.locals.schoolUserName = session.schoolUserName;
+  res.locals.schoolId = session.schoolId;
   res.locals.schoolStatus = session.schoolStatus;
   if (session.logged_in) {
     next();
@@ -18,10 +19,18 @@ exports.isSchool = async (req, res, next) => {
 
 exports.isStaff = async (req, res, next) => {
   let session = req.session;
-  console.log(session);
-  res.locals.loggedin = session.logged_in;
+  res.locals.logged_in = session.logged_in;
   res.locals.staffUsername = session.username;
   res.locals.staffStatus = session.staffStatus;
+  res.locals.staff_role = session.roleId;
+
+  var doubtCount = `SELECT COUNT(doubt_title) AS newDoubts FROM school_student_doubts WHERE asked_to = '${session.staff_id}'; SELECT COUNT(message) AS newThread FROM school_doubt_thread AS sdt INNER JOIN school_student_doubts AS ssd ON ssd.id = sdt.doubt_ref_id WHERE message_by != '${session.staff_id}' AND ssd.asked_to = '${session.staff_id}'`;
+  dbcon.query(doubtCount, (err, count) => {
+    if(err) throw err;
+    console.log(count);
+    res.locals.count = count;
+  })
+
   // check school startus here and proceed further.
   if (session.logged_in) {
     var isSchoolActive = `SELECT EXISTS(SELECT * FROM school_add_school WHERE id='${session.school_id}' AND status='Active')`;
@@ -54,6 +63,12 @@ exports.isHM = async(req, res, next) => {
 exports.isTeacher = async(req, res, next) => {
   let session = req.session;
   res.locals.staff_role = session.roleId;
+  var doubtCount = `SELECT COUNT(doubt_title) AS newDoubts FROM school_student_doubts WHERE asked_to = '${session.staff_id}'; SELECT COUNT(message) AS newThread FROM school_doubt_thread AS sdt INNER JOIN school_student_doubts AS ssd ON ssd.id = sdt.doubt_ref_id WHERE message_by != '${session.staff_id}' AND ssd.asked_to = '${session.staff_id}'`;
+  dbcon.query(doubtCount, (err, count) => {
+    if(err) throw err;
+    console.log(count);
+    res.locals.count = count;
+  })
   if(session.logged_in && session.roleId == 8) {
     next();
   } else {
@@ -92,9 +107,14 @@ exports.isStudent = async (req, res, next) => {
   res.locals.studentUsername = session.username;
   res.locals.email = session.email;
   res.locals.studentStatus = session.studentStatus;
-  res.locals.loggedin = session.logged_in;
+  res.locals.logged_in = session.logged_in;
+  var doubtCount = `SELECT sdt.created_at, COUNT(sdt.message) AS new_messages FROM school_doubt_thread AS sdt INNER JOIN school_student_doubts AS ssd ON ssd.id = sdt.doubt_ref_id WHERE message_by != '${session.student_id}' AND ssd.asked_by = '${session.student_id}' AND sdt.view_status = 'unread'`;
+    dbcon.query(doubtCount, (err, count) => {
+      if(err) throw err;
+      res.locals.newdoubts = count;
+    })
   if (session.logged_in) {
-    next();
+      next();
   } else {
     req.flash("err_msg", "It seems you are not logged in.");
     return res.redirect("/");

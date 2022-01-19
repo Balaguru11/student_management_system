@@ -590,6 +590,7 @@ exports.getStudentDoubts = (req, res) => {
     dbcon.query(askedToMe, (err, studentAsked) => {
       if(err) throw err;
       res.locals.studentAsked = studentAsked;
+      res.locals.who_logged_in = session.staff_id;
       return res.render('staffLevel/student-doubt-to-staff', {title: 'Students Doubts'});
     })
   } catch(err) {
@@ -607,7 +608,7 @@ exports.addThreadMsg = (req, res) => {
   let doubt_status = req.body.doubt_status;
   try {
     // do
-    var addThread = `INSERT INTO school_doubt_thread (school_id, doubt_ref_id, message, message_by) VALUES ('${session.school_id}', '${req.body.doubt_id}', '${req.body.reply_msg}', '${session.staff_id}')`;
+    var addThread = `INSERT INTO school_doubt_thread (school_id, doubt_ref_id, message, message_by, view_status) VALUES ('${session.school_id}', '${req.body.doubt_id}', '${req.body.reply_msg}', '${session.staff_id}', 'unread')`;
     dbcon.query(addThread, (err, addedNewMsg) => {
       if(err) throw err;
       else if (addedNewMsg.affectedRows == 1){
@@ -615,11 +616,11 @@ exports.addThreadMsg = (req, res) => {
         dbcon.query(updateDoubtStatus, (err, doubtUpdate) => {
           if(err) throw err;
           req.flash('success', 'Your message has been sent successfully');
-          return res.redirect('/dashboard/student-doubts');
+          return res.redirect('/staff/dashboard/student-doubts');
         })
       } else {
         req.flash('err_msg', 'We couldnt catch your message. Please try again.');
-        return res.redirect('/dashboard/student-doubts');
+        return res.redirect('/staff/dashboard/student-doubts');
       }
     })
   } catch (err) {

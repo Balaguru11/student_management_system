@@ -30,7 +30,6 @@ exports.allParentLogin = (req, res) => {
           );
           if (verified) {
             let session = req.session;
-
             session.parent_id = parent[0].id;
             session.roleId = parent[0].role_id_fk;
             session.username = req.body.username;

@@ -11,39 +11,75 @@
                 <li class="nav-item">
                     <a href="/" class="nav-link active text-white" aria-current="page">Home</a>
                 </li>
-                <% if(locals.schoolUserName){ %>
+                <!-- default Menus -->
+                <% if(!locals.logged_in) { %>
                     <li class="nav-item">
-                        <a href="/school/dashboard" class="nav-link active text-white" aria-current="page"><%= schoolUserName %></a>
+                        <a href="/school/create" class="nav-link active text-white" aria-current="page">Add A School</a>
                     </li>
-                    <% } else { %>
-                <li class="nav-item">
-                    <a href="/school/create" class="nav-link active text-white" aria-current="page">Add A School</a>
-                </li>
-                <li class="nav-item">
-                    <a href="/school/login" class="nav-link active text-white" aria-current="page">School Login</a>
-                </li>
-                
-                <% if(locals.staffUsername) { %>
                     <li class="nav-item">
-                        <a href="/staff/dashboard" class="nav-link active text-white" aria-current="page">Howdy, <%= staffUsername %></a>
+                        <a href="/school/login" class="nav-link active text-white" aria-current="page">School Login</a>
                     </li>
-                    <% } else { %>
                     <li class="nav-item">
                         <a href="/staff/login" class="nav-link active text-white" aria-current="page">User Login</a>
                     </li>
+                <% } %>
+                
+                <!-- Active school related menus -->
+                <% if(locals.schoolUserName && locals.schoolStatus =='Active') { %>
+                    <li class="nav-item">
+                        <a href="/school/dashboard" class="nav-link active text-white" aria-current="page"><%= locals.schoolUserName %></a>
+                    </li>
+                <% } %>
+                
+                <!-- inactive school menu -->
+                <% if(locals.schoolUserName && locals.schoolStatus =='Inactive') { %>
+                    <li class="nav-item">
+                        <a href="/school/dashboard" class="nav-link active alert-danger text-danger" aria-current="page"><%= locals.schoolUserName %> | <b>Inactive</b></a>
+                    </li>
+                <% } %>
+        
+                <!-- staff Active menu-->
+                <% if(locals.staffUsername && locals.staffStatus == 'Active') { %>
+                    <li class="nav-item bg-secondary">
+                        <a href="/staff/dashboard" class="nav-link active text-white" aria-current="page"><%= staffUsername %></a>
+                    </li>
+                    <%if(locals.staff_role == '8') { %>
+                        <li class="nav-item px-1">
+                            <a href="/staff/dashboard/student-doubts" class="nav-link active text-white border border-success rounded" aria-current="page"><span class="badge badge-success bg-success"><%= locals.count[0][0].newDoubts %></span> New Doubts<span class="sr-only">New Doubts</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/staff/dashboard/student-doubts" class="nav-link active text-white border border-warning rounded" aria-current="page"><span class="text-dark badge badge-warning bg-warning"><%= locals.count[1][0].newThread %></span> Thread Messages<span class="sr-only">Doubt Thread messages</span></a>
+                        </li> 
                     <% } %>
                 <% } %>
-                <% if((locals.schoolStatus == "Inactive") || (locals.staffStatus == "Inactive")) { %>
+
+                <!-- inactive staff menu -->
+                <% if(locals.staffStatus == "Inactive") { %>
                     <li class="nav-item">
-                        <a href="#" class="nav-link active alert-danger text-danger" aria-current="page">Inactivate</a>
+                        <a href="/staff/dashboard" class="nav-link active alert-danger text-danger" aria-current="page">Inactivate</a>
                     </li>
-                    <% } %>
-                <% if(locals.loggedin) { %>
+                <% } %>
+
+                <!-- student Active menu -->
+                <% if(locals.studentUsername && locals.studentStatus == 'Active') { %>
+                    <li class="nav-item">
+                        <a href="/student/dashboard/my-doubts" class="nav-link active text-white border border-success rounded" aria-current="page">Doubts <span class="badge badge-success bg-success"><%= locals.newdoubts[0].new_messages %></span><span class="sr-only">unread messages</span></a>
+                    </li>
+                <% } %>
+
+                <!-- Student Inactive menu -->
+
+                <!-- Parent Active menu -->
+
+                <!-- parent Inactive Menu -->
+
+                <% if(locals.logged_in) { %>
                     <li class="nav-item">
                         <a href="/logout" class="nav-link active text-white" aria-current="page">Logout</a>
                     </li>
-                    <% }  %>
+                <% }  %>
                 
+
             </ul>
         </div>
     </div>

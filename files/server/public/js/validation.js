@@ -579,7 +579,7 @@ $(document).ready(function () {
   });
 });
 
-// cehck if the week schedule for a class section already added or not
+// check if the week schedule for a class section already added or not
 $(document).ready(function () {
   $('#day, #class_sec').on('change', function () {
     var class_sec_id = $("#class_sec").val();
@@ -1368,7 +1368,7 @@ $(document).ready(function() {
             `<div class='container'>
             <div class='row'><p><b>Sending Message to: ${data.staff[0].name}</b></p></div>
             <div class='row'>
-            <form id='editpar-form' action='../dashboard/ask-my-staff/new-doubt/${data.staff[0].staff_id}' method='POST'>
+            <form id='editpar-form' action='../dashboard/ask-new-doubt/${data.staff[0].staff_id}' method='POST'>
             <div class='mb-3'><label for='status'>Doubt Title:</label>
             <input type='text' class='form-control' name='doubt_title' id='doubt_title' />
             <div class='mt-3 mb-3'><label for='status'>Describe it:</label>
@@ -1388,15 +1388,67 @@ $(document).ready(function() {
 })
 
 // student / staff replying to the doubt and creating thread.
-$(document).on('click', '.replybutton', function () {
+$(document).on('click', '.seeThreadButton, .replybutton', function () {
   var doubt_ref = $(this).attr('data-id');
   $('#doubt_'+doubt_ref).after(function () {
+    $('#thread_doubt_'+doubt_ref).remove();
     $('#new-doubt-thread-form').remove();
+    $('.no-thread').remove();
     return (
-      `<div class='row alert alert-secondary' id='new-doubt-thread-form'> <form id='doubtthread-form' method='POST' action='../add-doubt-thread-message'> <input type='hidden' class='form-control' name='doubt_id' id='doubt_id' value='${doubt_ref}' /><p>Replying</p> <hr /> <div class='mt-3 mb-3'> <textarea class='form-control' name='reply_msg' placeholder='Type your reply' id='reply_msg' rows='2' ></textarea> <span class='error' id='reply_msg' >Reply message should not be blank.</span > </div> <div class='mb-3'> <label for='doubt_status'>Make the thread:</label> <select id='doubt_status' name='doubt_status' class='form-control' required> <option value=''>Select an Option</option> <option value='open'>Open</option> <option value='closed'>Closed</option> </select> </div> <div class='login'> <button class='btn btn-secondary' type='submit'> Send </button> </div> </form> </div>`
+      `<div class='m-2 row alert alert-secondary' id='new-doubt-thread-form'> <form id='doubtthread-form' method='POST' action='../dashboard/add-doubt-thread-message'> <input type='hidden' class='form-control' name='doubt_id' id='doubt_id' value='${doubt_ref}' /><p>Replying</p> <hr /> <div class='mt-3 mb-3'> <textarea class='form-control' name='reply_msg' placeholder='Type your reply' id='reply_msg' rows='2' ></textarea> <span class='error' id='reply_msg' >Reply message should not be blank.</span > </div> <div class='mb-3'> <label for='doubt_status'>Make the thread:</label> <select id='doubt_status' name='doubt_status' class='form-control' required> <option value=''>Select an Option</option> <option value='open'>Open</option> <option value='closed'>Closed</option> </select> </div> <div class='login'> <button class='btn btn-secondary' type='submit'> Send </button> </div> </form> </div>`
     )
   })
 })
+
+// student / staff seeing the messages thread
+$(document).on('click', '.seeThreadButton', function() {
+  var doubt_ref = $(this).attr('data-id');
+  var asked_by = $(this).attr('who_is');
+  var logged_in = $(this).attr('who_logged_in')
+  console.log(logged_in);
+  console.log(asked_by);
+  $.ajax({
+    url: '/api/see-doubt-threads',
+    type: 'POST',
+    data: {
+      doubt_ref: doubt_ref,
+    }, dataType: 'JSON',
+    success: function (data) {
+      $('#doubt_'+doubt_ref).after(function () {
+        $('#new-doubt-thread-form').remove();
+        var doubt_thread = "";
+        if(data.threadMsg.length > 0){
+          $.each(data.threadMsg, function (key, value) {
+            if(data.threadMsg[key].message_by == asked_by && logged_in == asked_by) {
+              let message = `<div class='text-end text-white bg-primary bg-gradient alert alert-secondary'><b>${data.threadMsg[key].message}</b><br><small><i>sent by: ${data.threadMsg[key].stu_name}</i></small></div>`
+              doubt_thread = doubt_thread + message;
+            } else if(data.threadMsg[key].message_by == asked_by && logged_in != asked_by){ 
+              let message = `<div class='text-start text-dark bg-light bg-gradient alert alert-secondary'><b>${data.threadMsg[key].message}</b><br><small><i>sent by: ${data.threadMsg[key].stu_name}</i></small></div>`
+              doubt_thread = doubt_thread + message;
+            } else if (data.threadMsg[key].message_by != asked_by && logged_in == data.threadMsg[key].message_by){ 
+              let message = `<div class='text-end text-white bg-primary bg-gradient alert alert-secondary'><b>${data.threadMsg[key].message}</b><br><small><i>sent by: ${data.threadMsg[key].staff_name}</i></small></div>`
+              doubt_thread = doubt_thread + message;
+            } else if (data.threadMsg[key].message_by != asked_by && logged_in != data.threadMsg[key].message_by){
+              let message = `<div class='text-start text-dark bg-light bg-gradient alert alert-secondary'><b>${data.threadMsg[key].message}</b><br><small><i>sent by: ${data.threadMsg[key].staff_name}</i></small></div>`
+              doubt_thread = doubt_thread + message;
+            } 
+          })
+        } else {
+          $('.no-thread').remove();
+          return (`<p class='no-thread alert alert-warning text-dark m-3'>No messages found.</p>`)
+        }
+        return (
+          `<div class='container' id='thread_doubt_${doubt_ref}'><div class='row mt-3'>${doubt_thread}</div><div class='row alert alert-secondary' id='new-doubt-thread-form'> <form id='doubtthread-form' method='POST' action='../dashboard/add-doubt-thread-message'> <input type='hidden' class='form-control' name='doubt_id' id='doubt_id' value='${doubt_ref}' /><p>Replying</p> <hr /> <div class='mt-3 mb-3'> <textarea class='form-control' name='reply_msg' placeholder='Type your reply' id='reply_msg' rows='2' ></textarea> <span class='error' id='reply_msg' >Reply message should not be blank.</span > </div> <div class='mb-3'> <label for='doubt_status'>Make the thread:</label> <select id='doubt_status' name='doubt_status' class='form-control' required> <option value=''>Select an Option</option> <option value='open'>Open</option> <option value='closed'>Closed</option> </select> </div> <div class='login'> <button class='btn btn-secondary' type='submit'> Send </button> </div> </form></div></div>`
+        )
+      })
+    }, error: function (err) {
+      console.log(err);
+    }
+  })
+})
+
+// reduce the message count by click event
+
 
 // Add attendance - Dynamically removing students from options
 $(document).ready(function () {

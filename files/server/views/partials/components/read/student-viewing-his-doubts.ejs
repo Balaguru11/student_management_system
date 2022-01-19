@@ -1,6 +1,9 @@
 <div class="pt-5">
   <h4 class="text-center">My Doubts</h4>
   <br />
+  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+    <a href="../my-staff" role="button" class="btn btn-secondary me-md-2"><i class="fas fa-comment-medical"></i> Ask New Doubt</a>
+  </div>
   <% if (locals.myDoubtsList.length > 0) { %>
     <% for (let i = 0; i < locals.myDoubtsList.length; i++) { %>
       <div class="card p-3 m-2">
@@ -10,7 +13,7 @@
             <p><%= locals.myDoubtsList[i].doubt_desc %></p>
             <small>Asked to: <b><%= locals.myDoubtsList[i].name %></b></small><br>
             <div class="mt-2">
-              <button data-id="<%= locals.myDoubtsList[i].id %>" type="button" class="seeThreadButton btn btn-secondary View"><i class="fas fa-stream"></i> Thread</button> <button data-id="<%= locals.myDoubtsList[i].id %>" type="button" class="replybutton btn btn-info View">
+              <button data-id="<%= locals.myDoubtsList[i].id %>" who_is="<%= locals.myDoubtsList[i].asked_by %>" who_logged_in="<%= locals.who_logged_in %>" type="button" class="seeThreadButton btn btn-secondary View"><i class="fas fa-chevron-circle-down"></i> Thread</button> <button data-id="<%= locals.myDoubtsList[i].id %>" type="button" class="replybutton btn btn-info View">
                 Reply</button>
             </div>
           </div>

@@ -447,4 +447,15 @@ apiRouter.post('/student-ask-doubt', (req, res) => {
   })
 })
 
+// student / staff seeing doubt thread
+apiRouter.post('/see-doubt-threads', (req, res) => {
+  var doubtThread = `SELECT sdt.message, sdt.message_by, sml.role_id_fk, stu.name AS stu_name, staf.name AS staff_name, sdt.id AS thread_id FROM school_doubt_thread AS sdt LEFT JOIN school_staff AS staf ON staf.staff_id = sdt.message_by LEFT JOIN school_student AS stu ON stu.student_id = sdt.message_by LEFT JOIN school_main_login AS sml ON sml.id = sdt.message_by WHERE doubt_ref_id='${req.body.doubt_ref}' AND sdt.deleted_at IS NULL ORDER BY sdt.id ASC`;
+  dbcon.query(doubtThread, (err, threadMsg) => {
+    if(err) res.json({msg: 'error', err});
+    console.log(threadMsg);
+    res.json({msg: 'success', threadMsg });
+  })
+})
+
+
 module.exports = apiRouter;

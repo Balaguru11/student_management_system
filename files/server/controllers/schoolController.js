@@ -130,7 +130,6 @@ exports.postSchoolLogin = async (req, res) => {
           `${passwordEntered}`,
           `${school_pass}`
         );
-
         if (verified) {
           let session = req.session;
           session.schoolUserName = req.body.schoolUserName;
@@ -170,8 +169,7 @@ exports.getSchoolDashBoard = (req, res) => {
     let success_msg = req.flash("success");
     res.locals.success_msg = success_msg;
     //status flashing
-    let status = "";
-    status = req.session.schoolStatus;
+    let status = req.session.schoolStatus;
     res.locals.status = status;
 
     if (session.logged_in && session.schoolStatus == "Active") {
