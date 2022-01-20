@@ -190,7 +190,6 @@ exports.postStuProfile = (req, res) => {
             // student mapping with parent login
             dbcon.query(parentLogin, (err, parentLog) => {
               if (err) console.log(err);
-              console.log(parentLog);
               var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${parentLog[0].insertId}', '${session.student_id}')`;
               dbcon.query(stuParMap, (err) => {
                 if (err) throw err;
@@ -348,7 +347,6 @@ exports.allAdmissionDue = (req, res) => {
   try {
     if (req.method == "GET") {
       const student_id = session.student_id;
-      console.log(session);
       var stuAdmisData = `SELECT stu.student_id, stu.name, stu.email, stu.mobile_number, sfs.class_std, sfs.medium, clr.class_section, ssa.school_id, ssa.id AS admission_id, ssa.academic_year, ssa.actual_fee, ssa.paying_amount, ssa.payment_status FROM school_student_admission AS ssa 
       INNER JOIN school_feestructure as sfs ON sfs.id=ssa.class_medium 
       INNER JOIN school_classroom as clr ON clr.id=ssa.class_section 
@@ -442,7 +440,6 @@ exports.getMyAttendance = (req, res) => {
     var getMyAtt = `SELECT DATE_FORMAT(att.date, '%d-%c-%Y') AS date, att.period_no, att.attend_status FROM school_student_attendance AS att INNER JOIN school_classroom AS clr ON clr.id = att.class_sec WHERE student_affected = '${session.student_id}' OR student_affected = '0' AND att.school_id='${session.school_id}' AND att.deleted_at IS NULL`;
     dbcon.query(getMyAtt, (err, attendance) => {
       if (err) throw err;
-      console.log(attendance);
       res.locals.student_id = session.student_id;
       res.locals.attendance = attendance;
       return res.render('studentLevel/student-attendance', { title: 'Student Attendance'});
@@ -506,9 +503,14 @@ exports.myDoubtsList = (req, res) => {
   try {
     // do here
     var myDoubts = `SELECT doubt.id, doubt.asked_by, doubt.asked_to, staf.name, doubt.doubt_title, doubt.doubt_desc, doubt.status FROM school_student_doubts AS doubt INNER JOIN school_staff AS staf ON staf.staff_id = doubt.asked_to WHERE doubt.asked_by='${session.student_id}}' ORDER BY doubt.id DESC`;
+    
+    // SELECT sdt.doubt_ref_id, COUNT(sdt.message) AS newThread FROM school_doubt_thread AS sdt LEFT JOIN school_student_doubts AS ssd ON sdt.doubt_ref_id = ssd.id WHERE ssd.asked_by = '${session.student_id}' AND sdt.message_by != '${session.student_id}' AND sdt.view_status = 'unread' GROUP BY ssd.id
+
     dbcon.query(myDoubts, (err, myDoubtsList) => {
       if(err) throw err;
+      console.log(myDoubtsList);
       res.locals.myDoubtsList = myDoubtsList;
+      // res.locals.unreadCount = myDoubtsList[1];
       res.locals.who_logged_in = session.student_id;
       return res.render('studentLevel/doubts-by-student', {title: 'Doubts asked by me'});
     })

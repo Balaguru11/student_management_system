@@ -801,7 +801,7 @@ $(document).ready(function () {
       }, dataType: 'JSON',
       success: function (data) {
         if (data.scheduleData[2].length > 0){
-          $('.edit-modal-body').html(
+          $('.edit-weeksched-modal-body').html(
               `<form id='editweeksched-form' action='../dashboard/week-schedule/edit/${day_id}/${class_sec_id}?_method=PUT' method='POST'> <div class='mb-3'> <label for='class'>Class & Medium:</label> 	<input type='text' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' disabled/> 	<input type='hidden' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' /> <span class='error' id='class_error'>Class should not be empty.</span> </div> <div class='mb-3'> <label for='day'>Schedule Day </label> 	<input type='text' id='day_edit' class='day form-control' name='day_edit' value='${day_id}' disabled /> 	<input type='hidden' id='day_edit' class='day form-control' name='day_edit' value='${day_id}' /> <span class='error' id='day_error'>Please Select a Day.</span> </div> <div class='mb-3'> <label for='schedule_name'>Schedule Template: </label> 	<input type='text' id='schedule_name_edit' class='day form-control' name='schedule_name_edit' value='${data.scheduleData[0].schedule_name}' disabled /> 	<input type='hidden' id='schedule_name_edit' class='day form-control' name='schedule_name_edit' value='${data.scheduleData[0].schedule_name}' /> <span class='error' id='subject_error'>Please Select a Schedule Template.</span> </div> <div class='mb-3' id='schedule_list'></div> <div class='mb-3'> <button id='edit_week_schedule' class='btn btn-secondary' type='submit' value='submit'> Update Schedule </button> </div> </form> `
             )
             var counter = 1;
@@ -831,8 +831,8 @@ $(document).ready(function () {
               );
             })
         } else {
-          $('.edit-modal-body').html(function () {
-            $('#edit_week_schedule').attr("disabled", 'disabled');
+          $('#edit_week_schedule').attr("disabled", 'disabled');
+          $('.edit-weeksched-modal-body').html(function () {
             return (
               `<p>No Period found with this schedule. Click on the edit button to make changes.</p>`
             );
@@ -1416,6 +1416,10 @@ $(document).on('click', '.seeThreadButton', function() {
     success: function (data) {
       $('#doubt_'+doubt_ref).after(function () {
         $('#new-doubt-thread-form').remove();
+        $('#unread_doubt_'+doubt_ref).remove();
+        $('#doubt_box_'+doubt_ref).append(
+          `0 Unread`
+        )
         var doubt_thread = "";
         if(data.threadMsg.length > 0){
           $.each(data.threadMsg, function (key, value) {
@@ -1451,37 +1455,64 @@ $(document).on('click', '.seeThreadButton', function() {
 
 
 // Add attendance - Dynamically removing students from options
+// $(document).ready(function () {
+//   $('#absent_stu').on('change', function () {
+//     var absentees = $(this).val(); // array
+//     if (absentees.length > 0) {
+//       $.each(absentees, function (key, value){
+//         $('#leave_informed_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+//       })
+//     } else {
+//       $('#leave_informed_stu, #on_duty_stu').find("option").removeAttr('disabled');
+//     }
+//   })
+// })
+
+// $(document).on('change', '#leave_informed_stu', function () {
+//   var leave_today = $('#leave_informed_stu').val();
+//   if(leave_today.length > 0) {
+//     $.each(leave_today, function (key, value) {
+//       $('#absent_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+//     })
+//   } else {
+//     $('#absent_stu, #on_duty_stu').find("option").removeAttr('disabled');
+//   }
+// })
+
+// $(document).on('change', '#on_duty_stu', function () {
+//   var on_duty = $('#on_duty_stu').val();
+//   if(on_duty.length > 0){
+//     $.each(on_duty, function (key, value) {
+//       $('#absent_stu, #leave_informed_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+//     })
+//   }else {
+//     $('#absent_stu, #leave_informed_stu').find("option").removeAttr('disabled');
+//   }
+// })
+
 $(document).ready(function () {
-  $('#absent_stu').on('change', function () {
-    var absentees = $(this).val(); // array
-    if (absentees.length > 0) {
-      $.each(absentees, function (key, value){
+  $('#absent_stu, #leave_informed_stu, #on_duty_stu').on('change', function () {
+    var current_field = $(this) // getting the element
+    var current_value = current_field.val();
+    var current_field_id = current_field.attr('id');
+
+    console.log(current_field);
+    console.log(current_value);
+    console.log(current_field_id);
+
+    // get cu elem val & id
+    if (current_field_id == 'absent_stu' ) {
+      $.each(current_value, (key, value) => {
         $('#leave_informed_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
       })
+    } else if (current_field_id == 'leave_informed_stu') {
+      $.each(current_value, (key, value) => {
+        $('#absent_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+      })
     } else {
-      $('#leave_informed_stu, #on_duty_stu').find("option").removeAttr('disabled');
+      $.each(current_value, (key, value) => {
+        $('#leave_informed_stu, #absent_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+      })
     }
   })
-})
-
-$(document).on('change', '#leave_informed_stu', function () {
-  var leave_today = $('#leave_informed_stu').val();
-  if(leave_today.length > 0) {
-    $.each(leave_today, function (key, value) {
-      $('#absent_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
-    })
-  } else {
-    $('#absent_stu, #on_duty_stu').find("option").removeAttr('disabled');
-  }
-})
-
-$(document).on('change', '#on_duty_stu', function () {
-  var on_duty = $('#on_duty_stu').val();
-  if(on_duty.length > 0){
-    $.each(on_duty, function (key, value) {
-      $('#absent_stu, #leave_informed_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
-    })
-  }else {
-    $('#absent_stu, #leave_informed_stu').find("option").removeAttr('disabled');
-  }
 })

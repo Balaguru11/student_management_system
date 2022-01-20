@@ -63,7 +63,7 @@
                 <!-- student Active menu -->
                 <% if(locals.studentUsername && locals.studentStatus == 'Active') { %>
                     <li class="nav-item">
-                        <a href="/student/dashboard/my-doubts" class="nav-link active text-white border border-success rounded" aria-current="page">Doubts <span class="badge badge-success bg-success"><%= locals.newdoubts[0].new_messages %></span><span class="sr-only">unread messages</span></a>
+                        <a href="/student/dashboard/my-doubts" class="nav-link active text-white border border-success rounded" aria-current="page">Doubt Messages <span class="badge badge-success bg-success"><%= locals.newdoubts[0].new_messages %></span><span class="sr-only">unread messages</span></a>
                     </li>
                 <% } %>
 

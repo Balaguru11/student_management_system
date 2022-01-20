@@ -455,7 +455,6 @@ exports.getMyScheduleStaff = (req, res) => {
           title: "Teacher View Class Schedule",
         });
       } else {
-        console.log(schedule);
         res.locals.staff_id = session.staff_id;
         res.locals.schedule = schedule;
         return res.render("staffLevel/teacher-view-class-schedule", {
@@ -566,7 +565,6 @@ exports.postStuAttendance = (req, res) => {
         var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${onDutyDataEntry} ${absentDataEntry} ${leave_query}`;
         dbcon.query(attendanceData, (err, attendanceAdded) => {
           if (err) throw err;
-          console.log(attendanceAdded);
           req.flash("success", "Attendance added successfully.");
           return res.redirect("/staff/dashboard/my-schedule");
         });
@@ -729,15 +727,12 @@ exports.putFeeStructure = (req, res) => {
     dbcon.query(ifDuplicate, (err, result) => {
       if (err) throw err;
       else if (result[0].count == 1) {
-        console.log(result);
         req.flash("err_msg", "The Class Medium combination is already exist.");
         return res.redirect("/staff/dashboard/fee-structure");
       } else {
-        console.log(result);
         var insertFee = `UPDATE school_feestructure SET class_std='${req.body.class_std_edit}', medium='${req.body.medium_edit}', actual_fee='${req.body.fee_edit}' where id='${req.body.fee_id}'`;
         dbcon.query(insertFee, (err, response) => {
           if (err) throw err;
-          console.log(response);
           req.flash("success", "Updated successfully.");
           return res.redirect("/staff/dashboard/fee-structure");
         });
@@ -872,7 +867,6 @@ exports.putUserAccount = async (req, res) => {
     var userAccEdit = `UPDATE school_main_login SET role_id_fk='${req.body.role_update}', status='${req.body.status_edit}' WHERE id='${req.body.staff_edit_id}'`;
     dbcon.query(userAccEdit, (err, userEdited) => {
       if (err) throw err;
-      console.log(userEdited);
       req.flash("success", "User Account edited successfully.");
       return res.redirect("/staff/dashboard/users");
     });
@@ -918,7 +912,6 @@ exports.deleteFeeStructure = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   let id = req.params.id;
-  console.log(id);
   try {
     var checkSection = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${id}') AS count`;
     dbcon.query(checkSection, (err, sections) => {
@@ -933,7 +926,6 @@ exports.deleteFeeStructure = (req, res) => {
         var deleteClassStd = `UPDATE school_feestructure SET deleted_at = CURRENT_TIMESTAMP WHERE id='${id}'`;
         dbcon.query(deleteClassStd, (err, response) => {
           if (err) throw err;
-          console.log(response);
           req.flash("success", "Deleted successfully.");
           return res.redirect("/staff/dashboard/fee-structure");
         });
@@ -1108,7 +1100,6 @@ exports.getMapSubStaff = (req, res) => {
       INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.school_id}'`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) return res.render("server-error", { title: "Server Error" });
-        console.log(result);
         res.locals.tableData = tableData;
         res.locals.result = result;
         return res.render("staffLevel/sc-map-subject-staff-hm", {
@@ -1138,7 +1129,6 @@ exports.postMapSubStaff = async (req, res) => {
       if (err) {
         return res.render("server-error", { title: "Server Error" });
       } else if (isMapped[0].count == 0) {
-        console.log(isMapped);
         var MapSubStaffSec = `INSERT INTO school_class_subjects(school_id, subject_id, classroom_id, staff_id_assigned) VALUES ('${session.school_id}', '${req.body.subject}', '${req.body.class}', '${req.body.staff}')`;
 
         dbcon.query(MapSubStaffSec, (err, bridgeData) => {

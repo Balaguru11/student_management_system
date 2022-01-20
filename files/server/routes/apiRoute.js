@@ -237,10 +237,8 @@ apiRouter.post('/insert-week-schedule-by-period', (req, res) => {
   dbcon.query(checkData, (err, dataFound) => {
     if(err) res.json({msg: 'error', err});
     else if(dataFound.length != 0){
-      console.log(dataFound);
       res.json({msg: 'success', text: 'Staff not available', dataFound: dataFound});
     } else {
-      console.log(dataFound);
       res.json({msg: 'error', text: 'Staff available', dataFound: dataFound});
     }
   })
@@ -275,7 +273,6 @@ apiRouter.post('/edit-week-schedule-preiods', (req, res) => {
 apiRouter.post('/delete-week-schedule-preiods', (req, res) => {
   let session = req.session;
   var deleteSched = `SELECT week.day, clr.class_Section, sfs.class_std, sfs.medium FROM school_week_schedule AS week INNER JOIN school_classroom AS clr ON clr.id = week.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE week.day='${req.body.day_id_d}' AND week.class_sec_id='${req.body.class_sec_id_d}'`;
-  console.log(deleteSched);
   dbcon.query(deleteSched, (err, selecetdSched) => {
     if(err) res.json({msg: 'error', err});
     res.json({msg: 'success', selecetdSched: selecetdSched});
@@ -290,7 +287,6 @@ apiRouter.post("/edit-class-section", (req, res) => {
     else if (sectionData.length > 0) {
       res.json({ msg: "success", sectionData: sectionData });
     } else {
-      console.log(sectionData);
       res.json({ msg: "error", err });
     }
   });
@@ -302,7 +298,6 @@ apiRouter.post("/delete-class-section", (req, res) => {
   dbcon.query(deleteModalData, (err, secData) => {
     if (err) res.json({ msg: "error", err });
     else if (secData.length > 0) {
-      console.log(secData);
       res.json({ msg: "success", secData: secData });
     } else {
       res.json({ msg: "error", err });
@@ -321,7 +316,6 @@ apiRouter.post("/edit-subclassstaff-mapping", (req, res) => {
   dbcon.query(mapFetch, (err, mapData) => {
     if (err) res.json({ msg: "error", err });
     else {
-      console.log(mapData);
       res.json({ msg: "success", mapData: mapData });
     }
   });
@@ -337,7 +331,6 @@ apiRouter.post("/get-staff-subject-from-class-sec", (req, res) => {
     else if (classDrop.length > 0) {
       res.json({ msg: "success", classDrop: classDrop });
     } else {
-      console.log(`Data: ${classDrop}`);
       res.json({ msg: "No data found", classDrop: classDrop });
     }
   });
@@ -350,7 +343,6 @@ apiRouter.post("/delete-mapping", (req, res) => {
   dbcon.query(deleteModalData, (err, mappedData) => {
     if (err) res.json({ msg: "error", err });
     else if (mappedData.length > 0) {
-      console.log(mappedData);
       res.json({ msg: "success", mappedData: mappedData });
     } else {
       res.json({ msg: "error here", mappedData: mappedData });
@@ -449,11 +441,12 @@ apiRouter.post('/student-ask-doubt', (req, res) => {
 
 // student / staff seeing doubt thread
 apiRouter.post('/see-doubt-threads', (req, res) => {
-  var doubtThread = `SELECT sdt.message, sdt.message_by, sml.role_id_fk, stu.name AS stu_name, staf.name AS staff_name, sdt.id AS thread_id FROM school_doubt_thread AS sdt LEFT JOIN school_staff AS staf ON staf.staff_id = sdt.message_by LEFT JOIN school_student AS stu ON stu.student_id = sdt.message_by LEFT JOIN school_main_login AS sml ON sml.id = sdt.message_by WHERE doubt_ref_id='${req.body.doubt_ref}' AND sdt.deleted_at IS NULL ORDER BY sdt.id ASC`;
+  let session = req.session;
+  let logged = session.student_id || session.staff_id;
+  var doubtThread = `SELECT sdt.message, sdt.message_by, sml.role_id_fk, stu.name AS stu_name, staf.name AS staff_name, sdt.id AS thread_id FROM school_doubt_thread AS sdt LEFT JOIN school_staff AS staf ON staf.staff_id = sdt.message_by LEFT JOIN school_student AS stu ON stu.student_id = sdt.message_by LEFT JOIN school_main_login AS sml ON sml.id = sdt.message_by WHERE doubt_ref_id='${req.body.doubt_ref}' AND sdt.deleted_at IS NULL ORDER BY sdt.id ASC; UPDATE school_doubt_thread SET view_status = 'read' WHERE doubt_ref_id='${req.body.doubt_ref}' AND message_by != ${logged}`;
   dbcon.query(doubtThread, (err, threadMsg) => {
     if(err) res.json({msg: 'error', err});
-    console.log(threadMsg);
-    res.json({msg: 'success', threadMsg });
+    res.json({msg: 'success', threadMsg: threadMsg[0], seen: threadMsg[1] });
   })
 })
 

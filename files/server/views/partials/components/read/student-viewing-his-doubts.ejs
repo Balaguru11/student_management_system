@@ -17,12 +17,16 @@
                 Reply</button>
             </div>
           </div>
-          <div class="col-2 text-center">
+          <div class="col-2 text-center" id='doubt_box_<%= locals.myDoubtsList[i].id %>'>
             <% if(locals.myDoubtsList[i].status == 'open') { %>
               <p><span style="font-size: 1.6em; color: green;"><i class="fas fa-lock-open"></i></span></p>
             <% } else { %>
               <p><span style="font-size: 1.6em; color: gray;"><i class="fas fa-lock"></i></span> </p>
             <% } %>
+
+            <button id='unread_doubt_<%= locals.myDoubtsList[i].id %>' data-id="<%= locals.myDoubtsList[i].id %>" who_is="<%= locals.myDoubtsList[i].asked_by %>" who_logged_in="<%= locals.who_logged_in %>" type="button" class="seeThreadButton btn btn-success View btn-sm">Unread</button>
+
+
           </div>
         </div>
       </div>
