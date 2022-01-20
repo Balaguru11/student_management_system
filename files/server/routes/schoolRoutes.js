@@ -42,7 +42,7 @@ const {
   getSchedulePlanForm,
   postSchedulePlanForm, deleteSchedulePlan, 
   viewWeekSchedule,
-  addWeekScheduleForm, editWeekSchedule, 
+  addWeekScheduleForm, editWeekSchedule, deleteWeekSchedule, 
   allChangePwd,
   allDueCollection, viewDueCollectionData
 } = require("../controllers/schoolController");
@@ -161,7 +161,7 @@ schoolRouter.delete('/dashboard/schedule-plan/delete/:sched_tempid', isSchool, d
 schoolRouter.get("/dashboard/week-schedule", isSchool, viewWeekSchedule);
 schoolRouter.post("/dashboard/week-schedule", isSchool, addWeekScheduleForm);
 schoolRouter.put('/dashboard/week-schedule/edit/:day_id/:section_id', isSchool, editWeekSchedule);
-
+schoolRouter.get('/dashboard/week-schedule/delete/:day_id/:section_id', isSchool, deleteWeekSchedule);
 
 
 // not completed yet

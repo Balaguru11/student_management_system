@@ -596,14 +596,12 @@ $(document).ready(function () {
         if (data.foundNos > 0) {
           $("#day").after(function () {
             $('#schedule_name').attr('disabled', 'disabled');
-            $('#add_week_schedule').attr('disabled', 'disabled');
             $('#sched_warn').remove();
             return (`<p id='sched_warn' class='m-2 alert alert-danger'>Schedule of this Class Section for the day is already added. </p>`)
           })
         } else {
           $("#day").after(function () {
             $('#schedule_name').removeAttr("disabled");
-            $('#add_week_schedule').removeAttr("disabled");
             $('#sched_warn').remove();
           })
         }
@@ -693,7 +691,7 @@ $(document).on(
   }
 );
 
-// run insert query on focusout in week schedule - having issue
+// run insert query on focusout in week schedule
 $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4_sub,.period_5_sub, .period_6_sub, .period_7_sub, .period_8_sub, .period_9_sub, .period_10_sub", function () {
   var class_sec_id = $('#class_sec').val();
   var day = $('#day').val();
@@ -702,7 +700,6 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
   var staff = $('.subject_staff_hidden').val();
   var period_name = $(this).attr('name').match(/\d+/);
   var period_no = period_name[0];
-  console.log(period_no);
   $.ajax({
     url: '/api/insert-week-schedule-by-period',
     type: 'POST',
@@ -716,7 +713,7 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
     }, dataType: 'JSON',
     success: function (data) {
       if (data.dataFound.length > 0) {
-        $('#schedule_main_'+data.dataFound[0].period_no).addClass('alert alert-danger')
+        $('#schedule_main_'+data.dataFound[0].period_no).addClass('alert alert-danger').append(`<small>Staff is not available at this time.</small>`);
       } else {
         $('#schedule_main_'+period_no).addClass('alert alert-success')
       }
@@ -729,6 +726,16 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
         $('#schedule_main_'+period_no).removeClass('alert alert-danger')
       })
 
+      var errorCount = 0;
+      errorCount = errorCount + $('div#schedule_list div.alert-danger').length;
+      alert(errorCount);
+      if (errorCount > 0) {
+        $('#add_week_schedule').attr('disabled', 'disabled').before(function () {
+          return (`<small class='text-danger'>One or more staff not available. Please assign to available staff.</small><br>`);
+        })
+      } else {
+        $('#add_week_schedule').removeAttr('disabled');
+      }
     }, error: function (err) {
       console.log(err)
     }
@@ -784,7 +791,7 @@ $(document).ready(function () {
 
 // edit class Schedule modal from week schedule list - HAVING ISSUE
 $(document).ready(function () {
-  $('#editWeekSched').on('click', function () {
+  $('.editWeekSched').on('click', function () {
     var weekSched_id = $(this).attr('data-id');
     var day_id = $(this).attr('dayta-id');
     var class_sec_id = $(this).attr('sec-id');
@@ -802,7 +809,7 @@ $(document).ready(function () {
       success: function (data) {
         if (data.scheduleData[2].length > 0){
           $('.edit-weeksched-modal-body').html(
-              `<form id='editweeksched-form' action='../dashboard/week-schedule/edit/${day_id}/${class_sec_id}?_method=PUT' method='POST'> <div class='mb-3'> <label for='class'>Class & Medium:</label> 	<input type='text' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' disabled/> 	<input type='hidden' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' /> <span class='error' id='class_error'>Class should not be empty.</span> </div> <div class='mb-3'> <label for='day'>Schedule Day </label> 	<input type='text' id='day_edit' class='day form-control' name='day_edit' value='${day_id}' disabled /> 	<input type='hidden' id='day_edit' class='day form-control' name='day_edit' value='${day_id}' /> <span class='error' id='day_error'>Please Select a Day.</span> </div> <div class='mb-3'> <label for='schedule_name'>Schedule Template: </label> 	<input type='text' id='schedule_name_edit' class='day form-control' name='schedule_name_edit' value='${data.scheduleData[0].schedule_name}' disabled /> 	<input type='hidden' id='schedule_name_edit' class='day form-control' name='schedule_name_edit' value='${data.scheduleData[0].schedule_name}' /> <span class='error' id='subject_error'>Please Select a Schedule Template.</span> </div> <div class='mb-3' id='schedule_list'></div> <div class='mb-3'> <button id='edit_week_schedule' class='btn btn-secondary' type='submit' value='submit'> Update Schedule </button> </div> </form> `
+              `<div class='m-2'><form id='editweeksched-form' action='../dashboard/week-schedule/edit/${day_id}/${class_sec_id}?_method=PUT' method='POST'> <div class='mb-3'> <label for='class'>Class & Medium:</label> 	<input type='text' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' value='${data.scheduleData[1][0].class_std} STD - ${data.scheduleData[1][0].medium} Medium - ${data.scheduleData[1][0].class_section} Sec' disabled/> <input type='hidden' id='class_sec' class='class_sec form-control' name='class_sec_edit' value='${data.scheduleData[1][0].classroom_id}'/> <span class='error' id='class_error'>Class should not be empty.</span> </div> <div class='mb-3'> <label for='day'>Schedule Day </label> 	<input type='text' id='day_edit' class='day_edit form-control' name='day_edit' value='${day_id}' disabled /> <input type='hidden' id='day' class='day form-control' name='day' value='${day_id}' /> <span class='error' id='day_error'>Please Select a Day.</span> </div> <div class='mb-3'> <label for='schedule_name'>Schedule Template: </label> 	<input type='text' id='schedule_name_edit' class='schedule_name_edit form-control' name='schedule_name_edit' value='${data.scheduleData[0][0].schedule_name}' disabled /> <input type='hidden' id='schedule_name' class='schedule_name form-control' name='schedule_name' value='${data.scheduleData[0][0].id}' /> <span class='error' id='schedule_template_error'>Please Select a Schedule Template.</span> </div> <div class='mb-3' id='schedule_list'></div> <div class='mb-3'> <button id='edit_week_schedule' class='btn btn-secondary' type='submit' value='submit'> Update Schedule </button> </div> </form></div> `
             )
             var counter = 1;
             var period = data.scheduleData[2].no_of_periods;
@@ -846,38 +853,93 @@ $(document).ready(function () {
   })
 })
 
+// editing the subjects in edit week schedule modal
+// $(document).on('click', "#schedule_name", function () {
+//   $(this).focus(function() { 
+//     var schedule_temp_id = $("#schedule_name").val();
+//     var class_sec_id = $("#class_sec").val();
+//     $.ajax({
+//       url: "/api/get-periods-from-schedule-template",
+//       type: "POST",
+//       data: {
+//         schedule_temp_id: schedule_temp_id,
+//         class_sec_id: class_sec_id,
+//       },
+//       dataType: "Json",
+//       success: function (data) {
+//         $("#schedule_name").after(function () {
+//           // getting fields
+//           var counter = 1;
+//           var period = data.periods[0].no_of_periods;
+//           var foo = [];
+//           for (var i = 1; i <= period; i++) {
+//             foo.push(i);
+//             $("#schedule_list").html("<p>Schedule Plan</p> <hr />");
+//             $.each(foo, (key, value) => {
+//               $("#schedule_list").append(
+//                 `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub' required><option value=''>Choose a Subject</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden'></div></div>`
+//               );
+//               counter++;
+//             });
+//           } // for loop closing. getting subjects dropdown below
+//           var subject_name = [];
+//           for (var i = 0; i < data.subjects.length; i++) {
+//             subject_name.push(data.subjects[i].subject_name);
+//           }
+//           $.each(subject_name, (key, value) => {
+//             $(".subject_option").append(
+//               "<option value='" +
+//                 data.subjects[key].subject_id +
+//                 "'>" +
+//                 data.subjects[key].subject_name +
+//                 "</option>"
+//             );
+//           });
+//         });
+//       },
+//       error: function (err) {
+//         console.log(err);
+//       },
+//     });
+//   });
+// });
+
 // DELETING WEEK SCHEDULE FROM WEEK SCHEDULE LIST - having issue
 $(document).ready(function () {
-  $('#deleteWeekSched').on('click', function () {
-    // var weekSched_id_d = $(this).attr('data-id');
+  $('.deleteWeekSched').on('click', function () {
     var day_id_d = $(this).attr('dayta-id');
     var class_sec_id_d = $(this).attr('sec-id');
-    // var sched_temp_id_d = $(this).attr('template-id');
     $.ajax({
       url: '/api/delete-week-schedule-preiods',
       type: 'POST',
       data: {
-        // weekSched_id_d: weekSched_id_d,
         day_id_d: day_id_d,
         class_sec_id_d: class_sec_id_d,
-        // sched_temp_id_d: sched_temp_id_d,
       }, dataType: 'JSON',
       success: function (data) {
-        if(data.selectedSched.length > 0){
           $('.delete-modal-body').html(function () {
-            return (
-              `<div class='container'><div class='row'><input type='hidden' class='form-control' name='sec_id_hidden' id='sec_id_hidden' value='${data.selectedSched[0].id}' /><p><b>Do you want to delete, '${data.selectedSched[0].day} Schedule of '${data.selectedSched[0].class_std} Std - ${data.selectedSched[0].medium} Medium ${data.selectedSched[0].class_section} section'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/week-schedule/delete/${data.secData[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
+          return (
+              `<div class='container'>
+              <div class='row'>
+              <input type='hidden' class='form-control' name='sec_id_hidden' id='sec_id_hidden' value='${class_sec_id_d}' />
+              <input type='hidden' class='form-control' name='day_id_hidden' id='day_id_hidden' value='${day_id_d}' />
+              <p><b>Do you want to delete, '${data.selectedOne[0].day} Schedule of '${data.selectedOne[0].class_std} Std - ${data.selectedOne[0].medium} Medium ${data.selectedOne[0].class_section} section'?</b></p>
+              </div>
+              <div class='row'>
+              <div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div>
+              <div class='col-4'><a href='../dashboard/week-schedule/delete/${day_id_d}/${class_sec_id_d}?_method=DELETE'  role='button' class='btn btn-primary btn-block'>Delete</a></div>
+              </div></div>`
             )
           })
-        } else {
-          $('.delete-modal-body').html(function () {
-            return (
-              `<p>No schedule found</p>`
-            )
-          })
-        }
+          $("#deleteWeekSchedModal").modal("show");
       }, error: function (err){
         console.log(err);
+        $('.delete-modal-body').html(function () {
+          return (
+            `<p>No schedule found</p>`
+          )
+        })
+        $("#deleteWeekSchedModal").modal("show");
       }
   })
 })

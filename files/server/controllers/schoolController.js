@@ -1365,6 +1365,28 @@ exports.editWeekSchedule = (req, res) => {
   }
 }
 
+// delet Week schedule
+exports.deleteWeekSchedule = (req, res) => {
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let session = req.session;
+  let day = req.params.day_id;
+  let class_sec_id = req.params.section_id;
+  try {
+    //  when seleting a week schedule, 
+    var deleteAWeekSched = `UPDATE school_week_schedule SET deleted_at = CURRENT_TIMESTAMP WHERE day = '${day}' AND class_sec_id = '${class_sec_id}' AND school_id = '${session.schoolId}'`;
+    dbcon.query(deleteAWeekSched, (err, response) => {
+      if(err) throw err;
+      req.flash('success', 'Week schedule deleted.')
+      return res.redirect('/school/dashboard/week-schedule');
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // change password
 exports.allChangePwd = (req, res) => {
   let success_msg = req.flash("success");
