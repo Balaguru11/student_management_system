@@ -730,14 +730,14 @@ exports.getMapSubStaff = (req, res) => {
 
   try {
     // fetching class_id, section from classroom
-    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_main_login WHERE school_id='${session.schoolId}' AND role_id_fk='8' AND status='Active'`;
+    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_staff WHERE school_id='${session.schoolId}'`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) console.log(err);
       // return res.render("server-error", { title: "Server Error" });
-      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username AS staff_primary, sml2.username AS staff_secondary FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
+      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.name AS staff_primary, sml2.name AS staff_secondary FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
-      INNER JOIN school_main_login AS sml ON scs.staff_id_assigned = sml.id 
-      INNER JOIN school_main_login AS sml2 ON scs.secondary_staff_assigned = sml2.id
+      INNER JOIN school_staff AS sml ON scs.staff_id_assigned = sml.staff_id 
+      INNER JOIN school_staff AS sml2 ON scs.secondary_staff_assigned = sml2.staff_id
       INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id WHERE sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) console.log(err);
@@ -1247,7 +1247,7 @@ exports.deleteSchedulePlan = (req, res) => {
   }
 }
 
-// make weekly schedule
+// View weekly schedule
 exports.viewWeekSchedule = (req, res) => {
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
@@ -1359,7 +1359,7 @@ exports.editWeekSchedule = (req, res) => {
   let day_id = req.params.day_id;
   let class_sec_id = req.params.section_id;
   try {
-    // do
+    // do here
   } catch (err) {
     console.log(err);
   }
@@ -1651,14 +1651,64 @@ exports.mapParStudent = (req, res) => {
   let session = req.session;
   res.locals.success_msg = success_msg;
   let parent_id = req.params.parent_id;
+  let untouchedOldMap = req.body.mapped_students_old_hide;
+  let already_mapped = req.body.mapped_students_edit; // new array
+  let new_mapping = req.body.map_students_edit;
   try {
-    var mapStuParent = `INSERT IGNORE INTO school_parent_student_map (stu_school_id, parent_id, ml_student_id) VALUES ('${session.schoolId}', '${parent_id}', '${req.body.map_students_edit}')`;
-    dbcon.query(mapStuParent, (err, result) => {
-      if(err) throw err;
-      req.flash('success', 'Parent and Student Mapped successfully.');
-      return res.redirect('/school/dashboard/parents');
-    })
-  }catch(err){
+    // finding missing variable from 2 arrays
+    var missing = [];
+    for (let x of untouchedOldMap) {
+      console.log(x);
+      if(already_mapped.indexOf(x) !== -1) {
+        continue;
+      } else {
+        missing.push(x);
+      }
+    }
+    var deleteFinalQuery = "";
+    // deleting already mapped student
+    if(typeof missing !== 'undefined'){
+      for (let i = 0; i < missing.length; i++){
+        var deleteMap = `UPDATE school_parent_student_map SET deleted_at = CURRENT_TIMESTAMP WHERE parent_id = '${parent_id}' AND ml_student_id = '${missing[i]}';`
+        deleteFinalQuery += deleteMap
+      }
+    } else {
+      // no change found in old_mapping
+      deleteFinalQuery;
+    }
+    // new student adding
+      let mapParentStudent = "";
+      if(typeof new_mapping !== 'undefined'){
+        for (let i=0; i < new_mapping.length; i++) {
+          var newMap = `('${session.schoolId}', '${parent_id}', '${new_mapping[i]}'),`;
+          mapParentStudent = mapParentStudent + newMap;
+        }
+      } else {
+        mapParentStudent = ",";
+      }
+
+      var final_value = mapParentStudent.slice(0, -1)
+
+      if(final_value.length > 0 ){
+      var mapStuParent = `${deleteFinalQuery} INSERT INTO school_parent_student_map (stu_school_id, parent_id, ml_student_id) VALUES ${final_value} ON DUPLICATE KEY UPDATE deleted_at = NULL`;
+      dbcon.query(mapStuParent, (err, result) => {
+        if(err) throw err;
+        req.flash('success', 'Parent and Student Map updated  successfully.');
+        return res.redirect('/school/dashboard/parents');
+      })
+    } else if(final_value.length == 0 && deleteFinalQuery.length > 0){
+      dbcon.query(deleteFinalQuery, (err, deleted) => {
+        if(err) throw err;
+        req.flash('success', 'Parent and Student Map updated  successfully.');
+        return res.redirect('/school/dashboard/parents');
+      })
+      
+    } else {
+      req.flash('success', 'No changes made.');
+        return res.redirect('/school/dashboard/parents');
+    }
+     
+  } catch(err){
     console.log(err);
   }
 }

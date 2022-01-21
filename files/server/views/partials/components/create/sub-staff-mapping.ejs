@@ -41,7 +41,7 @@
                   <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[2].length; i++) { %>
-                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].id %> - <%= locals.tableData[2][i].username %> </option>
+                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].staff_id %> - <%= locals.tableData[2][i].name %> </option>
                     <% } } %>
                 </select>
                 <span class="error" id="staff_error"
@@ -54,7 +54,7 @@
                   <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[2].length; i++) { %>
-                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].id %> - <%= locals.tableData[2][i].username %> </option>
+                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].staff_id %> - <%= locals.tableData[2][i].name %> </option>
                     <% } } %>
                 </select>
                 <span class="error" id="sec_staff_error"

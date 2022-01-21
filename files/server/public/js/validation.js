@@ -199,7 +199,7 @@ $(document).ready(function () {
         });
       },
       error: function (err) {
-        alert("No Student found");
+        console.log("No Student found");
       },
     });
   });
@@ -267,7 +267,7 @@ $(document).ready(function () {
         });
       },
       error: function (err) {
-        alert(err);
+        console.log(err);
       },
     });
   });
@@ -352,7 +352,7 @@ $(document).ready(function () {
         });
       },
       error: function (err) {
-        alert("No Student found.");
+        console.log("No Student found.");
       },
     });
   });
@@ -630,18 +630,18 @@ $(document).ready(function () {
           // getting fields
           var counter = 1;
           var period = data.periods[0].no_of_periods;
-          var foo = [];
+          var foo = []; // [1, 2, 3, ... 8]
           for (var i = 1; i <= period; i++) {
             foo.push(i);
             $("#schedule_list").html("<p>Schedule Plan</p> <hr />");
-            $.each(foo, (key, value) => {
+            $.each(foo, (key, value) => { // 0 (index), 1
               $("#schedule_list").append(
                 `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub' required><option value=''>Choose a Subject</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden'></div></div>`
               );
               counter++;
             });
           } // for loop closing. getting subjects dropdown below
-          var subject_name = [];
+          var subject_name = []; // [c++, tamil]
           for (var i = 0; i < data.subjects.length; i++) {
             subject_name.push(data.subjects[i].subject_name);
           }
@@ -713,7 +713,8 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
     }, dataType: 'JSON',
     success: function (data) {
       if (data.dataFound.length > 0) {
-        $('#schedule_main_'+data.dataFound[0].period_no).addClass('alert alert-danger').append(`<small>Staff is not available at this time.</small>`);
+        $('#error_'+data.dataFound[0].period_no).remove();
+        $('#schedule_main_'+data.dataFound[0].period_no).addClass('alert alert-danger').append(`<small id='error_${data.dataFound[0].period_no}'>Staff is not available at this time.</small>`);
       } else {
         $('#schedule_main_'+period_no).addClass('alert alert-success')
       }
@@ -728,10 +729,10 @@ $(document).on('change', ".period_1_sub, .period_2_sub, .period_3_sub, .period_4
 
       var errorCount = 0;
       errorCount = errorCount + $('div#schedule_list div.alert-danger').length;
-      alert(errorCount);
       if (errorCount > 0) {
-        $('#add_week_schedule').attr('disabled', 'disabled').before(function () {
-          return (`<small class='text-danger'>One or more staff not available. Please assign to available staff.</small><br>`);
+        $('#add_button_error').remove();
+        $('#add_week_schedule').attr('disabled', 'disabled').after(function () {
+          return (`<small class='text-danger' id='add_button_error'>One or more staff not available. Please assign to available staff.</small>`);
         })
       } else {
         $('#add_week_schedule').removeAttr('disabled');
@@ -808,21 +809,29 @@ $(document).ready(function () {
       }, dataType: 'JSON',
       success: function (data) {
         if (data.scheduleData[2].length > 0){
+            // $('#schedule_name_edit').on('click', function () {
+            //   $(this).after(function () {
+             
+              var counter = 1;
+              var period_count = data.scheduleData[2].length;
+              var create_inputs = [];
+              for (var i = 1; i <= period_count; i++) {
+                create_inputs.push(i);
+                $("#schedule_list").html("<p>Schedule Plan</p> <hr />");
+                var period_inputs = "";
+                $.each(create_inputs, (key, value) => {
+                  // $('#schedule_list').append(
+                   period_inputs = period_inputs + `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub' required><option value='${data.scheduleData[2][key].period_subject_id}'>${data.scheduleData[2][key].subject_name}</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff' value='${data.scheduleData[2][key].name}'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden' value='${data.scheduleData[2][key].period_staff_id}'></div></div>`
+                  // );
+                  counter++;
+                });
+              }
+          //   })
+          // })
+
           $('.edit-weeksched-modal-body').html(
-              `<div class='m-2'><form id='editweeksched-form' action='../dashboard/week-schedule/edit/${day_id}/${class_sec_id}?_method=PUT' method='POST'> <div class='mb-3'> <label for='class'>Class & Medium:</label> 	<input type='text' id='class_sec_edit' class='class_sec form-control' name='class_sec_edit' value='${data.scheduleData[1][0].class_std} STD - ${data.scheduleData[1][0].medium} Medium - ${data.scheduleData[1][0].class_section} Sec' disabled/> <input type='hidden' id='class_sec' class='class_sec form-control' name='class_sec_edit' value='${data.scheduleData[1][0].classroom_id}'/> <span class='error' id='class_error'>Class should not be empty.</span> </div> <div class='mb-3'> <label for='day'>Schedule Day </label> 	<input type='text' id='day_edit' class='day_edit form-control' name='day_edit' value='${day_id}' disabled /> <input type='hidden' id='day' class='day form-control' name='day' value='${day_id}' /> <span class='error' id='day_error'>Please Select a Day.</span> </div> <div class='mb-3'> <label for='schedule_name'>Schedule Template: </label> 	<input type='text' id='schedule_name_edit' class='schedule_name_edit form-control' name='schedule_name_edit' value='${data.scheduleData[0][0].schedule_name}' disabled /> <input type='hidden' id='schedule_name' class='schedule_name form-control' name='schedule_name' value='${data.scheduleData[0][0].id}' /> <span class='error' id='schedule_template_error'>Please Select a Schedule Template.</span> </div> <div class='mb-3' id='schedule_list'></div> <div class='mb-3'> <button id='edit_week_schedule' class='btn btn-secondary' type='submit' value='submit'> Update Schedule </button> </div> </form></div> `
+              `<div class='m-2'><form id='editweeksched-form' action='../dashboard/week-schedule/edit/${day_id}/${class_sec_id}?_method=PUT' method='POST'> <div class='mb-3'> <label for='class'>Class & Medium:</label> 	<input type='text' id='class_sec_edit' class='class_sec_edit form-control' name='class_sec_edit' value='${data.scheduleData[1][0].class_std} STD - ${data.scheduleData[1][0].medium} Medium - ${data.scheduleData[1][0].class_section} Sec' disabled/> <input type='hidden' id='class_sec' class='class_sec form-control' name='class_sec' value='${data.scheduleData[1][0].classroom_id}'/> <span class='error' id='class_error'>Class should not be empty.</span> </div> <div class='mb-3'> <label for='day'>Schedule Day </label> 	<input type='text' id='day_edit' class='day_edit form-control' name='day_edit' value='${day_id}' disabled /> <input type='hidden' id='day' class='day form-control' name='day' value='${day_id}' /> <span class='error' id='day_error'>Please Select a Day.</span> </div> <div class='mb-3'> <label for='schedule_name'>Schedule Template: </label> 	<input type='text' id='schedule_name_edit' class='schedule_name form-control' name='schedule_name' value='${data.scheduleData[0][0].schedule_name}' disabled/> <input type='hidden' id='schedule_name' class='schedule_name form-control' name='schedule_name' value='${data.scheduleData[0][0].id}' /> <span class='error' id='schedule_template_error'>Please Select a Schedule Template.</span> </div> <div class='mb-3' id='schedule_list'>${period_inputs}</div> <div class='mb-3'> <button id='edit_week_schedule' class='btn btn-secondary' type='submit' value='submit'> Update Schedule </button> </div> </form></div> `
             )
-            var counter = 1;
-            var period = data.scheduleData[2].no_of_periods;
-            var foo = [];
-            for (var i = 1; i <= period; i++){
-              foo.push(i);
-              $.each(foo, (key, value) => {
-                $('#schedule_list').append(
-                  `<input type='hidden' name='period_no_${value}' value='${value}'></input><div id='schedule_main_${value}' class='m-1 row g-3'><div class='col'><label for='period_${value}_sub'>Period ${value}- Subject</label><select data-id='${counter}' id='subject_option period_${value}_sub' class='period_${value}_sub form-control subject_option' name='period_${value}_sub' required><option value='${data.scheduleData[2][value].period_subject_id}'>${data.scheduleData[2][value].subject_name}</option></select></div><div class='col'><label for='period_${value}_staff'>Period ${value} - Staff</label><input disabled id='period_${value}_staff subject_staff' type='text' class='${counter} subject_staff period_${value}_staff form-control' placeholder='Choose Staff' name='period_${value}_staff' value='${data.scheduleData[2][value].name}'><input id='period_${value}_staff_hidden subject_staff_hidden' type='hidden' class='${counter}_hidden subject_staff_hidden period_${value}_staff form-control' name='period_${value}_staff_hidden' value='${data.scheduleData[2][value].period_staff_id}'></div></div>`
-                );
-                counter++;
-              });
-            }
 
             var subject_name = [];
             for (var s = 0; s < data.scheduleData[1].length; s++) {
@@ -830,18 +839,14 @@ $(document).ready(function () {
             }
             $.each(subject_name, (key, value) => {
               $(".subject_option").append(
-                "<option value='" +
-                  data.scheduleData[1][key].subject_id +
-                  "'>" +
-                  data.scheduleData[1][key].subject_name +
-                  "</option>"
+                `<option value='${data.scheduleData[1][key].subject_id}'>${data.scheduleData[1][key].subject_name}</option>`
               );
             })
         } else {
           $('#edit_week_schedule').attr("disabled", 'disabled');
           $('.edit-weeksched-modal-body').html(function () {
             return (
-              `<p>No Period found with this schedule. Click on the edit button to make changes.</p>`
+              `<p>No Periods found with this Schedule. </p><br><p>Possible Issues: You may be loggedout, please login to try again. If you see this message again for this particular Schedule, feel free to delete the schedule and start afresh.</p>`
             );
           })
         }
@@ -854,9 +859,9 @@ $(document).ready(function () {
 })
 
 // editing the subjects in edit week schedule modal
-// $(document).on('click', "#schedule_name", function () {
+// $(document).on('change', "#schedule_name_edit", function () {
 //   $(this).focus(function() { 
-//     var schedule_temp_id = $("#schedule_name").val();
+//     var schedule_temp_id = $("#schedule_name_edit").val();
 //     var class_sec_id = $("#class_sec").val();
 //     $.ajax({
 //       url: "/api/get-periods-from-schedule-template",
@@ -867,7 +872,7 @@ $(document).ready(function () {
 //       },
 //       dataType: "Json",
 //       success: function (data) {
-//         $("#schedule_name").after(function () {
+//         $("#schedule_name_edit").after(function () {
 //           // getting fields
 //           var counter = 1;
 //           var period = data.periods[0].no_of_periods;
@@ -1287,7 +1292,9 @@ $(document).ready(function(){
             <div class='row'>
             <form id='editpar-form' action='../dashboard/parents/map/${data.parMapData[0][0].id}?_method=PUT' method='POST'>
             <div class='mb-3' id='previously_mapped'><label for='status'>Earlier Mapped Students:</label>
-            <select id='mapped_students_edit' class='js-example-basic-multiple js-example-responsive form-control' name='mapped_students_edit[]' multiple='multiple'></select></div>
+            <select id='mapped_students_edit' class='js-example-basic-multiple js-example-responsive form-control' name='mapped_students_edit[]' multiple='multiple'></select>
+            <select id='mapped_students_old_hide' class='js-example-basic-multiple js-example-responsive form-control' name='mapped_students_old_hide[]' multiple='multiple'></select>
+            </div>
             <div class='mb-3' ><label for='status'>Add New Students:</label>
             <select id='map_students_edit' class='js-example-basic-multiple form-control' name='map_students_edit[]' multiple='multiple'></select></div>
             <div class='mb-3'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a> <button class='btn btn-primary' type='submit' value='submit'>Update</button></div>
@@ -1295,13 +1302,13 @@ $(document).ready(function(){
             </div></div>`
           );
         })
-        
+
         // showing previosuly mapped students here
         if (data.parMapData[1].length > 0){
           var full_data = [];
           var mapped = "";
           $.each(data.parMapData[1], function(key, value){
-            $('#mapped_students_edit').append(
+            $('#mapped_students_edit, #mapped_students_old_hide').append(
               `<option value='${value.ml_student_id}' selected="selected" >${value.student_name}</option>`
             )
           })
@@ -1333,6 +1340,12 @@ $(document).ready(function(){
         console.log(err)
       }
     })
+  })
+})
+
+$(document).ready(function () {
+  $('#mapParAccModal').on('shown.bs.modal', function () {
+    $('#mapped_students_old_hide').hide();
   })
 })
 
@@ -1515,7 +1528,6 @@ $(document).on('click', '.seeThreadButton', function() {
 
 // reduce the message count by click event
 
-
 // Add attendance - Dynamically removing students from options
 // $(document).ready(function () {
 //   $('#absent_stu').on('change', function () {
@@ -1554,27 +1566,21 @@ $(document).on('click', '.seeThreadButton', function() {
 
 $(document).ready(function () {
   $('#absent_stu, #leave_informed_stu, #on_duty_stu').on('change', function () {
-    var current_field = $(this) // getting the element
-    var current_value = current_field.val();
-    var current_field_id = current_field.attr('id');
+    var absentees = $("#absent_stu").val();
+    var leave_informed = $("#leave_informed_stu").val();
+    var onduties = $("#on_duty_stu").val();
 
-    console.log(current_field);
-    console.log(current_value);
-    console.log(current_field_id);
+    $('#leave_informed_stu, #on_duty_stu, #absent_stu').find("option").removeAttr('disabled');
 
-    // get cu elem val & id
-    if (current_field_id == 'absent_stu' ) {
-      $.each(current_value, (key, value) => {
-        $('#leave_informed_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
-      })
-    } else if (current_field_id == 'leave_informed_stu') {
-      $.each(current_value, (key, value) => {
-        $('#absent_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
-      })
-    } else {
-      $.each(current_value, (key, value) => {
-        $('#leave_informed_stu, #absent_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
-      })
-    }
+    $.each(absentees, (key, value) => {
+      $('#leave_informed_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+    })
+    $.each(leave_informed, (key, value) => {
+      $('#absent_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+    })
+    $.each(onduties, (key, value) => {
+      $('#leave_informed_stu, #absent_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+    })
+
   })
 })

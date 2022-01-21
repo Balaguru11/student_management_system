@@ -203,7 +203,7 @@ apiRouter.post('/get-week-schedule-added', (req, res) => {
 
 // get Schedule Periods from schedule_template
 apiRouter.post("/get-periods-from-schedule-template", (req, res) => {
-  var periods = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.deleted_at IS NULL`;
+  var periods = `SELECT * FROM school_schedule_template WHERE id='${req.body.schedule_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_main_login AS sml ON sml.id = scs.staff_id_assigned RIGHT JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}' AND scs.deleted_at IS NULL`;
   dbcon.query(periods, (err, periodNos) => {
     if (err) res.json({ msg: "error", err });
     else {
@@ -218,14 +218,14 @@ apiRouter.post("/get-periods-from-schedule-template", (req, res) => {
 
 //get subjects associated with the class section to add schedule
 apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
-  var subjects = `SELECT scs.subject_id, subj.subject_name, scs.staff_id_assigned, scs.classroom_id, sst.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id=scs.subject_id INNER JOIN school_staff AS sst ON sst.staff_id = scs.staff_id_assigned WHERE scs.classroom_id='${req.body.class_sec_id}' AND subj.id='${req.body.subject_id}' AND subj.deleted_at IS NULL`;
+  var subjects = `SELECT scs.subject_id, subj.subject_name, scs.staff_id_assigned, scs.classroom_id, sst.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id=scs.subject_id INNER JOIN school_staff AS sst ON sst.staff_id = scs.staff_id_assigned WHERE scs.classroom_id='${req.body.class_sec_id}' AND subj.id='${req.body.subject_id}' AND scs.deleted_at IS NULL`;
 
   dbcon.query(subjects, (err, staffNames) => {
     if (err) res.json({ msg: "error", err });
     else if (subjects.length > 0) {
       res.json({ msg: "success", staff: staffNames });
     } else {
-      res.json({ msg: "error" });
+      res.json({ msg: "error", err });
     }
   });
 });
@@ -369,7 +369,7 @@ apiRouter.post('/get-parent-account-data', (req, res) => {
 // get parent account data and mapped date
 apiRouter.post('/get-parent-account-mapped-data', (req, res) => {
   let session = req.session;
-var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.body.parent_id}' AND role_id_fk='5'; SELECT stu.school_id, spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.body.parent_id}'; SELECT stu.school_id, stu.name AS student_name, stu.student_id FROM school_student AS stu INNER JOIN school_main_login AS sml ON sml.id = stu.student_id WHERE sml.school_id='${session.schoolId}' AND sml.status='Active' AND sml.deleted_at IS NULL AND sml.role_id_fk = '1'`;
+var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.body.parent_id}' AND role_id_fk='5'; SELECT stu.school_id, spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.body.parent_id}' AND spam.deleted_at IS NULL; SELECT stu.school_id, stu.name AS student_name, stu.student_id FROM school_student AS stu INNER JOIN school_main_login AS sml ON sml.id = stu.student_id WHERE sml.school_id='${session.schoolId}' AND sml.status='Active' AND sml.deleted_at IS NULL AND sml.role_id_fk = '1'`;
   dbcon.query(parentMapData, (err, parMapData) => {
     if(err) res.json({msg: 'error', err});
     else if(parMapData[0].length != 0){
