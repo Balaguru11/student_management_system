@@ -1,6 +1,5 @@
 const express = require("express");
 const studentRouter = express.Router();
-
 const { isStudent } = require("../middlewares/auth");
 
 // importing schoolController here
@@ -34,7 +33,6 @@ studentRouter.get('/dashboard/my-staff', isStudent, getStaffProfile);
 studentRouter.post('/dashboard/ask-new-doubt/:staff_id', isStudent, askMyStaff);
 studentRouter.get('/dashboard/my-doubts', isStudent, myDoubtsList);
 studentRouter.post('/dashboard/add-doubt-thread-message', isStudent, addThreadMsg);
-
 
 // student making paymnent for his own
 studentRouter.all("/admission-fee-payment", isStudent, allAdmissionDue);

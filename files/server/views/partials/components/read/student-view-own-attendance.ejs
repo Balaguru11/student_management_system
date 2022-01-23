@@ -156,3 +156,34 @@
     </div>
   </div>
 </div>
+
+
+
+<% /* %> <tbody>
+  <% if(locals.attendance.length > 0) { %>
+    for (var i = 0; i < locals.attendance.length; i++) { %>
+      <% var period_string = locals.attendance[i].period_no %>
+      <% var period_array = period_string.split(",") %>
+      <% var att_sta = locals.attendance[i].attend_status %>
+      <% var att_sta_arr = att_sta.split(",") %>
+    <tr>
+      <th scope="row"><%= (i+1) %></th>
+      <td><%= att_sta_arr[0] %></td>
+      <td><%= att_sta_arr[1] %></td>
+      <td><%= att_sta_arr[2] %></td>
+      <td><%= att_sta_arr[3] %></td>
+      <td><%= att_sta_arr[4] %></td>
+      <td><%= att_sta_arr[5] %></td>
+      <td><%= att_sta_arr[6] %></td>
+      <td><%= att_sta_arr[7] %></td>
+      <td><%= att_sta_arr[8] %></td>
+      <td><%= att_sta_arr[9] %></td>
+      <td>Calculation Here</td>
+  </tr>
+  <% } } %>
+  <% else { %>
+  <tr>
+    <td colspan="13" class="text-center">No records found.</td>
+  </tr>
+  <% } %>
+</tbody> <% */ %>

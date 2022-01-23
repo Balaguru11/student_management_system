@@ -513,9 +513,10 @@ exports.postStuAttendance = (req, res) => {
   var absent = req.body.absent_stu; // 1
   var on_duty = req.body.on_duty_stu; // 2
   var leave_intimated = req.body.leave_informed_stu;
+  var present_today = req.body.present_students;
   try { 
     // check for records dupe
-    var dupeAttendance = `SELECT * FROM school_student_attendance WHERE school_id = '${session.school_id}' AND class_sec = '${req.body.class_sec_id_hide}' AND period_no = '${req.body.period_no}'`;
+    var dupeAttendance = `SELECT * FROM school_student_attendance WHERE school_id = '${session.school_id}' AND class_sec = '${req.body.class_sec_id_hide}' AND period_no = '${req.body.period_no}' AND date = CURDATE()`;
     dbcon.query(dupeAttendance, (err, duplicate) => {
       if(err) throw err
       else if (duplicate.length > 0) {
@@ -526,6 +527,7 @@ exports.postStuAttendance = (req, res) => {
         var absentDataEntry = "";
         var onDutyDataEntry = "";
         var leaveDataEntry = "";
+        var presentDataEntry = "";
 
         if (typeof absent !== 'undefined'){
           for (let i = 0; i < absent.length; i++){
@@ -533,8 +535,9 @@ exports.postStuAttendance = (req, res) => {
             absentDataEntry = absentDataEntry + absent_loop;
           }
         } else {
-          let absent_i = 'NULL';
-          absentDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent_i}', '${session.staff_id}'),`;
+          // let absent_i = 'NULL';
+          // absentDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Absent','${absent_i}', '${session.staff_id}'),`;
+          absentDataEntry = "";
         }
         
         if(typeof on_duty !== 'undefined') {
@@ -544,8 +547,17 @@ exports.postStuAttendance = (req, res) => {
             onDutyDataEntry = onDutyDataEntry + onDuty_loop;
           }
         } else {
-          let on_duty_i = 'NULL';
-          onDutyDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','On_Duty','${on_duty_i}', '${session.staff_id}'),`;
+          onDutyDataEntry = "";
+        }
+
+        if(typeof present_today !== 'undefined') {
+          // for loop to construct a query - Present students
+          for (let i = 0; i < present_today.length; i++){
+            var present_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Present','${present_today[i]}', '${session.staff_id}'),`;
+            presentDataEntry = presentDataEntry + present_loop;
+          }
+        } else {
+          presentDataEntry = "";
         }
         
         if (typeof leave_intimated !== 'undefined') {
@@ -553,16 +565,16 @@ exports.postStuAttendance = (req, res) => {
           for (let i = 0; i < leave_intimated.length; i++){ // length 1 - 1 run
             var leave_loop = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated[i]}', '${session.staff_id}'),`;
             leaveDataEntry = leaveDataEntry + leave_loop;
-            var leave_query = leaveDataEntry.slice(0, -1);
           }
         } else {
-          let leave_intimated_i = 'NULL';
-          leaveDataEntry = `('${req.body.attendance_date_hide}', '${session.school_id}', '${req.body.class_sec_id_hide}','${req.body.period_no}','Leave_Intimated','${leave_intimated_i}', '${session.staff_id}'),`;
-          var leave_query = leaveDataEntry.slice(0, -1);
+          leaveDataEntry = "";
         }
+        var finalQuery = (onDutyDataEntry + absentDataEntry + presentDataEntry + leaveDataEntry).slice(0, -1);
+  
         
         // inserting attendance
-        var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${onDutyDataEntry} ${absentDataEntry} ${leave_query}`;
+        var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${finalQuery}`;
+        console.log(attendanceData);
         dbcon.query(attendanceData, (err, attendanceAdded) => {
           if (err) throw err;
           req.flash("success", "Attendance added successfully.");

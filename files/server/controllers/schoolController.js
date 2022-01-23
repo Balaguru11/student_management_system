@@ -1652,19 +1652,25 @@ exports.mapParStudent = (req, res) => {
   res.locals.success_msg = success_msg;
   let parent_id = req.params.parent_id;
   let untouchedOldMap = req.body.mapped_students_old_hide;
-  let already_mapped = req.body.mapped_students_edit; // new array
+  let oldMappedEdit = req.body.mapped_students_edit; // new array
   let new_mapping = req.body.map_students_edit;
   try {
     // finding missing variable from 2 arrays
+    console.log(oldMappedEdit);
     var missing = [];
-    for (let x of untouchedOldMap) {
-      console.log(x);
-      if(already_mapped.indexOf(x) !== -1) {
-        continue;
-      } else {
-        missing.push(x);
+    if (typeof oldMappedEdit !== 'undefined'){
+      for (let x of untouchedOldMap) {
+        if(oldMappedEdit.indexOf(x) !== -1) {
+          continue;
+        } else {
+          missing.push(x);
+        }
       }
+    } else {
+      missing = untouchedOldMap;
+      console.log(missing);
     }
+   
     var deleteFinalQuery = "";
     // deleting already mapped student
     if(typeof missing !== 'undefined'){

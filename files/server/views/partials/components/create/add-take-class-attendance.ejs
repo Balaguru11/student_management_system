@@ -51,6 +51,13 @@
           <% }  %>
       </select>
     </div>
+    <div class="mb-3" id="present_student_div">
+      <select multiple="multiple" class="form-control js-example-basic-multiple" id="present_students" name="present_students[]">
+         <% for (let i=0; i < locals.attendances[2].length; i++) { %>
+            <option selected value="<%= locals.attendances[2][i].student_id %>"><%= locals.attendances[2][i].student_id %> - <%= locals.attendances[2][i].name %></option>
+          <% }  %>
+      </select>
+    </div>
     <div class="mt-3 mb-3">
       <button class="btn btn-secondary" type="submit" value="submit">
         Add Attendance Record

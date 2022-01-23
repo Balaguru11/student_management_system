@@ -1565,6 +1565,7 @@ $(document).on('click', '.seeThreadButton', function() {
 // })
 
 $(document).ready(function () {
+  $('#present_student_div').hide();
   $('#absent_stu, #leave_informed_stu, #on_duty_stu').on('change', function () {
     var absentees = $("#absent_stu").val();
     var leave_informed = $("#leave_informed_stu").val();
@@ -1574,12 +1575,15 @@ $(document).ready(function () {
 
     $.each(absentees, (key, value) => {
       $('#leave_informed_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+      $('#present_students').find("option[value='" + value + "']").remove();
     })
     $.each(leave_informed, (key, value) => {
       $('#absent_stu, #on_duty_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+      $('#present_students').find("option[value='" + value + "']").remove();
     })
     $.each(onduties, (key, value) => {
       $('#leave_informed_stu, #absent_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
+      $('#present_students').find("option[value='" + value + "']").remove();
     })
 
   })

@@ -2,7 +2,7 @@
   <h4 class="text-center">My Doubts</h4>
   <br />
   <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-    <a href="../my-staff" role="button" class="btn btn-secondary me-md-2"><i class="fas fa-comment-medical"></i> Ask New Doubt</a>
+    <a href="../dashboard/my-staff" role="button" class="btn btn-secondary me-md-2"><i class="fas fa-comment-medical"></i> Ask New Doubt</a>
   </div>
   <% if (locals.myDoubtsList.length > 0) { %>
     <% for (let i = 0; i < locals.myDoubtsList.length; i++) { %>
@@ -23,8 +23,9 @@
             <% } else { %>
               <p><span style="font-size: 1.6em; color: gray;"><i class="fas fa-lock"></i></span> </p>
             <% } %>
+            <% var myUnread_arr = 0 %>
 
-            <button id='unread_doubt_<%= locals.myDoubtsList[i].id %>' data-id="<%= locals.myDoubtsList[i].id %>" who_is="<%= locals.myDoubtsList[i].asked_by %>" who_logged_in="<%= locals.who_logged_in %>" type="button" class="seeThreadButton btn btn-success View btn-sm">Unread</button>
+            <button id='unread_doubt_<%= locals.myDoubtsList[i].id %>' data-id="<%= locals.myDoubtsList[i].id %>" who_is="<%= locals.myDoubtsList[i].asked_by %>" who_logged_in="<%= locals.who_logged_in %>" type="button" class="seeThreadButton btn btn-success View btn-sm"><%= myUnread_arr %> Unread</button>
 
 
           </div>
