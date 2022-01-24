@@ -128,6 +128,11 @@ exports.isParent = async (req, res, next) => {
   res.locals.email = session.email;
   res.locals.logged_in = session.logged_in;
   if (session.logged_in) {
+    // var studentCard = `SELECT spam.ml_student_id, stu.name, spam.stu_school_id, sfs.class_std, sfs.medium, clr.class_section, sas.school_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id INNER JOIN school_student_admission AS stad ON stad.student_id = spam.ml_student_id INNER JOIN school_classroom AS clr ON clr.id = stad.class_section INNER JOIN school_feestructure AS sfs ON sfs.id = stad.class_medium INNER JOIN school_add_school AS sas ON sas.id = spam.stu_school_id WHERE spam.parent_id = '${session.parent_id}' ORDER BY ABS(sfs.class_std) DESC`;
+    // dbcon.query(studentCard, (err, mappedStudents) => {
+    //   if(err) throw err;
+    //   res.locals.mappedStudents = mappedStudents;
+    // })
     next();
   } else {
     req.flash("err_msg", "It seems you are not logged in.");

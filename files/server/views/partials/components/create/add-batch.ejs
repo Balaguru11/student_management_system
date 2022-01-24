@@ -1,0 +1,53 @@
+
+            <form id="addbatch-form" action="../dashboard/batch" method="POST">
+                <div class="mt-3 mb-3">
+                  <h2 class="text-center">Create New Batch</h2>
+                  <p class="text-center">
+                    <small>Adding Batch to the school.</small>
+                  </p>
+                  <hr />
+                </div>
+                <div class="mb-3">
+                  <label for="batch_name">Batch Name:</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="batch_name"
+                    id="batch_name"
+                    placeholder="Ex: 2022 Batch"
+                  />
+                  <span class="error" id="batch_name_error"
+                    >Batch name could be more than 3 characters long.</span
+                  >
+                </div>
+                <div class="mb-3">
+                  <label for="batch_from">Batch starts from the Year</label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="batch_from"
+                    id="batch_from"
+                    min="<%= new Date().getFullYear() %>"
+                    value="<%= new Date().getFullYear() %>"
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="batch_to">Batch ends in </label>
+                  <input
+                    type="number"
+                    class="form-control"
+                    name="batch_to"
+                    id="batch_to"
+                    min="<%= new Date().getFullYear()+1 %>"
+                    placeholder="Ex: 2023"
+                  />
+                  <span class="error" id="batch_to_error"
+                    >Please enter a year.</span
+                  >
+                </div>
+                <div class="mb-3">
+                  <button class="btn btn-secondary" type="submit" value="submit">
+                    Add New Batch
+                  </button>
+                </div>
+              </form>

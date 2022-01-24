@@ -74,8 +74,6 @@ $(function () {
 
   // School-Create Form Validations - schooolName
 
-  // School-Create Form Validations - schooolName
-
   //username field
   $("#username").on("input", function () {
     var input = $(this);
@@ -123,6 +121,31 @@ $(document).ready(function () {
     var previous_tab = e.relatedTarget;
   });
 });
+
+// DELETE BATCH - Open Modal id deleteBatchModal
+$(document).ready(function () {
+  $('.deleteBatch').on('click', function () {
+    var batch_id = $(this).attr('data-id');
+    $.ajax({
+      url: '/api/delete-batch-by-id',
+      type: 'POST',
+      data: {
+        batch_id: batch_id,
+      }, dataType: 'JSON',
+      success: function (data){
+        // do
+        $('.delete-batch-modal-body').html(function () {
+          return (
+            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='batch_id_hidden' id='batch_id_hidden' value='${batch_id}' /><p class='text-center mt-3 mb-3'><b>Do you want to delete '${data.batch[0].batch_name}'?</b></p></div><div class='row mb-3'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/batch/delete/${data.batch[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
+          )
+        })
+        $('#deleteBatchModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
 
 // view fee due collection data as modal
 $(document).ready(function () {
@@ -461,15 +484,7 @@ $(document).ready(function () {
           $("#medium_edit").val(fetched_medium);
 
           return (
-            "<form id='editclass-form' action='../dashboard/fee-structure/edit/" +
-            data.feeRow[0].id +
-            "?_method=PUT' method='POST'><input type='hidden' class='form-control' name='fee_id' id='fee_id' value='" +
-            data.feeRow[0].id +
-            "' /><div class='mb-3'><label for='class_std'>Class (Std):</label><input type='text' class='form-control' name='class_std_edit' id='class_std_edit' placeholder='6 / LKG / UKG etc' value='" +
-            data.feeRow[0].class_std +
-            "' /><span class='error' id='class_std_error' >Please enter the Class / Standarad.</span ></div><div class='mb-3'><label for='medium'>Medium of Language:</label><select id='medium_edit' class='form-control' name='medium_edit'><option value=''>Select One</option><option value='Tamil'>Tamil</option><option value='English'>English</option><option value='Hindi'>Hindi</option></select><span class='error' id='medium_error' >Please select the Medium.</span ></div><div class='mb-3'><label for='fee'>Fees: </label><input type='number' class='form-control' name='fee_edit' id='fee_edit' placeholder='Fee (in INR) per year.' value='" +
-            data.feeRow[0].actual_fee +
-            "' /><span class='error' id='fee_error' >Please enter the Fee amount.</span ></div><div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>"
+            `<form id='editclass-form' action='../dashboard/fee-structure/edit/${data.feeRow[0].id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='fee_id' id='fee_id' value='${data.feeRow[0].id}' /><div class='mb-3'><label for='batch_id'>Batch:</label><input type='text' class='form-control' name='batch_id_edit_disa' id='batch_id_edit_disa' value='${data.feeRow[0].batch_name}' disabled /><input type='hidden' class='form-control' name='batch_id_edit' id='batch_id_edit' value='${data.feeRow[0].batch_id}' /></div><div class='mb-3'><label for='class_std'>Class (Std):</label><input type='text' class='form-control' name='class_std_edit_disa' id='class_std_edit_disa' placeholder='6 / LKG / UKG etc' value='${data.feeRow[0].class_std}' disabled /><input type='hidden' class='form-control' name='class_std_edit' id='class_std_edit' placeholder='6 / LKG / UKG etc' value='${data.feeRow[0].class_std}' /><span class='error' id='class_std_error' >Please enter the Class / Standarad.</span ></div><div class='mb-3'><label for='medium'>Medium of Language:</label><select id='medium_edit' class='form-control' name='medium_edit'><option value=''>Select One</option><option value='Tamil'>Tamil</option><option value='English'>English</option><option value='Hindi'>Hindi</option></select><span class='error' id='medium_error' >Please select the Medium.</span ></div><div class='mb-3'><label for='fee'>Fees: </label><input type='number' class='form-control' name='fee_edit' id='fee_edit' placeholder='Fee (in INR) per year.' value='${data.feeRow[0].actual_fee}' /><span class='error' id='fee_error' >Please enter the Fee amount.</span ></div><div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>`
           );
         });
         // show data in the element.
@@ -1586,5 +1601,12 @@ $(document).ready(function () {
       $('#present_students').find("option[value='" + value + "']").remove();
     })
 
+  })
+})
+
+// parent Header menu On hover navigation dropdown
+$(document).ready(function () {
+  $('.parent_student').on('mouseover', function () {
+    
   })
 })

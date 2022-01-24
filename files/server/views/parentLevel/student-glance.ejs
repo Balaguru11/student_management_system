@@ -1,0 +1,96 @@
+<% if(locals.err_msg.length > 0) { %>
+<div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
+  <%= err_msg %>
+  <button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<% } %> <% if(locals.success_msg.length > 0) { %>
+<div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
+  <%= success_msg %>
+  <button
+    type="button"
+    class="btn-close"
+    data-bs-dismiss="alert"
+    aria-label="Close"
+  ></button>
+</div>
+<% } %> <% if(locals.welcome_msg) { %>
+<div class="col-6 m-4 p-2 mt-5">
+  <h5><%= welcome_msg %></h5>
+</div>
+<% } %>
+<br />
+
+<!-- When Account is Inactive -->
+<% if(locals.parent_status == "Inactive") { %>
+<!-- Inactive Part -->
+<div class="p-5">
+  <p>Viewing Ms. <%= locals.studentInfo[0].name %>'s Portal</p>
+  <p>This is visible. Because you are NOT ACTIVE.</p>
+  <div class="alert alert-danger" role="alert">
+    <h4 class="text-center">You are a parent.</h4>
+    <p class="text-center">
+      Your account is not active. parent Activation module is getting ready. It
+      will send activation code to the registered email id. And the same has to
+      be entered in the form below (Which will be available soon) to activate
+      your account.
+    </p>
+  </div>
+</div>
+<hr />
+<% } else { %>
+<!-- active part -->
+<%- include ('../partials/components/parent-sideMenu') %>
+
+<div class="pt-5 pb-5">
+  <h6 class="display-6">Viewing, <%= locals.studentInfo[0].name %>'s Portal</h6>
+  <div class="row mt-5">
+      <div class="col-8 p-3">
+        <div class="card">
+          <div class="card-body">
+            <h5>Personal & Academic Details</h5><hr>
+            <p>Studying: <%= locals.studentInfo[0].class_std %> STD - <%= locals.studentInfo[0].medium %> Medium - <%= locals.studentInfo[0].lass_section %> Section</p>
+            <p>Academic Year: <%= locals.studentInfo[0].academic_year %></p>
+            <p>School Name: <%= locals.studentInfo[0].school_name %></p>
+            <p>Mail to: <a href="mailto:<%= locals.studentInfo[0].school_email %>"><%= locals.studentInfo[0].school_email %></a></p>
+            <p>School Location: <%= locals.studentInfo[0].city %></p>
+          </div>
+        </div>
+          
+      </div>
+    <div class="col-4 p-3">
+      <div class="card">
+        <div class="card-body border border-warning">
+          <h5 class="text-center">Fee Due Details</h5><hr>
+          <p class="h5">Course Fee: <%= locals.studentInfo[0].actual_fee %></p><hr class="text-muted">
+          <p class="h5">Paid Amount: <%= locals.studentInfo[0].paid_amt %></p><hr class="text-muted">
+          <% if(locals.studentInfo[0].payment_status == 'Due') { %>
+            <p>Academic Course Fee Due is: </p>
+            <h4 class="display-6"><%= locals.studentInfo[0].actual_fee - locals.studentInfo[0].paid_amt %></h4>
+            <a href="/parent/dashboard/" role="button" class="btn btn-warning">Pay Now</a>
+          <% } else { %>
+            <h4 class="display-6 bg-success p-2 text-center text-white">No Due</h4>
+          <%  } %>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    Points to be added here:
+    student Details
+Schedule
+Student Attendance
+Home Work
+Classteacher details , Chat
+Score card
+Payment Due
+messages from School & Staff
+  </div>
+</div>
+<% } %>

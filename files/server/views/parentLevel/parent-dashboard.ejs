@@ -1,6 +1,3 @@
-<!-- <div class="col-xl-12 col-lg-12 col-md-8 col-sm-10 p-5 m-3 justify-content-center">
-    <h2 class="text-center">Student Dashboard</h2> -->
-
 <% if(locals.err_msg.length > 0) { %>
 <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
   <%= err_msg %>
@@ -32,7 +29,7 @@
 <% if(locals.parent_status == "Inactive") { %>
 <!-- Inactive Part -->
 <div class="p-5">
-  <p>Howdy, <%= username %>,</p>
+  <p>Howdy, <%= parentUsername %>,</p>
   <p>This is visible. Because you are NOT ACTIVE.</p>
   <div class="alert alert-danger" role="alert">
     <h4 class="text-center">You are a parent.</h4>
@@ -49,8 +46,8 @@
 <!-- active part -->
 <%- include ('../partials/components/parent-sideMenu') %>
 <div class="p-5">
-  <p>Howdy <%= username %>, Good to see you again..!</p>
-  <h5><%= username %>'s Dashboard</h5>
+  <p>Howdy <%= parentUsername %>, Good to see you again..!</p>
+  <h5><%= parentUsername %>'s Dashboard</h5>
   <p>Being a parent, you get access to do the following:</p>
   <ul>
     <li>Manage your Profile</li>
@@ -59,5 +56,25 @@
     <li>Check Report card in your section.</li>
     <li>Speak with Faculties associated with your kid.</li>
   </ul>
+</div>
+
+<div class="p-5">
+  <h4 class="display-6">My Children:</h4><hr>
+  <% if(locals.mappedStudents.length > 0){ %>
+    <div class="row">
+      <% for (let i = 0; i < locals.mappedStudents.length; i++){ %>
+        <div class="col-4 p-3">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title"><%= locals.mappedStudents[i].name %></h5>
+            <h6 class="card-subtitle mb-2 text-muted"><%= locals.mappedStudents[i].class_std %> STD - <%= locals.mappedStudents[i].medium %> Medium - <%= locals.mappedStudents[i].class_section %> Sec</h6>
+            <p class="card-text">Studying in: <%= locals.mappedStudents[i].school_name %></p>
+            <a href="/parent/dashboard/my-children/<%= locals.mappedStudents[i].ml_student_id %>/<%= locals.mappedStudents[i].stu_school_id %>" class="card-link btn btn-primary" role="button">View</a>
+          </div>
+        </div>
+        </div>
+      <%  } %>
+    </div>
+    <%  } %>
 </div>
 <% } %>

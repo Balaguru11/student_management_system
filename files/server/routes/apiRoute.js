@@ -6,6 +6,18 @@ const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 const con = require("../config/database");
 
+apiRouter.post('/delete-batch-by-id', (req, res) => {
+  var getBatch = `SELECT * FROM school_batch_mgmt WHERE id = '${req.body.batch_id}'`;
+  dbcon.query(getBatch, (err, batch) => {
+    if(err) res.json({msg: 'error', err})
+    else if (batch.length > 0) {
+      res.json({msg: 'success', batch: batch})
+    } else {
+      res.json({msg: 'error', err })
+    }
+  })
+})
+
 apiRouter.post("/get-class-sections", (req, res) => {
   var getclassection =
     'SELECT *, (students_strength - students_filled) AS seats_free FROM school_classroom WHERE class_id= "' +
@@ -136,7 +148,7 @@ apiRouter.post("/get-one-staff-profile", (req, res) => {
 
 // edit fee structure class-medium (GET)
 apiRouter.post("/edit-class-medium-fee", (req, res) => {
-  var getFeeData = `SELECT * FROM school_feestructure WHERE id='${req.body.class_medium_id}'`;
+  var getFeeData = `SELECT sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee, batch.id AS batch_id, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.id='${req.body.class_medium_id}'`;
 
   dbcon.query(getFeeData, (err, data) => {
     if (err) {

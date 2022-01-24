@@ -9,7 +9,7 @@ const {
   postCreateSchool,
   getSchoolLogin,
   postSchoolLogin,
-  getSchoolDashBoard,
+  getSchoolDashBoard, getCreateNewBatch, postCreateNewBatch, deleteBatch, 
   postAddClassroom,
   postAddUser,
   putUserAccount,
@@ -60,6 +60,11 @@ schoolRouter.get("/dashboard", isSchool, getSchoolDashBoard);
 
 // School change Password
 schoolRouter.all("/dashboard/change-password", isSchool, allChangePwd);
+
+// batch CRUD
+schoolRouter.get('/dashboard/batch', isSchool, getCreateNewBatch);
+schoolRouter.post('/dashboard/batch', isSchool, postCreateNewBatch);
+schoolRouter.get("/dashboard/batch/delete/:batch_id", isSchool, deleteBatch);
 
 // Fee Structure CRUD (assigned to staff_role = 9 Admin)
 schoolRouter.get("/dashboard/fee-structure", isSchool, viweFeeStructure);

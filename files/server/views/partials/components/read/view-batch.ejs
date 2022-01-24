@@ -1,0 +1,67 @@
+<div>
+  <h4 class="text-center">View Batches</h4>
+  <br />
+  <table class="table table-light text-center">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Batch Name</th>
+        <th scope="col">Year (From)</th>
+        <th scope="col">Year (To)</th>
+        <th width="200px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.batchList.length > 0) { for(var i = 0; i < locals.batchList.length;
+      i++) { %>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.batchList[i].batch_name %></td>
+        <td><%= locals.batchList[i].year_from %></td>
+        <td><%= locals.batchList[i].year_to %></td>
+        <td>
+          <button
+            data-id="<%= locals.batchList[i].id %>"
+            type="button"
+            class="deleteBatch btn btn-danger View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-trash-alt" aria-hidden="true"></i>
+          </button>
+        </td>
+      </tr>
+
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center">No Batch created yet.</td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- delete modal -->
+<div
+  class="modal fade"
+  id="deleteBatchModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteBatchModalLabel">
+          Deleting A Batch
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="delete-batch-modal-body"></div>
+    </div>
+  </div>
+</div>
