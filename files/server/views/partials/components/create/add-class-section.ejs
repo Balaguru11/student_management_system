@@ -11,7 +11,7 @@
                 <select id="class" class="form-control" name="class">
                   <% if(locals.classOptions) {
                     for (let i=0; i < locals.classOptions.length; i++) { %>
-                      <option value="<%= locals.classOptions[i].id %>"><%= locals.classOptions[i].class_std %> std - <%= locals.classOptions[i].medium %> Medium</option>
+                      <option value="<%= locals.classOptions[i].id %>"><%= locals.classOptions[i].class_std %> std - <%= locals.classOptions[i].medium %> Medium (<%= locals.classOptions[i].batch_name %>)</option>
                     <% } } %>
                 </select>
                 <span class="error" id="class_error"

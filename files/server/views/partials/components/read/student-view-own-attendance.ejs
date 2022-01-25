@@ -1,7 +1,7 @@
 <div>
   <h4 class="text-center">My Attendance</h4>
   <br />
-  <table class="table table-light text-center">
+  <table class="table table-light text-center" id="datatable">
     <thead>
       <tr>
         <th scope="col">S.No</th>
@@ -20,85 +20,28 @@
       </tr>
     </thead>
     <tbody>
-      <% if(locals.attendance.length > 0) { for(var i = 0; i < locals.attendance.length;
-      i++) { %>
-      <tr>
-        <th scope="row"><%= (i+1) %></th>
-        <td><%= locals.attendance[i].date %></td>
-        <td><% if(locals.attendance[i].period_no == 1 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty'))  { %>
-          Present
-        <% } else if (locals.attendance[i].period_no == 1 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 2 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty')) { %>
-          Present
-        <% } else if (locals.attendance[i].period_no == 2 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 3 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty'))  { %>
-          Present
-       <% } else if (locals.attendance[i].period_no == 3 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 4 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty')) { %>
-          Present
-        <% } else if (locals.attendance[i].period_no == 4 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 5 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty'))  { %>
-          Present
-        <% } else if (locals.attendance[i].period_no == 5 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 6 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty')) { %>
-          Present
-       <% } else if (locals.attendance[i].period_no == 6 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 7 && (locals.attendance[i].student_affected == 'student_id'  || '0') && (locals.attendance[i].attend_status == 'On_Duty')) { %>
-          Present
-        <% } else if (locals.attendance[i].period_no == 7 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 8 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty'))  { %>
-         Present
-        <% } else if (locals.attendance[i].period_no == 8 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 9 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty'))  { %>
-          Present
-        <% } else if (locals.attendance[i].period_no == 9 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td><% if(locals.attendance[i].period_no == 10 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'On_Duty'))  { %>
-          Present
-        <% } else if (locals.attendance[i].period_no == 10 && (locals.attendance[i].student_affected == 'student_id' || '0') && (locals.attendance[i].attend_status == 'Absent' || 'Leave_intimated')){ %>
-          AB / L
-        <% } else { %>
-          --
-        <% } %></td>
-        <td>Calculation Here</td>
+      <% if(locals.attendance.length > 0) { %>
+        <% for (var i = 0; i < locals.attendance.length; i++) { %>
+          <% var period_string = locals.attendance[i].period_no %>
+          <% var period_array = period_string.split(",") %>
+          <% var att_sta = locals.attendance[i].attend_status %>
+          <% var att_sta_arr = att_sta.split(",") %>
+        <tr>
+          <th scope="row"><%= (i+1) %></th>
+          <td><%= att_sta_arr[0] %></td>
+          <td><%= att_sta_arr[1] %></td>
+          <td><%= att_sta_arr[2] %></td>
+          <td><%= att_sta_arr[3] %></td>
+          <td><%= att_sta_arr[4] %></td>
+          <td><%= att_sta_arr[5] %></td>
+          <td><%= att_sta_arr[6] %></td>
+          <td><%= att_sta_arr[7] %></td>
+          <td><%= att_sta_arr[8] %></td>
+          <td><%= att_sta_arr[9] %></td>
+          <td>Calculation Here</td>
       </tr>
-
-      <% } } else { %>
+      <% } } %>
+      <% if (locals.attendance.length == 0) { %>
       <tr>
         <td colspan="13" class="text-center">No records found.</td>
       </tr>
@@ -159,31 +102,3 @@
 
 
 
-<% /* %> <tbody>
-  <% if(locals.attendance.length > 0) { %>
-    for (var i = 0; i < locals.attendance.length; i++) { %>
-      <% var period_string = locals.attendance[i].period_no %>
-      <% var period_array = period_string.split(",") %>
-      <% var att_sta = locals.attendance[i].attend_status %>
-      <% var att_sta_arr = att_sta.split(",") %>
-    <tr>
-      <th scope="row"><%= (i+1) %></th>
-      <td><%= att_sta_arr[0] %></td>
-      <td><%= att_sta_arr[1] %></td>
-      <td><%= att_sta_arr[2] %></td>
-      <td><%= att_sta_arr[3] %></td>
-      <td><%= att_sta_arr[4] %></td>
-      <td><%= att_sta_arr[5] %></td>
-      <td><%= att_sta_arr[6] %></td>
-      <td><%= att_sta_arr[7] %></td>
-      <td><%= att_sta_arr[8] %></td>
-      <td><%= att_sta_arr[9] %></td>
-      <td>Calculation Here</td>
-  </tr>
-  <% } } %>
-  <% else { %>
-  <tr>
-    <td colspan="13" class="text-center">No records found.</td>
-  </tr>
-  <% } %>
-</tbody> <% */ %>

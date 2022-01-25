@@ -278,19 +278,18 @@ exports.postAddFeeStructure = (req, res) => {
       const class_std = req.body.class_std;
       const medium = req.body.medium;
       const actual_fee = req.body.fee;
-      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}'AND class_std='${class_std}' AND medium='${medium}' AND deleted_at IS NULL) AS count`;
+      const batch_id = req.body.batch_id;
+      var feeQuery = `SELECT EXISTS (SELECT * FROM school_feestructure WHERE school_id='${school_id}' AND class_std='${class_std}' AND medium='${medium}' AND batch_id='${batch_id}' AND deleted_at IS NULL) AS count`;
       dbcon.query(feeQuery, (err, data) => {
-        if (err) {
-          return res.render("server-error", { title: "Server Error" });
-        } else if (data[0].count == 0) {
-          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee, batch_id) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}', '${req.body.batch_id}')`;
+        if (err) return res.render("server-error", { title: "Server Error" });
+        else if (data[0].count == 0) {
+          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee, batch_id) VALUES ('${school_id}', '${class_std}', '${medium}', '${actual_fee}', '${batch_id}')`;
           dbcon.query(addFeeQuery, (err, response) => {
-            if (err) {
-              return res.render("server-error", { title: "Server Error" });
-            } else {
+            if (err) return res.render("server-error", { title: "Server Error" });
+            else {
               req.flash(
                 "success",
-                `Fee structure for ${class_std} STD - ${medium} Medium is added successfully.`
+                `Fee structure for ${class_std} STD - ${medium} Medium, ${batch_id} is added successfully.`
               );
               return res.redirect("/school/dashboard/fee-structure");
             }
@@ -298,7 +297,7 @@ exports.postAddFeeStructure = (req, res) => {
         } else {
           req.flash(
             "err_msg",
-            `Fee structure for ${class_std} STD - ${medium} Medium is already added.`
+            `Fee structure of ${class_std} STD - ${medium} Medium for ${batch_id} Batch is already added.`
           );
           return res.redirect("/school/dashboard/subjects");
         }
@@ -342,39 +341,54 @@ exports.viweFeeStructure = (req, res) => {
 };
 
 // CLASS MEDIUM CRUD - put Edit fee structure
-// exports.putFeeStructure = (req, res, next) => {
-//   //flashing err_msg
-//   let err_msg = req.flash("err_msg");
-//   res.locals.err_msg = err_msg;
-//   // flashing success_msg
-//   let success_msg = req.flash("success");
-//   res.locals.success_msg = success_msg;
-//   let session = req.session;
-//   try {
-//     const id = req.params.id;
-//     // check the edited data for duplicate entry
-//     var dupeFeeStruc = `SELECT * FROM school_feestructure WHERE class_std = ${req.body.class_std_edit} AND medium = '${req.body.medium_edit}' AND school_id = ${session.schoolId} AND actual_fee = '${fee_edit}' AND batch_id = '${req.body.batch_id_edit}' AND deleted_at IS NULL`;
-//     dbcon.query(dupeFeeStruc, (err, duplicate) => {
-//       if(err) return res.render("server-error", { title: "Server Error" });
-//       else if (duplicate[0].id == id){
-//         console.log(duplicate);
-//         req.flash('err_msg', 'No changes were made.');
-//         return res.redirect('/school/dashboard/fee-structure');
-//       } else if(duplicate == 'undefined' || duplicate[0].id != id){
-//         console.log(duplicate);
-//       } else {
-//         var updateFeeStruc = `UPDATE school_feestructure SET class_std = ${req.body.class_std_edit}, medium = '${req.body.medium_edit}', actual_fee='${req.body.fee_edit}' WHERE id='${id}'`;
-//         dbcon.query(updateFeeStruc, (err, updated) => {
-//           if(err) return res.render("server-error", { title: "Server Error" });
-//           req.flash('success', 'Fee structure updated successfully.');
-//           return res.redirect('/school/dashboard/fee-structure');
-//         })
-//       }
-//     })
-//   } catch (err) {
-//     return res.render("server-error", { title: "Server Error" });
-//   }
-// };
+exports.putFeeStructure = (req, res, next) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  console.log(req.body.medium_edit);
+  try {
+    const id = req.params.id;
+    // check the edited data for duplicate entry
+    var dupeFeeStruc = `SELECT * FROM school_feestructure WHERE class_std = ${req.body.class_std_edit} AND medium = '${req.body.medium_edit}' AND school_id = ${session.schoolId} AND batch_id = '${req.body.batch_id_edit}' AND deleted_at IS NULL`;
+    dbcon.query(dupeFeeStruc, (err, duplicate) => {
+      if(err) console.log(err);
+      // return res.render("server-error", { title: "Server Error" });
+      if (duplicate.length > 0) {
+        console.log(duplicate);
+        if (duplicate[0].id == id){
+          // there is only one data which we chose to edit
+          var updateFeeStruc = `UPDATE school_feestructure SET medium='${req.body.medium_edit}', actual_fee='${req.body.fee_edit}' WHERE id='${id}' AND school_id = '${session.schoolId}' AND batch_id = '${req.body.batch_id_edit}' AND deleted_at IS NULL`;
+          dbcon.query(updateFeeStruc, (err, updated) => {
+            if(err) console.log(err);
+            // return res.render("server-error", { title: "Server Error" });
+            req.flash('success', 'Fee structure updated successfully.');
+            return res.redirect('/school/dashboard/fee-structure');
+          })
+        } else {
+        console.log(duplicate);
+          // there is duplicate which is not matching the current id.
+          req.flash('err_msg', 'Data already exists.');
+          return res.redirect('/school/dashboard/fee-structure');
+        }
+      } else {
+        var updateFeeStruc = `UPDATE school_feestructure SET medium='${req.body.medium_edit}', actual_fee='${req.body.fee_edit}' WHERE id='${id}' AND school_id = '${session.schoolId}' AND batch_id = '${req.body.batch_id_edit}' AND deleted_at IS NULL`;
+        dbcon.query(updateFeeStruc, (err, updated) => {
+          if(err) console.log(err); 
+          // return res.render("server-error", { title: "Server Error" });
+          req.flash('success', 'Fee structure updated successfully.');
+          return res.redirect('/school/dashboard/fee-structure');
+        })
+      }
+    })
+  } catch (err) {
+    console.log(err)
+    // return res.render("server-error", { title: "Server Error" });
+  }
+};
 
 // CLASS MEDIUM CRUD - deleting fee structure
 exports.deleteFeeStructure = (req, res) => {
@@ -489,13 +503,15 @@ exports.viewClassSections = (req, res) => {
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var classSecData = `SELECT clr.id AS sec_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' AND clr.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
+    var classSecData = `SELECT clr.id AS sec_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium, sfs.batch_id, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' AND clr.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
     dbcon.query(classSecData, (err, data) => {
-      if (err) return res.render("server-error", { title: "Server Error" });
+      if (err) console.log(err);
+      // return res.render("server-error", { title: "Server Error" });
 
-      var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.schoolId}' AND deleted_at IS NULL ORDER BY ABS(class_std);`;
+      var classDrop = `SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id='${session.schoolId}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(classDrop, (err, classOptions) => {
-        if (err) return res.render("server-error", { title: "Server Error" });
+        if (err) console.log(err);
+        // return res.render("server-error", { title: "Server Error" });
         res.locals.classOptions = classOptions;
         res.locals.data = data;
         return res.render("schoolLevel/school-classSections", {
@@ -504,7 +520,8 @@ exports.viewClassSections = (req, res) => {
       });
     });
   } catch (err) {
-    return res.render("server-error", { title: "Server Error" });
+    if (err) console.log(err);
+    // return res.render("server-error", { title: "Server Error" });  
   }
 };
 

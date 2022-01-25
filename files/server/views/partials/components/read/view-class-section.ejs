@@ -1,13 +1,14 @@
 <div class="pt-5">
   <h4 class="text-center">View Class Sections</h4>
   <br />
-  <table class="table table-light text-center">
+  <table class="table table-light text-center" id="datatable">
     <thead>
       <tr>
         <th scope="col">S.No</th>
+        <th width="200px">Batch Name</th>
         <th width="200px">Class & Medium</th>
-        <th width="200px">Section</th>
-        <th width="200px">Total Seats</th>
+        <th width="100px">Section</th>
+        <th width="100px">Total Seats</th>
         <th width="200px">Actions</th>
       </tr>
     </thead>
@@ -16,6 +17,7 @@
       i++) {%>
       <tr>
         <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.data[i].batch_name %></td>
         <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %></td>
         <td><%= locals.data[i].class_section %></td>
         <td><%= locals.data[i].students_strength %></td>

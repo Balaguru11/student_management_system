@@ -480,15 +480,30 @@ $(document).ready(function () {
       dataType: "Json",
       success: function (data) {
         $(".modal-body").html(function () {
-          var fetched_medium = data.feeRow[0].medium;
-          $("#medium_edit").val(fetched_medium);
+          // var fetched_medium = ;
+          // $("#medium_edit").val(fetched_medium);
 
           return (
-            `<form id='editclass-form' action='../dashboard/fee-structure/edit/${data.feeRow[0].id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='fee_id' id='fee_id' value='${data.feeRow[0].id}' /><div class='mb-3'><label for='batch_id'>Batch:</label><input type='text' class='form-control' name='batch_id_edit_disa' id='batch_id_edit_disa' value='${data.feeRow[0].batch_name}' disabled /><input type='hidden' class='form-control' name='batch_id_edit' id='batch_id_edit' value='${data.feeRow[0].batch_id}' /></div><div class='mb-3'><label for='class_std'>Class (Std):</label><input type='text' class='form-control' name='class_std_edit_disa' id='class_std_edit_disa' placeholder='6 / LKG / UKG etc' value='${data.feeRow[0].class_std}' disabled /><input type='hidden' class='form-control' name='class_std_edit' id='class_std_edit' placeholder='6 / LKG / UKG etc' value='${data.feeRow[0].class_std}' /><span class='error' id='class_std_error' >Please enter the Class / Standarad.</span ></div><div class='mb-3'><label for='medium'>Medium of Language:</label><select id='medium_edit' class='form-control' name='medium_edit'><option value=''>Select One</option><option value='Tamil'>Tamil</option><option value='English'>English</option><option value='Hindi'>Hindi</option></select><span class='error' id='medium_error' >Please select the Medium.</span ></div><div class='mb-3'><label for='fee'>Fees: </label><input type='number' class='form-control' name='fee_edit' id='fee_edit' placeholder='Fee (in INR) per year.' value='${data.feeRow[0].actual_fee}' /><span class='error' id='fee_error' >Please enter the Fee amount.</span ></div><div class='mb-3'><button class='btn btn-secondary' type='submit' value='submit'> Update </button></div></form>`
+            `<form id='editclass-form' action='../dashboard/fee-structure/edit/${data.feeRow[0].id}?_method=PUT' method='POST'><input type='hidden' class='form-control' name='fee_id' id='fee_id' value='${data.feeRow[0].id}' /><div class='mb-3'><label for='batch_id'>Batch:</label><input type='text' class='form-control' name='batch_id_edit_disa' id='batch_id_edit_disa' value='${data.feeRow[0].batch_name}' disabled /><input type='hidden' class='form-control' name='batch_id_edit' id='batch_id_edit' value='${data.feeRow[0].batch_id}' /></div><div class='mb-3'><label for='class_std'>Class (Std):</label><input type='text' class='form-control' name='class_std_edit_disa' id='class_std_edit_disa' placeholder='6 / LKG / UKG etc' value='${data.feeRow[0].class_std}' disabled /><input type='hidden' class='form-control' name='class_std_edit' id='class_std_edit' placeholder='6 / LKG / UKG etc' value='${data.feeRow[0].class_std}' /><span class='error' id='class_std_error' >Please enter the Class / Standarad.</span ></div><div class='mb-3'><label for='medium'>Medium of Language:</label><select id='medium_edit' class='form-control' name='medium_edit'><option value='${data.feeRow[0].medium}'>${data.feeRow[0].medium}</option><option value='Tamil'>Tamil</option><option value='English'>English</option><option value='Hindi'>Hindi</option></select><span class='error' id='medium_error' >Please select the Medium.</span ></div><div class='mb-3'><label for='fee'>Fees: </label><input type='number' class='form-control' name='fee_edit' id='fee_edit' placeholder='Fee (in INR) per year.' value='${data.feeRow[0].actual_fee}' /><span class='error' id='fee_error' >Please enter the Fee amount.</span ></div><div class='mb-3'><button class='btn btn-secondary' id='update-fee-struc-button' type='submit' value='submit'> Update </button></div></form>`
           );
         });
+
+        $('#update-fee-struc-button').attr('disabled', 'disabled');
         // show data in the element.
         $("#editFeeStructModal").modal("show");
+
+        $('#medium_edit').on('change', function () {
+          var selected = $(this).val();
+          console.log(selected);
+          $('#medium_edit').find("option").removeAttr('selected');
+          $('#medium_edit').find("option[value='"+ selected +"']").attr('selected', 'selected');
+        })
+        // enabiling button on change
+        $('#medium_edit, #fee_edit').on('change', function () {
+          $('#update-fee-struc-button').removeAttr('disabled');
+        })
+
+
       },
       error: function (err) {
         console.log(err);
@@ -1141,7 +1156,7 @@ $(document).ready(function () {
 
 // data tables
 $(document).ready(function () {
-  $("#schedule").DataTable();
+  $("#schedule, #datatable").DataTable();
 });
 
 // multi select option

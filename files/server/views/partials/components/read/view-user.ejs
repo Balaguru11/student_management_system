@@ -3,7 +3,7 @@
   <br />
   <% if(locals.staff_role == 9 ){ %>
   <!-- Admin view -->
-  <table class="table table-light text-center" id="schedule">
+  <table class="table table-light text-center" id="datatable">
     <thead>
       <tr>
         <th scope="col">S.No</th>
@@ -44,15 +44,15 @@
 
   <% } %> <% if(locals.schoolId){ %>
   <!-- School view -->
-  <table class="table table-light text-center">
+  <table class="table table-light text-center"  id="datatable">
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th scope="col">Role</th>
-        <th scope="col">Username</th>
-        <th scope="col">Email ID</th>
-        <th scope="col">Status</th>
-        <th width="200px">Actions</th>
+        <th width="200px">Role</th>
+        <th width="200px">Username</th>
+        <th width="200px">Email ID</th>
+        <th width="100px">Status</th>
+        <th width="100px">Actions</th>
       </tr>
     </thead>
     <tbody>

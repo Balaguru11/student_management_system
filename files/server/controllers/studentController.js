@@ -429,7 +429,7 @@ exports.allChangePwd = (req, res) => {
   }
 };
 
-// get my attendance
+// get my attendance - working here
 exports.getMyAttendance = async (req, res) => {
   let session = req.session;
   let success_msg = req.flash('success');
@@ -441,9 +441,27 @@ exports.getMyAttendance = async (req, res) => {
 
     dbcon.query(getMyAtt, (err, attendance) => {
       if (err) throw err;
-      console.log(attendance);
+      var finalResult = [];
+      for (let i=0; i < attendance.length; i++) {
+        var index = [];
+        var date = {date: attendance[i].date};
+        index.push(date);
+        var period_arr = attendance[i].period_no.split(",");
+        for (let x=0; x < period_arr.length; x++){
+          var period = {period_x: period_arr[x]} // issue here - 
+          index.push(period);
+        }
+        var att_arr = attendance[i].attendance.split(",");
+        for (let a of att_arr) {
+          var status = {att_status_a: att_arr[a]}
+          index.push(status);
+        }
+        finalResult.push(index);
+      }
+      console.log(finalResult);
+      res.locals.attendance = finalResult;
       res.locals.student_id = session.student_id;
-      res.locals.attendance = attendance;
+      // res.locals.attendance = attendance;
       return res.render('studentLevel/student-attendance', { title: 'Student Attendance'});
     })
   } catch (err) {
@@ -504,7 +522,7 @@ exports.myDoubtsList = (req, res) => {
   res.locals.err_msg = err_msg;
   try {
     // do here
-    var myDoubts = `SELECT doubt.id, doubt.asked_by, doubt.asked_to, staf.name, doubt.doubt_title, doubt.doubt_desc, doubt.status FROM school_student_doubts AS doubt INNER JOIN school_staff AS staf ON staf.staff_id = doubt.asked_to WHERE doubt.asked_by='${session.student_id}}' ORDER BY doubt.id DESC; SELECT sdt.doubt_ref_id, COUNT(sdt.message) AS newThread FROM school_doubt_thread AS sdt INNER JOIN school_student_doubts AS ssd ON sdt.doubt_ref_id = ssd.id WHERE ssd.asked_by = '${session.student_id}' AND sdt.message_by != '${session.student_id}' AND sdt.view_status = 'read' GROUP BY ssd.id ORDER BY sdt.doubt_ref_id DESC;`;
+    var myDoubts = `SELECT doubt.id, doubt.asked_by, doubt.asked_to, staf.name, doubt.doubt_title, doubt.doubt_desc, doubt.status FROM school_student_doubts AS doubt INNER JOIN school_staff AS staf ON staf.staff_id = doubt.asked_to WHERE doubt.asked_by='${session.student_id}}' ORDER BY doubt.id DESC; SELECT sdt.doubt_ref_id, COUNT(sdt.message) AS newThread FROM school_doubt_thread AS sdt INNER JOIN school_student_doubts AS ssd ON sdt.doubt_ref_id = ssd.id WHERE ssd.asked_by = '${session.student_id}' AND sdt.message_by != '${session.student_id}' AND sdt.view_status = 'unread' GROUP BY ssd.id ORDER BY sdt.doubt_ref_id DESC;`;
 
     dbcon.query(myDoubts, (err, myDoubtsList) => {
       if(err) throw err;
@@ -515,13 +533,13 @@ exports.myDoubtsList = (req, res) => {
       // if(typeof unreadList !== 'undefined'){
       //   for (let x of doubtsList) {
       //     var id = x.id;
-      //     console.log(id);
+      //     console.log(id); //  1
       //     // console.log(unreadList.indexOf(id));
       //     if(unreadList.indexOf(id) !== -1){
       //       unreadCount.push(unreadList[unreadList.indexOf(id)].newThread);
             
       //     } else {
-      //       unreadCount.push(0);
+      //       unreadCount.push(0); // work
       //     }
       //   }
       // } else {
