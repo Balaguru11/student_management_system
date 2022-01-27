@@ -34,7 +34,7 @@ const {
   getMapSubStaff,
   postMapSubStaff,
   viewClassSections,
-  postAddClassroom,
+  postAddClassroom, getAddExamsForm, 
   getAllStaffList,
   putFeeStructure,
   deleteFeeStructure,
@@ -91,7 +91,6 @@ staffRouter.get('/dashboard/student-doubts', isStaff, isTeacher, getStudentDoubt
 staffRouter.post('/dashboard/add-doubt-thread-message', isStaff, isTeacher, addThreadMsg);
 
 // exams conducted for Students by Teaching Staffs
-// staffRouter.get('/dashboard/exams', isStaff, getExams);
 // staffRouter.get('/dashboard/student-marks', isStaff, getStuExamMarks);
 // staffRouter.get('/dashboard/student-performance', isStaff, getStuPerformReport);
 
@@ -224,6 +223,9 @@ staffRouter.post(
 // Class Section CRUD by HM
 staffRouter.get("/dashboard/sections", isStaff, isHM, viewClassSections);
 staffRouter.post("/dashboard/sections", isStaff, isHM, postAddClassroom);
+
+// HM creates Big Exams
+staffRouter.get('/dashboard/exams', isStaff, isHM, getAddExamsForm);
 
 // message to staff by HM
 // staffRouter.get('/dashboard/message-staff', isStaff, getStaffMsgForm);

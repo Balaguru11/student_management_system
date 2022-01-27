@@ -465,5 +465,20 @@ apiRouter.post('/see-doubt-threads', (req, res) => {
   })
 })
 
+// Add Exam - get subjects assigned to the class sec
+apiRouter.post('/get-subjects-from-exam-class', (req, res) => {
+  let session = req.session;
+  let school = session.schoolId || session.school_id;
+  var subjectList = `SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.id IN (${req.body.exam_std}) AND sfs.deleted_at IS NULL AND sfs.school_id = '${school}' ORDER BY ABS(sfs.class_std); SELECT sfs.id AS std_id, sfs.class_std, sfs.medium, clr.id AS sec_id, clr.class_section, subj.id AS subject_id, subj.subject_name, subj.deleted_at FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL INNER JOIN school_class_subjects AS scs ON scs.classroom_id = clr.id AND scs.deleted_at IS NULL INNER JOIN school_subjects AS subj ON subj.id = scs.subject_id WHERE sfs.id IN (${req.body.exam_std}) AND subj.deleted_at IS NULL AND sfs.school_id = '${school}' AND sfs.deleted_at IS NULL GROUP BY ABS(sfs.class_std)`;
+  dbcon.query(subjectList, (err, subjects) => {
+    if(err){
+      res.json({msg: 'error', err})
+    } else if (subjects.length != 0){
+      res.json({msg: 'success', std: subjects[0], subjects: subjects[1]})
+    } else {
+      res.json({msg: 'error', std: subjects[0], subjects: subjects[1]})
+    }
+  })
+})
 
 module.exports = apiRouter;

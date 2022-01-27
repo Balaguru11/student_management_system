@@ -1261,6 +1261,27 @@ exports.postAddClassroom = async (req, res) => {
   }
 };
 
+// Add Big Exams and View list
+exports.getAddExamsForm = (req, res) => {
+    let err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    let success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+    let session = req.session;
+    res.locals.staff_role = session.roleId;
+    try {
+      var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status FROM school_exams AS xam INNER JOIN school_feestructure AS sfs ON sfs.id = xam.exam_conducted_class_sec INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT  sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
+      dbcon.query(examList, (err, data) => {
+        if(err) throw err;
+        res.locals.data = data[0];
+        res.locals.classStd = data[1];
+        return res.render('staffLevel/hm-add-exams', {title: 'Exams List'})
+      })
+    } catch(err) {
+      console.log(err);
+    }
+}
+
 // ******** STAFF_ROLE = HEAD MASTER ********
 
 // ******** STAFF_ROLE = NON TEACHING FACULTY ********
