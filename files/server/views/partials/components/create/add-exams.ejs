@@ -6,38 +6,40 @@
                 </p>
                 <hr />
               </div>
-              <div class="mb-3">
-                <label for="exam_name">Name the Exam:</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  name="exam_name"
-                  id="exam_name"
-                  placeholder="Name anything. For identification purpose only"
-                />
-                <span class="error" id="exam_name_error"
-                  >Exam Name should not be empty.</span
-                >
-              </div>
-              <div class="mb-3">
-                <label for="exam_type">Choose Exam Type:</label>
-                <select id="exam_type" class="form-control" name="exam_type" required>
-                  <option value="">Select One</option>
-                  <option value="term_exam">Mid Term Exam</option>
-                  <option value="quarterly_exam">Quarterly Exam</option>
-                  <option value="half_yearly_exam">Half Yearly Exam</option>
-                  <option value="model_exam">Model Exam</option>
-                  <option value="annual_exam">Annual Exam</option>
-                </select>
-                <span class="error" id="class_error"
-                  >Please choose an exam type.</span
-                >
+              <div class="row">
+                <div class="col mb-3">
+                  <label for="exam_name">Name the Exam:</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    name="exam_name"
+                    id="exam_name"
+                    placeholder="Name anything. For identification purpose only"
+                  />
+                  <span class="error" id="exam_name_error"
+                    >Exam Name should not be empty.</span
+                  >
+                </div>
+                <div class="col mb-3">
+                  <label for="exam_type">Choose Exam Type:</label>
+                  <select id="exam_type" class="form-control" name="exam_type" required>
+                    <option value="">Select One</option>
+                    <option value="term_exam">Mid Term Exam</option>
+                    <option value="quarterly_exam">Quarterly Exam</option>
+                    <option value="half_yearly_exam">Half Yearly Exam</option>
+                    <option value="model_exam">Model Exam</option>
+                    <option value="annual_exam">Annual Exam</option>
+                  </select>
+                  <span class="error" id="class_error"
+                    >Please choose an exam type.</span
+                  >
+                </div>
               </div>
               <div class="mb-3">
                 <label for="exam_conducted_for">Exam Scheduling for:</label>
                 <select id="exam_conducted_for" class="js-example-basic-multiple js-example-responsive form-control" name="exam_conducted_for[]" multiple="multiple">
                   <option value="" disabled>Choose at least one</option>
-                  <% if(locals.classStd) {
+                  <% if(locals.classStd.length > 0) {
                     for (let i=0; i < locals.classStd.length; i++) { %>
                       <option value="<%= locals.classStd[i].id %>"><%= locals.classStd[i].class_std %> std - <%= locals.classStd[i].medium %> Medium (<%= locals.classStd[i].batch_name %>)</option>
                     <% } } %>

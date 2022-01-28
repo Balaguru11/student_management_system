@@ -13,7 +13,7 @@
                   <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[0].length; i++) { %>
-                      <option value="<%= locals.tableData[0][i].clr_id %>"><%= locals.tableData[0][i].class_std %> std - <%= locals.tableData[0][i].medium %> Medium - <%= locals.tableData[0][i].class_section %> Section</option>
+                      <option value="<%= locals.tableData[0][i].clr_id %>"><%= locals.tableData[0][i].class_std %> STD - <%= locals.tableData[0][i].medium %> Medium - <%= locals.tableData[0][i].class_section %> Section (<%= locals.tableData[0][i].batch_name %>)</option>
                     <% } } %>
                 </select>
                 <span class="error" id="class_error"
@@ -41,7 +41,7 @@
                   <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[2].length; i++) { %>
-                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].staff_id %> - <%= locals.tableData[2][i].name %> </option>
+                      <option value="<%= locals.tableData[2][i].staff_id %>"><%= locals.tableData[2][i].staff_id %> - <%= locals.tableData[2][i].name %> </option>
                     <% } } %>
                 </select>
                 <span class="error" id="staff_error"
@@ -54,7 +54,7 @@
                   <option value="">Select One</option>
                   <% if(locals.tableData) {
                     for (let i=0; i < locals.tableData[2].length; i++) { %>
-                      <option value="<%= locals.tableData[2][i].id %>"><%= locals.tableData[2][i].staff_id %> - <%= locals.tableData[2][i].name %> </option>
+                      <option value="<%= locals.tableData[2][i].staff_id %>"><%= locals.tableData[2][i].staff_id %> - <%= locals.tableData[2][i].name %> </option>
                     <% } } %>
                 </select>
                 <span class="error" id="sec_staff_error"

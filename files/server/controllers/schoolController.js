@@ -893,21 +893,20 @@ exports.getMapSubStaff = (req, res) => {
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
-
   try {
     // fetching class_id, section from classroom
-    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_staff WHERE school_id='${session.schoolId}'`;
+    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, batch.batch_name, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_staff WHERE school_id='${session.schoolId}'`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) console.log(err);
       // return res.render("server-error", { title: "Server Error" });
-      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.name AS staff_primary, sml2.name AS staff_secondary FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
+      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.name AS staff_primary, sml2.name AS staff_secondary, batch.batch_name FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
       INNER JOIN school_staff AS sml ON scs.staff_id_assigned = sml.staff_id 
       INNER JOIN school_staff AS sml2 ON scs.secondary_staff_assigned = sml2.staff_id
-      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id WHERE sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
+      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) console.log(err);
-        console.log(result);
+        console.log(`Bridg Data result : ${result}`);
         // return res.render("server-error", { title: "Server Error" });
         res.locals.tableData = tableData;
         res.locals.result = result;

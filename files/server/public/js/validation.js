@@ -1604,7 +1604,7 @@ $(document).ready(function () {
       }, dataType: 'JSON',
       success: function (data) {
         $('#exam_conducted_for').after(function () {
-          $('#exam_plan').html("");
+          $('#exam_plan').html(`<input id='subject_count' type='hidden' class='subject_count form-control' name='subject_count' value='${data.subjects.length}'>`);
           if(data.std.length > 0) {
             for (let s=0; s < data.std.length; s++){
               $('#exam_plan').append(`<div class='m-2 p-2 border border-secondary rounded'><p class='std-exam-plan' id='std_exam_plan_${data.std[s].id}'><b>Exam Plan for ${data.std[s].class_std} STD - ${data.std[s].medium} Medium (${data.std[s].batch_name})</b></p><hr><div class='std_${data.std[s].id}' id='std_${data.std[s].id}'></div></div>`)
@@ -1619,19 +1619,21 @@ $(document).ready(function () {
               $('#std_'+data.subjects[i].std_id).append(`
               <div id='subject_list subject_${i+1}' class=' m-1 row g-3'>
               <div class='col-3'>
-              <label for='subject_name_${i+1}'>Subject ${i+1}</label><input id='subject_id_${i+1}' type='hidden' class='subject_id_${i+1} form-control' name='subject_id_${i+1}' value='${data.subjects[i].subject_id}'><input id='subject_name_${i+1}' type='text' class='subject_name_${i+1} form-control' name='subject_name_${i+1}' value='${data.subjects[i].subject_name}' disabled>
+              <label for='subject_name_${i+1}'>Subject ${i+1}</label><input id='sec_id_${i+1}' type='hidden' class='sec_id_${i+1} form-control' name='sec_${i+1}_id' value='${data.subjects[i].sec_id}'><input id='subject_id_${i+1}' type='hidden' class='subject_id_${i+1} form-control' name='subject_${i+1}_id' value='${data.subjects[i].subject_id}'><input id='subject_name_${i+1}' type='text' class='subject_name_${i+1} form-control' name='subject_name_${i+1}' value='${data.subjects[i].subject_name}' disabled>
               </div>
               <div class='col-3'>
-              <label for='exam_date_${i+1}'>Exam Date</label><input id='exam_date_${i+1}' type='datetime-local' class='exam_date_${i+1} form-control' name='exam_date_${i+1}'>
+              <label for='exam_date_${i+1}'>Exam Date</label><input id='exam_date_${i+1}' type='datetime-local' class='exam_date_${i+1} form-control' name='exam_${i+1}_date' required>
               </div>
               <div class='col-3'>
-              <label for='exam_duration_${i+1}'>Exam Duration</label><input placeholder='in Mins' id='exam_duration_${i+1}' type='text' class='exam_duration_${i+1} form-control' name='exam_duration_${i+1}'>
+              <label for='exam_duration_${i+1}'>Exam Duration</label><input placeholder='in Mins' id='exam_duration_${i+1}' type='text' class='exam_duration_${i+1} form-control' name='exam_${i+1}_duration' required>
               </div>
               <div class='col-3'>
-              <label for='sub_total_${i+1}'>Total Marks</label><input id='sub_total_${i+1}' type='text' class='sub_total_${i+1} form-control' name='sub_total_${i+1}'>
+              <label for='sub_total_${i+1}'>Total Marks</label><input id='sub_total_${i+1}' type='text' class='sub_total_${i+1} form-control' name='sub_${i+1}_total' required>
               </div>
               </div>`)
             }
+            $('#create_exam_button').removeAttr('disabled');
+
           } else {
             $('#exam_plan').html("<p class='text-danger'>Please select at least one Class std with subjects mapped to it.</p>")
             $('#create_exam_button').attr('disabled', 'disabled');
@@ -1644,3 +1646,21 @@ $(document).ready(function () {
   })
 })
 
+// View Exams >> On click of Add Marks button #recordExamMark
+// $(document).ready(function () {
+//   $('#recordExamMark').on('click', function () {
+//     var exam_ref = $(this).attr('exam-id');
+//     $.ajax({
+//       url: '/api/add-marks-for-exam-subject',
+//       type: 'POST',
+//       data: {
+//         exam_ref: exam_ref,
+//       }, dataType: 'JSON',
+//       success: function (data) {
+
+//       }, error: function (err) {
+//         console.log(err);
+//       }
+//     })
+//   })
+// })

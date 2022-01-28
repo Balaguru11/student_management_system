@@ -1,15 +1,19 @@
 <div class="pt-5">
-  <h4 class="text-center">View Class Sections</h4>
+  <h4 class="text-center">View Exams</h4>
   <br />
   <table class="table table-light text-center" id="datatable">
     <thead>
       <tr>
         <th scope="col">S.No</th>
         <th width="200px">Exam Name</th>
-        <th width="200px">Exam Type</th>
+        <th width="100px">Exam Type</th>
         <th width="200px">Class & Medium</th>
-        <th width="100px">Exam Status</th>
-        <th width="200px">Actions</th>
+        <th width="200px">Subject</th>
+        <th width="150px">When?</th>
+        <th width="100px">Duration</th>
+        <th width="100px">Marks</th>
+        <th width="100px">Status</th>
+        <th width="100px">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -20,8 +24,13 @@
         <td><%= locals.data[i].exam_name %></td>
         <td><%= locals.data[i].exam_type %></td>
         <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %> (<%= locals.data[i].batch_name %>)</td>
+        <td><%= locals.data[i].subject_name %></td>
+        <td><%= locals.data[i].exam_date %></td>
+        <td><%= locals.data[i].exam_duration %></td>
+        <td><%= locals.data[i].sub_outoff_marks %></td>
         <td><%= locals.data[i].exam_status %></td>
         <td>
+          <% if(locals.staff_role == '4') { if (locals.data[i].exam_status != 'completed') { %>
           <button
             data-id="<%= locals.data[i].id %>"
             type="button"
@@ -38,12 +47,34 @@
           >
             <i class="far fa-trash-alt" aria-hidden="true"></i>
           </button>
+          <% } else if (locals.data[i].exam_status == 'completed') { %>
+            <a
+            class="btn btn-success"
+            href="../dashboard/exam-marks/view/<%= locals.data[i].id %>"
+            ><i class="far fa-eye"></i> Marks</a>
+          <% } }%>
+          <% if (locals.staff_role == '8') { %>
+           <% if (locals.data[i].exam_status == 'completed') { %>
+            <a
+            class="btn btn-success"
+            href="../dashboard/exam-marks/add/<%= locals.data[i].id %>"
+            ><i class="fas fa-plus-circle"></i></a>
+            <a
+            class="btn btn-success"
+            href="../dashboard/exam-marks/view/<%= locals.data[i].id %>"
+            ><i class="far fa-eye"></i></a>
+          <% } else if (locals.data[i].exam_status != 'completed') { %>
+            <a 
+            class="btn btn-secondary"
+            href="../dashboard/exam-marks/add/<%= locals.data[i].id %>" onclick="return false;"
+            ><i class="fas fa-plus-circle"></i></a>
+         <% } } %>
         </td>
       </tr>
       <% } } else { %>
       <tr>
-        <td colspan="6" class="text-center">
-          <mark>No Class Sections found.</mark>
+        <td colspan="10" class="text-center">
+          <mark>No Exams found.</mark>
         </td>
       </tr>
       <% } %>

@@ -5,7 +5,7 @@
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th width="250px">Class-Section - Medium</th>
+        <th width="250px">Class-Sec-Medium</th>
         <th width="100px">Subjects</th>
         <th width="150px">Staff</th>
         <th width="150px">Alternate Staff</th>
@@ -18,11 +18,8 @@
       <tr>
         <th scope="row"><%= (i+1) %></th>
         <td>
-          <b><%= locals.result[i].class_std %></b> std-<b
-            ><%= locals.result[i].medium %></b
-          >
-          Medium - <b><%= locals.result[i].class_section %></b> Sec
-        </td>
+          <b><%= locals.result[i].class_std %></b> std-<b><%= locals.result[i].medium %> </b>
+          Medium - <b><%= locals.result[i].class_section %> </b> Sec (<%= locals.result[i].batch_name %>)</td>
         <td><%= locals.result[i].subject_name %></td>
         <td><%= locals.result[i].staff_primary %></td>
         <td><%= locals.result[i].staff_secondary %></td>

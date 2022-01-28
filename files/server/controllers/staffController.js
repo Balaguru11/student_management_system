@@ -511,7 +511,7 @@ exports.postStuAttendance = (req, res) => {
   res.locals.success_msg = success_msg;
   let staff_role = session.roleId;
   res.locals.staff_role = staff_role;
-  var absent = req.body.absent_stu; // 1
+  var absent = req.body.absent_stu; // [1, 2, 5]
   var on_duty = req.body.on_duty_stu; // 2
   var leave_intimated = req.body.leave_informed_stu;
   var present_today = req.body.present_students;
@@ -609,6 +609,33 @@ exports.getStudentDoubts = (req, res) => {
   }
 }
 
+// Teaching staff viewing Exams created by HM (subjects that are handled by him)
+exports.viewExamsByHM = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let doubt_status = req.body.doubt_status;
+  res.locals.staff_role = session.roleId;
+  try {
+    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.exam_status FROM school_exams AS xam 
+    INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
+    INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
+    INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
+    INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
+    WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL`;
+    dbcon.query(examList, (err, data) => {
+      if(err) throw err;
+      console.log(data);
+      res.locals.data = data;
+      return res.render('staffLevel/staff-view-exams', {title: 'Staff Viewing Exams'})
+    })
+  } catch(err) {
+    console.log(err);
+  }
+}
+
 // adding new thread message by staff
 exports.addThreadMsg = (req, res) => {
   let session = req.session;
@@ -634,6 +661,27 @@ exports.addThreadMsg = (req, res) => {
         return res.redirect('/staff/dashboard/student-doubts');
       }
     })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// add Exam marks for the student - working in query here
+exports.getStuExamMarks = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let exam_ref_id = req.params.exam_ref_id;
+  try {
+    var getStudents = `SELECT xam.exam_name school_exams AS xam INNER JOIN WHERE xam.id = '${exam_ref_id}'`;
+    dbcon.query(getStudents, (err, studentsList) => {
+      if(err) throw err;
+      res.locals.studentsList = studentsList;
+      return res.render('staffLevel/teacher-add-marks', {title: 'Exam Marks'})
+    })
+    // do
   } catch (err) {
     console.log(err);
   }
@@ -1106,11 +1154,11 @@ exports.getMapSubStaff = (req, res) => {
     var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.school_id}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.school_id}'; SELECT * FROM school_main_login WHERE school_id='${session.school_id}' AND role_id_fk='8' AND status='Active'`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) return res.render("server-error", { title: "Server Error" });
-      var bridgeTableQuery = `SELECT scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.username FROM school_class_subjects AS scs 
-      INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
+      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.name AS staff_primary, sml2.name AS staff_secondary FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
-      INNER JOIN school_main_login AS sml ON sml.id = scs.staff_id_assigned AND sml.status='Active'
-      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id AND sfs.school_id='${session.school_id}'`;
+      INNER JOIN school_staff AS sml ON scs.staff_id_assigned = sml.staff_id 
+      INNER JOIN school_staff AS sml2 ON scs.secondary_staff_assigned = sml2.staff_id
+      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id WHERE sfs.school_id='${session.school_id}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.tableData = tableData;
@@ -1270,14 +1318,56 @@ exports.getAddExamsForm = (req, res) => {
     let session = req.session;
     res.locals.staff_role = session.roleId;
     try {
-      var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status FROM school_exams AS xam INNER JOIN school_feestructure AS sfs ON sfs.id = xam.exam_conducted_class_sec INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT  sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
+      var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.exam_status FROM school_exams AS xam 
+      INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
+      INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
+      INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
+      INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
+      WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(examList, (err, data) => {
         if(err) throw err;
+        console.log(data);
         res.locals.data = data[0];
         res.locals.classStd = data[1];
         return res.render('staffLevel/hm-add-exams', {title: 'Exams List'})
       })
     } catch(err) {
+      console.log(err);
+    }
+}
+
+// Add Big Exam POST ROUTE -
+exports.addNewExam = (req, res) => {
+  let err_msg = req.flash("err_msg");
+    res.locals.err_msg = err_msg;
+    let success_msg = req.flash("success");
+    res.locals.success_msg = success_msg;
+    let session = req.session;
+    res.locals.staff_role = session.roleId;
+    try {
+      let subjectCount = req.body.subject_count;
+      var query = "";
+      if(subjectCount > 0){
+        for (let i = 1; i <= subjectCount; i++){
+          var value = `('${session.school_id}', '${req.body.exam_name}', '${req.body.exam_type}', '${req.body[`sec_${i}_id`]}', '${req.body[`subject_${i}_id`]}', '${req.body[`exam_${i}_date`]}', '${req.body[`exam_${i}_duration`]}', '${req.body[`sub_${i}_total`]}', 'scheduled', '${session.staff_id}'),`
+          query += value;
+        }
+      } else {
+        query = ","
+      }
+      var query = query.slice(0,-1);
+      if(query.length > 0) {
+        var addExam = `INSERT INTO school_exams (school_id, exam_name, exam_type, exam_conducted_class_sec, subject_id, exam_date, exam_duration, sub_outoff_marks, exam_status, created_by) VALUES ${query}`;
+        dbcon.query(addExam, (err, newExam) => {
+          if(err) throw err;
+          req.flash('success', 'Exams created and scheduled.');
+          return res.redirect('/staff/dashboard/exams');
+        })
+      } else {
+        req.flash('err_msg', 'No data found to be added.');
+        return res.redirect('/staff/dashboard/exams')
+      }
+    } catch (err) {
       console.log(err);
     }
 }
