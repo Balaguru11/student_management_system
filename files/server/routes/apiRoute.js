@@ -484,4 +484,16 @@ apiRouter.post('/get-subjects-from-exam-class', (req, res) => {
   })
 })
 
+apiRouter.post('/get-exam-data', (req, res) => {
+  var getExamData = `SELECT exam.id, exam.exam_name, sfs.class_std, sfs.medium, clr.class_section, exam.exam_type, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, exam.exam_duration, exam.sub_outoff_marks, exam.exam_status FROM school_exams AS exam INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
+  console.log(getExamData);
+  dbcon.query(getExamData, (err, exam) => {
+    if(err) {
+      res.json({msg: 'error', err});
+    } else {
+    console.log(exam);
+      res.json({msg: 'success', exam: exam});
+    }
+  })
+})
 module.exports = apiRouter;

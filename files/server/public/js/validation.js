@@ -1379,12 +1379,6 @@ $(document).ready(function () {
   })
 })
 
-// $(document).ready(function() {
-//   $('#mapped_students_edit').select2({
-//       dropdownParent: $('#mapParAccModal')
-//   });
-// });
-
 // get Delete Modal for PARENT ACCOUNTS by School
 $(document).ready(function () {
   $(".deleteParAcc").on("click", function () {
@@ -1617,9 +1611,12 @@ $(document).ready(function () {
           if(data.subjects.length > 0) {
             for (let i = 0; i < data.subjects.length; i++) {
               $('#std_'+data.subjects[i].std_id).append(`
-              <div id='subject_list subject_${i+1}' class=' m-1 row g-3'>
-              <div class='col-3'>
-              <label for='subject_name_${i+1}'>Subject ${i+1}</label><input id='sec_id_${i+1}' type='hidden' class='sec_id_${i+1} form-control' name='sec_${i+1}_id' value='${data.subjects[i].sec_id}'><input id='subject_id_${i+1}' type='hidden' class='subject_id_${i+1} form-control' name='subject_${i+1}_id' value='${data.subjects[i].subject_id}'><input id='subject_name_${i+1}' type='text' class='subject_name_${i+1} form-control' name='subject_name_${i+1}' value='${data.subjects[i].subject_name}' disabled>
+              <div id='subject_list subject_${i+1}' class='m-1 row g-3 align-middle'>
+              <div class='col-1 align-bottom'><label class='text-center' for='sec_${i+1}'>Sec</label>
+              <input id='sec' type='text' class='text-center text-white rounded bg-success form-control' name='sec' value='${data.subjects[i].class_section}' disabled>
+              </div>
+              <div class='col-2'>
+              <input id='sec_id_${i+1}' type='hidden' class='sec_id_${i+1} form-control' name='sec_${i+1}_id' value='${data.subjects[i].sec_id}'><input id='subject_id_${i+1}' type='hidden' class='subject_id_${i+1} form-control' name='subject_${i+1}_id' value='${data.subjects[i].subject_id}'><label for='subject_name_${i+1}'>Subject ${i+1}</label><input id='subject_name_${i+1}' type='text' class='subject_name_${i+1} form-control' name='subject_name_${i+1}' value='${data.subjects[i].subject_name}' disabled>
               </div>
               <div class='col-3'>
               <label for='exam_date_${i+1}'>Exam Date</label><input id='exam_date_${i+1}' type='datetime-local' class='exam_date_${i+1} form-control' name='exam_${i+1}_date' required>
@@ -1646,21 +1643,53 @@ $(document).ready(function () {
   })
 })
 
-// View Exams >> On click of Add Marks button #recordExamMark
-// $(document).ready(function () {
-//   $('#recordExamMark').on('click', function () {
-//     var exam_ref = $(this).attr('exam-id');
-//     $.ajax({
-//       url: '/api/add-marks-for-exam-subject',
-//       type: 'POST',
-//       data: {
-//         exam_ref: exam_ref,
-//       }, dataType: 'JSON',
-//       success: function (data) {
+// HM edits an Exam
+$(document).ready(function () {
+ $('.editExam').on('click', function () {
+   var exam_id = $(this).attr('data-id');
+   $.ajax({
+     url: '/api/get-exam-data',
+     type: 'POST',
+     data: {
+       exam_id: exam_id,
+     }, dataType: 'JSON',
+     success: function (data) {
+      $('.edit-exam-modal-body').html(function () {
+        return (
+          `<div class='row m-3 p-1 rounded bg-warning'><h5>${data.exam[0].exam_name}</h5><hr><span><p>Exam type: ${data.exam[0].exam_type}</p><p>Subject: <b>${data.exam[0].subject_name}</b></p><p>Class Sec: <b>${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium - ${data.exam[0].class_section} Section</b></p></span></div><div>
+          
+          <form id='editExam-form' action='../dashboard/exams/edit/${data.exam[0].id}' method='POST'> <div class='row m-3'> 
+          <div class='mb-3'> <label for='exam_date_edit'>Exam Date:</label> <input type='datetime-local' class='form-control' name='exam_date_edit' id='exam_date_edit' value='${data.exam[0].exam_date}' /> </div> <div class='mb-3'> <label for='exam_duration_edit'>Exam Duration (in Mins):</label> <input type='number' class='form-control' name='exam_duration_edit' id='exam_duration_edit' placeholder='Exam duration in Mins.' value='${data.exam[0].exam_duration}' /> </div>  <div class='mb-3'> <label for='subj_mark_edit'>Total Marks:</label> <input type='number' class='form-control' name='subj_mark_edit' id='subj_mark_edit' placeholder='Total marks' value='${data.exam[0].sub_outoff_marks}' /> </div> <div class='mb-3'> <label for='exam_status_edit'>Exam Status:</label> <select id='exam_status_edit' class='form-control' name='exam_status_edit' value='${data.exam[0].exam_status}' > <option value='scheduled' >Scheduled</option> <option value='postponed'>Postponed</option> <option value='completed' class='text-white mark bg-success'>Completed</option> <option value='cancelled'>Cancelled</option> <option value='onhold'>Withheld (On Hold)</option> </select> <span class='error' id='class_error' >Please choose a Status.</span > </div> <div class='mb-3'> <button id='create_exam_button' class='btn btn-secondary' type='submit' value='submit'> Update Exam </button> </div> </form></div>`
+        )
+      })
+      $('#editExamModal').modal('show');
+     }, error: function (err) {
+       console.log(err);
+     }
+   })
+ }) 
+})
 
-//       }, error: function (err) {
-//         console.log(err);
-//       }
-//     })
-//   })
-// })
+// HM deletes an Exam
+$(document).ready(function () {
+  $('.deleteExam').on('click', function () {
+    var exam_id = $(this).attr('data-id');
+    $.ajax({
+      url: '/api/get-exam-data',
+      type: 'POST',
+      data: {
+        exam_id: exam_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        $('.delete-exam-modal-body').html(function () {
+          return (
+            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='exam_status_hidden' id='exam_status_hidden' value='${data.exam[0].exam_status}'/><p class='text-center mt-3 mb-3'><b>Do you want to delete ${data.exam[0].exam_name} for ${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium ?</b></p></div><div class='row mb-3'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/exams/delete/${data.exam[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
+          )
+        })
+        $('#deleteExamModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})

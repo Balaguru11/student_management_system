@@ -1,0 +1,48 @@
+            <form id="addclass-form" action="/staff/dashboard/exam-marks/add/<%= locals.examData[0].id %>/<%= locals.studentsList.length %>" method="POST">
+              <div class="mt-3 mb-3">
+                <h2 class="text-center">Add Exam Marks</h2>
+                <p class="text-center">
+                  <small>Scheduling Exams to the school.</small>
+                </p>
+                <hr />
+              </div>
+
+              <div class="card bg-warning bg-gradient m-3">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-6">
+                      <p>Exam Name: <b><%= locals.examData[0].exam_name %></b></p>
+                      <p>Exam Type: <b><%= locals.examData[0].exam_type %></b></p>
+                      <p>Exam Conducted ON: <b><%= locals.examData[0].exam_date %></b></p>
+                    </div>
+                    <div class="col-6">
+                      <p>Conducted for: <b><%= locals.examData[0].class_std %> STD - <%= locals.examData[0].medium %> Medium</b></p>
+                      <p>Subject: <b><%= locals.examData[0].subject_name %> </b></p>
+                      <p>Exam Duration: <b><%= locals.examData[0].exam_duration %> </b></p>
+                      <p>Total Marks: <b><%= locals.examData[0].sub_outoff_marks %> </b></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <% if (locals.studentsList.length > 0) { %>
+                <div class="row m-2">
+                  <h5>Total Students: <b><%= locals.studentsList.length %></b></h5><hr>
+                </div>
+                <div class="row m-2">
+                  <% for (let i=0; i < locals.studentsList.length; i++) { %>
+                    <div class="col-lg-6 col-sm-12 col-xl-4">
+                      <label for="student_<%= locals.studentsList[i].student_id %>">Student: <b><%= locals.studentsList[i].name %></b> (<%= locals.studentsList[i].student_id %>)</label>
+                      <input type="hidden" class="form-control" name="student_<%= i+1 %>" id="student_<%= i+1 %>" value="<%= locals.studentsList[i].student_id %>"/>
+                      <input type="number" class="form-control" name="exam_mark_<%= i+1 %>" id="exam_mark_<%= i+1 %>" min="0" max="<%= locals.examData[0].sub_outoff_marks %>" required placeholder="Enter Mark here"/>
+                    </div>
+                  <% } %>
+                </div>
+                <div class="m-3">
+                  <button id="save_exam_mark_button" class="btn btn-secondary" type="submit" value="submit">
+                    Save Exam Marks
+                  </button>
+              <% } else { %>
+                <p class="alert alert-danger">No Students enrolled in this class Medium. </p>
+              <% } %>
+            </form>

@@ -21,7 +21,7 @@ const {
   getStudentsList,
   getClassAssigned, getMyScheduleStaff, 
   getStuAttendance,
-  postStuAttendance, getStudentDoubts, addThreadMsg, viewExamsByHM, getStuExamMarks, 
+  postStuAttendance, getStudentDoubts, addThreadMsg, viewExamsByHM, addStuExamMarks, postStuExamMarks, 
   allChangePwd,
   viweFeeStructure,
   viewUserAccounts,
@@ -34,7 +34,7 @@ const {
   getMapSubStaff,
   postMapSubStaff,
   viewClassSections,
-  postAddClassroom, getAddExamsForm, addNewExam, 
+  postAddClassroom, getAddExamsForm, addNewExam, editExamByHM, deleteExamByHM, 
   getAllStaffList,
   putFeeStructure,
   deleteFeeStructure,
@@ -92,7 +92,9 @@ staffRouter.post('/dashboard/add-doubt-thread-message', isStaff, isTeacher, addT
 
 // exams conducted for Students by Teaching Staffs
 staffRouter.get('/dashboard/view-exams', isStaff, isTeacher, viewExamsByHM);
-staffRouter.get('/dashboard/exam-marks/add/:exam_ref_id', isStaff, isTeacher, getStuExamMarks);
+staffRouter.get('/dashboard/exam-marks/add/:exam_ref_id', isStaff, isTeacher, addStuExamMarks);
+staffRouter.post('/dashboard/exam-marks/add/:exam_ref_id/:students_count', isStaff, isTeacher, postStuExamMarks);
+
 // staffRouter.get('/dashboard/student-performance', isStaff, getStuPerformReport);
 
 //Teaching Staff sending message to Students (Also HM)
@@ -228,6 +230,10 @@ staffRouter.post("/dashboard/sections", isStaff, isHM, postAddClassroom);
 // HM creates Big Exams
 staffRouter.get('/dashboard/exams', isStaff, isHM, getAddExamsForm); // loads View and add form at the same time.
 staffRouter.post('/dashboard/exams', isStaff, isHM, addNewExam);
+staffRouter.post('/dashboard/exams/edit/:exam_id', isStaff, isHM, editExamByHM);
+
+staffRouter.get('/dashboard/exams/delete/:exam_id', isStaff, isHM, deleteExamByHM);
+
 
 
 // message to staff by HM

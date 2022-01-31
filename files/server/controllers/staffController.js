@@ -619,12 +619,13 @@ exports.viewExamsByHM = (req, res) => {
   let doubt_status = req.body.doubt_status;
   res.locals.staff_role = session.roleId;
   try {
-    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.exam_status FROM school_exams AS xam 
+    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks FROM school_exams AS xam 
     INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
     INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
     INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
     INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
-    WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL`;
+    INNER JOIN school_class_subjects AS scs ON scs.deleted_at IS NULL AND scs.subject_id = xam.subject_id AND xam.exam_conducted_class_sec = scs.classroom_id
+    WHERE scs.staff_id_assigned = '${session.staff_id}' AND xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL`;
     dbcon.query(examList, (err, data) => {
       if(err) throw err;
       console.log(data);
@@ -667,7 +668,7 @@ exports.addThreadMsg = (req, res) => {
 }
 
 // add Exam marks for the student - working in query here
-exports.getStuExamMarks = (req, res) => {
+exports.addStuExamMarks = (req, res) => {
   let session = req.session;
   let success_msg = req.flash('success');
   res.locals.success_msg = success_msg;
@@ -675,10 +676,14 @@ exports.getStuExamMarks = (req, res) => {
   res.locals.err_msg = err_msg;
   let exam_ref_id = req.params.exam_ref_id;
   try {
-    var getStudents = `SELECT xam.exam_name school_exams AS xam INNER JOIN WHERE xam.id = '${exam_ref_id}'`;
+    var getStudents = `SELECT xam.id, xam.exam_name, xam.exam_type, xam.exam_conducted_class_sec, sfs.class_std, sfs.medium, clr.class_section, subj.subject_name, xam.exam_date, xam.exam_duration, xam.sub_outoff_marks FROM school_exams AS xam INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE xam.id = '${exam_ref_id}';
+
+    SELECT ssad.class_section, stu.student_id, stu.name FROM school_student_admission AS ssad INNER JOIN school_student AS stu ON stu.student_id = ssad.student_id INNER JOIN school_exams AS exam ON exam.exam_conducted_class_sec = ssad.class_section WHERE exam.id = '${exam_ref_id}';
+    `;
     dbcon.query(getStudents, (err, studentsList) => {
       if(err) throw err;
-      res.locals.studentsList = studentsList;
+      res.locals.examData = studentsList[0];
+      res.locals.studentsList = studentsList[1];
       return res.render('staffLevel/teacher-add-marks', {title: 'Exam Marks'})
     })
     // do
@@ -686,6 +691,44 @@ exports.getStuExamMarks = (req, res) => {
     console.log(err);
   }
 }
+
+// teaching staff saves exam marks
+exports.postStuExamMarks = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let exam_ref_id = req.params.exam_ref_id;
+  let student_count = req.params.students_count;
+  try {
+    // check duplicate if any
+    var checkMark = `SELECT EXISTS ( SELECT * FROM school_exams_marks WHERE exam_id = '${exam_ref_id}') AS count`;
+    dbcon.query(checkMark, (err, duplicateEntry) => {
+      if(err) throw err;
+      else if (duplicateEntry[0].count > 0) {
+        req.flash('err_msg', 'Marks for this Exam is already added.')
+        return res.redirect('/staff/dashboard/view-exams');
+      } else {
+        let mark_values = "";
+        for (let i = 0; i < student_count; i++) {
+          let new_mark = `('${session.school_id}', '${exam_ref_id}', '${req.body[`student_${i+1}`]}', '${req.body[`exam_mark_${i+1}`]}', '${session.staff_id}'),`
+          mark_values += new_mark;
+        }
+        mark_values = mark_values.slice(0, -1);
+        var addmarks = `INSERT INTO school_exams_marks (school_id, exam_id, student_id, received_mark, entered_by) VALUES ${mark_values}`;
+        dbcon.query(addmarks, (err, markAdded) => {
+          if(err) throw err;
+          req.flash('success', 'Exam Marks added successfully.');
+          return res.redirect('/staff/dashboard/view-exams');
+        })
+      }
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // ******** STAFF_ROLE = TEACHING STAFF ********
 
 // ******** STAFF_ROLE = ADMIN ********
@@ -1339,37 +1382,84 @@ exports.getAddExamsForm = (req, res) => {
 // Add Big Exam POST ROUTE -
 exports.addNewExam = (req, res) => {
   let err_msg = req.flash("err_msg");
-    res.locals.err_msg = err_msg;
-    let success_msg = req.flash("success");
-    res.locals.success_msg = success_msg;
-    let session = req.session;
-    res.locals.staff_role = session.roleId;
-    try {
-      let subjectCount = req.body.subject_count;
-      var query = "";
-      if(subjectCount > 0){
-        for (let i = 1; i <= subjectCount; i++){
-          var value = `('${session.school_id}', '${req.body.exam_name}', '${req.body.exam_type}', '${req.body[`sec_${i}_id`]}', '${req.body[`subject_${i}_id`]}', '${req.body[`exam_${i}_date`]}', '${req.body[`exam_${i}_duration`]}', '${req.body[`sub_${i}_total`]}', 'scheduled', '${session.staff_id}'),`
-          query += value;
-        }
-      } else {
-        query = ","
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    let subjectCount = req.body.subject_count;
+    var query = "";
+    if(subjectCount > 0){
+      for (let i = 1; i <= subjectCount; i++){
+        var value = `('${session.school_id}', '${req.body.exam_name}', '${req.body.exam_type}', '${req.body[`sec_${i}_id`]}', '${req.body[`subject_${i}_id`]}', '${req.body[`exam_${i}_date`]}', '${req.body[`exam_${i}_duration`]}', '${req.body[`sub_${i}_total`]}', 'scheduled', '${session.staff_id}'),`
+        query += value;
       }
-      var query = query.slice(0,-1);
-      if(query.length > 0) {
-        var addExam = `INSERT INTO school_exams (school_id, exam_name, exam_type, exam_conducted_class_sec, subject_id, exam_date, exam_duration, sub_outoff_marks, exam_status, created_by) VALUES ${query}`;
-        dbcon.query(addExam, (err, newExam) => {
-          if(err) throw err;
-          req.flash('success', 'Exams created and scheduled.');
-          return res.redirect('/staff/dashboard/exams');
-        })
-      } else {
-        req.flash('err_msg', 'No data found to be added.');
-        return res.redirect('/staff/dashboard/exams')
-      }
-    } catch (err) {
-      console.log(err);
+    } else {
+      query = ","
     }
+    var query = query.slice(0,-1);
+    if(query.length > 0) {
+      var addExam = `INSERT INTO school_exams (school_id, exam_name, exam_type, exam_conducted_class_sec, subject_id, exam_date, exam_duration, sub_outoff_marks, exam_status, created_by) VALUES ${query}`;
+      dbcon.query(addExam, (err, newExam) => {
+        if(err) throw err;
+        req.flash('success', 'Exams created and scheduled.');
+        return res.redirect('/staff/dashboard/exams');
+      })
+    } else {
+      req.flash('err_msg', 'No data found to be added.');
+      return res.redirect('/staff/dashboard/exams')
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Edit Exam by HM
+exports.editExamByHM = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  let exam_id = req.params.exam_id;
+  try {
+    var editedExam = `UPDATE school_exams SET exam_date = '${req.body.exam_date_edit}', exam_duration = '${req.body.exam_duration_edit}', sub_outoff_marks = '${req.body.subj_mark_edit}', exam_status = '${req.body.exam_status_edit}' WHERE id = '${exam_id}'`;
+    dbcon.query(editedExam, (err, updated) => {
+      if(err) throw err;
+      req.flash('success', 'Exam has been edited successfully');
+      return res.redirect('/staff/dashboard/exams')
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// DELETE BIG Exam - Execution route
+exports.deleteExamByHM = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  let exam_id = req.params.exam_id;
+  try {
+    if(req.body.exam_status_hidden != 'completed') {
+      var delExam = `UPDATE school_exams SET deleted_at = CURRENT_TIMESTAMP WHERE id = '${exam_id}'`;
+      dbcon.query(delExam, (err, unwantedExam) => {
+        if(err) throw err;
+        req.flash('success', 'Exam has been deleted successfully');
+        return res.redirect('/staff/dashboard/exams')
+      })
+    } else {
+      req.flash('err_msg', 'This Exam cannot be deleted.');
+      return res.redirect('/staff/dashboard/exams')
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 // ******** STAFF_ROLE = HEAD MASTER ********
