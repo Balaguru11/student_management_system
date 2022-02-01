@@ -21,7 +21,7 @@ const {
   getStudentsList,
   getClassAssigned, getMyScheduleStaff, 
   getStuAttendance,
-  postStuAttendance, getStudentDoubts, addThreadMsg, viewExamsByHM, addStuExamMarks, postStuExamMarks, 
+  postStuAttendance, getStudentDoubts, addThreadMsg, viewExamsByHM, addStuExamMarks, postStuExamMarks, editExamMarks, 
   allChangePwd,
   viweFeeStructure,
   viewUserAccounts,
@@ -94,6 +94,7 @@ staffRouter.post('/dashboard/add-doubt-thread-message', isStaff, isTeacher, addT
 staffRouter.get('/dashboard/view-exams', isStaff, isTeacher, viewExamsByHM);
 staffRouter.get('/dashboard/exam-marks/add/:exam_ref_id', isStaff, isTeacher, addStuExamMarks);
 staffRouter.post('/dashboard/exam-marks/add/:exam_ref_id/:students_count', isStaff, isTeacher, postStuExamMarks);
+staffRouter.get('/dashboard/exam-marks/edit/:exam_ref_id/:students_count', isStaff, isTeacher, editExamMarks);
 
 // staffRouter.get('/dashboard/student-performance', isStaff, getStuPerformReport);
 
@@ -231,8 +232,8 @@ staffRouter.post("/dashboard/sections", isStaff, isHM, postAddClassroom);
 staffRouter.get('/dashboard/exams', isStaff, isHM, getAddExamsForm); // loads View and add form at the same time.
 staffRouter.post('/dashboard/exams', isStaff, isHM, addNewExam);
 staffRouter.post('/dashboard/exams/edit/:exam_id', isStaff, isHM, editExamByHM);
-
 staffRouter.get('/dashboard/exams/delete/:exam_id', isStaff, isHM, deleteExamByHM);
+// staffRouter.get('/dashboard/exam-marks/view/:exam_id', isStaff, isHM, viewExamMarks);
 
 
 

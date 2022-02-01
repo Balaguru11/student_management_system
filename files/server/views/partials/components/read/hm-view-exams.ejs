@@ -1,0 +1,153 @@
+<div class="pt-5">
+  <h4 class="text-center">View Exams</h4>
+  <br />
+  <table class="table table-light text-center" id="datatable">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th width="200px">Exam Name</th>
+        <th width="100px">Exam Type</th>
+        <th width="200px">Class & Medium</th>
+        <th width="200px">Subject</th>
+        <th width="150px">When?</th>
+        <th width="100px">Duration</th>
+        <th width="100px">Marks</th>
+        <th width="100px">Status</th>
+        <th width="100px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.data.length > 0) { for(var i = 0; i < locals.data.length;
+      i++) { %>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.data[i].exam_name %></td>
+        <td><%= locals.data[i].exam_type %></td>
+        <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %> (<%= locals.data[i].batch_name %>)</td>
+        <td><%= locals.data[i].subject_name %></td>
+        <td><%= locals.data[i].exam_date %></td>
+        <td><%= locals.data[i].exam_duration %></td>
+        <td><%= locals.data[i].sub_outoff_marks %></td>
+        <td><%= locals.data[i].exam_status %></td>
+        <td>
+          <% if (locals.data[i].exam_status != 'completed') { %>
+          <button
+            data-id="<%= locals.data[i].id %>"
+            type="button"
+            class="editExam btn btn-warning View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-edit aria-hidden="true"></i>
+          </button>
+          <button
+            data-id="<%= locals.data[i].id %>"
+            type="button"
+            class="deleteExam btn btn-danger View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-trash-alt" aria-hidden="true"></i>
+          </button>
+          <% } else if (locals.data[i].exam_status == 'completed') { %>
+            <% var mapped = locals.marks.map(obj => obj.exam_id).indexOf(locals.data[i].id) %>
+              <% if (mapped) { %>
+                <a
+                class="btn btn-secondary" onclick="return false;"
+                href="#"
+                ><i class="far fa-eye"></i> Marks</a>
+              <% } else { %>
+                <button
+                data-id="<%= locals.data[i].id %>"
+                logged-in = "<%= locals.staff_role %>"
+                type="button"
+                class="view_exam_mark btn btn-success"
+                data-bs-toggle="modal"
+                >
+                <i class="far fa-eye"></i> Marks
+                </button>
+          <% } } %>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="10" class="text-center">
+          <mark>No Exams found.</mark>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- edit Exam modal -->
+<div
+  class="modal fade"
+  id="editExamModal"
+  tabindex="-1"
+  aria-labelledby="editModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit An Exam</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="edit-exam-modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- delete Exam modal -->
+<div
+  class="modal fade"
+  id="deleteExamModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          Deleting An Exam
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="delete-exam-modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- View Exam Marks modal -->
+<div
+  class="modal fade"
+  id="viewMarksModal"
+  tabindex="-1"
+  aria-labelledby="viewModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">View Exam Marks</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="view-exam-modal-body"></div>
+    </div>
+  </div>
+</div>

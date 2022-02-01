@@ -525,8 +525,8 @@ exports.postStuAttendance = (req, res) => {
         return res.redirect("/staff/dashboard/my-schedule");
       } else {
         // for loop to construct a query - absent
-        var absentDataEntry = "";
-        var onDutyDataEntry = "";
+        var absentDataEntry = ""; 
+        var onDutyDataEntry = ""; 
         var leaveDataEntry = "";
         var presentDataEntry = "";
 
@@ -571,10 +571,9 @@ exports.postStuAttendance = (req, res) => {
           leaveDataEntry = "";
         }
         var finalQuery = (onDutyDataEntry + absentDataEntry + presentDataEntry + leaveDataEntry).slice(0, -1);
-  
         
         // inserting attendance
-        var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${finalQuery}`;
+        var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${finalQuery}`; 
         console.log(attendanceData);
         dbcon.query(attendanceData, (err, attendanceAdded) => {
           if (err) throw err;
@@ -625,11 +624,12 @@ exports.viewExamsByHM = (req, res) => {
     INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
     INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
     INNER JOIN school_class_subjects AS scs ON scs.deleted_at IS NULL AND scs.subject_id = xam.subject_id AND xam.exam_conducted_class_sec = scs.classroom_id
-    WHERE scs.staff_id_assigned = '${session.staff_id}' AND xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL`;
+    WHERE scs.staff_id_assigned = '${session.staff_id}' AND xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL`;
     dbcon.query(examList, (err, data) => {
       if(err) throw err;
       console.log(data);
-      res.locals.data = data;
+      res.locals.data = data[0];
+      res.locals.marks = data[1];
       return res.render('staffLevel/staff-view-exams', {title: 'Staff Viewing Exams'})
     })
   } catch(err) {
@@ -729,6 +729,32 @@ exports.postStuExamMarks = (req, res) => {
   }
 }
 
+// TEaching Staff Edits Exam Marks - having issue - not saving the updted marks
+exports.editExamMarks = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let exam_ref_id = req.params.exam_ref_id;
+  let student_count = req.params.students_count;
+  try {
+    // do
+    let updateMarks = "";
+    for (let i=1; i <= student_count; i++) {
+      var loop = `UPDATE school_exams_marks SET received_mark = '${req.body[`edit_exam_mark_${i}`]}' WHERE student_id = '${req.body[`student_id_${i}`]}' AND exam_id = '${exam_ref_id}';`;
+      updateMarks += loop
+    }
+    console.log(updateMarks);
+    dbcon.query(updateMarks, (err, updatedMarks) => {
+      if(err) throw err;
+      req.flash('success', 'Marks updated successfully.');
+      return res.redirect('/staff/dashboard/view-exams');
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
 // ******** STAFF_ROLE = TEACHING STAFF ********
 
 // ******** STAFF_ROLE = ADMIN ********
@@ -1366,12 +1392,13 @@ exports.getAddExamsForm = (req, res) => {
       INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
       INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
       INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
-      WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
+      WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std); SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL`;
       dbcon.query(examList, (err, data) => {
         if(err) throw err;
         console.log(data);
         res.locals.data = data[0];
         res.locals.classStd = data[1];
+        res.locals.marks = data[2];
         return res.render('staffLevel/hm-add-exams', {title: 'Exams List'})
       })
     } catch(err) {

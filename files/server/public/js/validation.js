@@ -1164,6 +1164,11 @@ $(document).ready(function() {
   $('.js-example-basic-multiple').select2();
 });
 
+// date Picker JQuery UI
+$(document).ready(function() {
+    $(".my_date_picker").datepicker();
+})
+
 // Password Reset student Account Modal for School Login
 $(document).ready(function () {
   $(".pwdStudAcc").on("click", function () {
@@ -1574,7 +1579,6 @@ $(document).ready(function () {
       $('#leave_informed_stu, #absent_stu').find("option[value='" + value + "']").attr('disabled', 'disabled');
       $('#present_students').find("option[value='" + value + "']").remove();
     })
-
   })
 })
 
@@ -1619,7 +1623,7 @@ $(document).ready(function () {
               <input id='sec_id_${i+1}' type='hidden' class='sec_id_${i+1} form-control' name='sec_${i+1}_id' value='${data.subjects[i].sec_id}'><input id='subject_id_${i+1}' type='hidden' class='subject_id_${i+1} form-control' name='subject_${i+1}_id' value='${data.subjects[i].subject_id}'><label for='subject_name_${i+1}'>Subject ${i+1}</label><input id='subject_name_${i+1}' type='text' class='subject_name_${i+1} form-control' name='subject_name_${i+1}' value='${data.subjects[i].subject_name}' disabled>
               </div>
               <div class='col-3'>
-              <label for='exam_date_${i+1}'>Exam Date</label><input id='exam_date_${i+1}' type='datetime-local' class='exam_date_${i+1} form-control' name='exam_${i+1}_date' required>
+              <label for='exam_date_${i+1}'>Exam Date</label><input id='exam_date_${i+1}' type='text' class='my_date_picker exam_date_${i+1} form-control' name='exam_${i+1}_date' required>
               </div>
               <div class='col-3'>
               <label for='exam_duration_${i+1}'>Exam Duration</label><input placeholder='in Mins' id='exam_duration_${i+1}' type='text' class='exam_duration_${i+1} form-control' name='exam_${i+1}_duration' required>
@@ -1635,6 +1639,7 @@ $(document).ready(function () {
             $('#exam_plan').html("<p class='text-danger'>Please select at least one Class std with subjects mapped to it.</p>")
             $('#create_exam_button').attr('disabled', 'disabled');
           }
+          $('.my_date_picker').datepicker();
         })
       }, error: function (err) {
         $('#exam_plan').html("<p>No Subject Found</p>")
@@ -1659,9 +1664,10 @@ $(document).ready(function () {
           `<div class='row m-3 p-1 rounded bg-warning'><h5>${data.exam[0].exam_name}</h5><hr><span><p>Exam type: ${data.exam[0].exam_type}</p><p>Subject: <b>${data.exam[0].subject_name}</b></p><p>Class Sec: <b>${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium - ${data.exam[0].class_section} Section</b></p></span></div><div>
           
           <form id='editExam-form' action='../dashboard/exams/edit/${data.exam[0].id}' method='POST'> <div class='row m-3'> 
-          <div class='mb-3'> <label for='exam_date_edit'>Exam Date:</label> <input type='datetime-local' class='form-control' name='exam_date_edit' id='exam_date_edit' value='${data.exam[0].exam_date}' /> </div> <div class='mb-3'> <label for='exam_duration_edit'>Exam Duration (in Mins):</label> <input type='number' class='form-control' name='exam_duration_edit' id='exam_duration_edit' placeholder='Exam duration in Mins.' value='${data.exam[0].exam_duration}' /> </div>  <div class='mb-3'> <label for='subj_mark_edit'>Total Marks:</label> <input type='number' class='form-control' name='subj_mark_edit' id='subj_mark_edit' placeholder='Total marks' value='${data.exam[0].sub_outoff_marks}' /> </div> <div class='mb-3'> <label for='exam_status_edit'>Exam Status:</label> <select id='exam_status_edit' class='form-control' name='exam_status_edit' value='${data.exam[0].exam_status}' > <option value='scheduled' >Scheduled</option> <option value='postponed'>Postponed</option> <option value='completed' class='text-white mark bg-success'>Completed</option> <option value='cancelled'>Cancelled</option> <option value='onhold'>Withheld (On Hold)</option> </select> <span class='error' id='class_error' >Please choose a Status.</span > </div> <div class='mb-3'> <button id='create_exam_button' class='btn btn-secondary' type='submit' value='submit'> Update Exam </button> </div> </form></div>`
+          <div class='mb-3'> <label for='exam_date_edit'>Exam Date:</label> <input type='text' class='my_date_picker form-control' name='exam_date_edit' id='exam_date_edit' value='${data.exam[0].exam_date}' /> </div> <div class='mb-3'> <label for='exam_duration_edit'>Exam Duration (in Mins):</label> <input type='number' class='form-control' name='exam_duration_edit' id='exam_duration_edit' placeholder='Exam duration in Mins.' value='${data.exam[0].exam_duration}' /> </div>  <div class='mb-3'> <label for='subj_mark_edit'>Total Marks:</label> <input type='number' class='form-control' name='subj_mark_edit' id='subj_mark_edit' placeholder='Total marks' value='${data.exam[0].sub_outoff_marks}' /> </div> <div class='mb-3'> <label for='exam_status_edit'>Exam Status:</label> <select id='exam_status_edit' class='form-control' name='exam_status_edit' value='${data.exam[0].exam_status}' > <option value='scheduled' >Scheduled</option> <option value='postponed'>Postponed</option> <option value='completed' class='text-white mark bg-success'>Completed</option> <option value='cancelled'>Cancelled</option> <option value='onhold'>Withheld (On Hold)</option> </select> <span class='error' id='class_error' >Please choose a Status.</span > </div> <div class='mb-3'> <button id='create_exam_button' class='btn btn-secondary' type='submit' value='submit'> Update Exam </button> </div> </form></div>`
         )
       })
+      $('.my_date_picker').datepicker();
       $('#editExamModal').modal('show');
      }, error: function (err) {
        console.log(err);
@@ -1687,6 +1693,86 @@ $(document).ready(function () {
           )
         })
         $('#deleteExamModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
+
+// HM & TEACHER Views EXAM MARKS .view_exam_mark
+$(document).ready(function () {
+  $('.view_exam_mark').on('click', function () {
+    var exam_id = $(this).attr('data-id');
+    var staff_role = $(this).attr('logged-in');
+    $.ajax({
+      url: '/api/get-exam-scores',
+      type: 'POST',
+      data: {
+        exam_id: exam_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+
+          let view_mark = ``;
+          for (let i=0; i < data.markList.length; i++) {
+            let view_i = `<div class='col-lg-6 col-sm-12 col-xl-6 mb-3'><label for="student_${data.markList[i].student_id}">Student: <b>${data.markList[i].name}</b> (${data.markList[i].student_id})</label> 
+            <input type="hidden" class="form-control" name="student_${i+1}" id="student_${i+1}" value="${data.markList[i].student_id}"/> 
+            <input type="number" class="form-control" name="exam_mark_${i+1}" id="exam_mark_${i+1}" value="${data.markList[i].received_mark}" placeholder="Enter Mark here" disabled/></div>`
+            view_mark += view_i;
+          }
+
+        $('.view-exam-modal-body').html(function () {
+          return (
+            `<div class="row m-2"><div class='col-8'>
+            <h5>Total Students: <b>${data.markList.length}</b></h5></div><div class='col-4'><button data-id="${exam_id}" logged-in = "${staff_role}" type="button" class="edit_exam_mark btn btn-warning" id="mark-edit-button" data-bs-toggle="modal" ><i class="far fa-edit"></i> Marks</button></div><hr></div>
+            <div class="row markList_data m-2"> ${view_mark}</div>`
+          )
+        })
+
+        if (staff_role == 4) {
+          $('#mark-edit-button').hide();
+        } else {
+          $('#mark-edit-button').show();
+        }
+
+        $('#viewMarksModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
+
+// TEACHER EDITS Exam Marks  .edit_exam_mark
+$(document).ready(function () {
+  $('.edit_exam_mark').on('click', function () {
+    var exam_id = $(this).attr('data-id');
+    var staff_role = $(this).attr('logged-in');
+    $.ajax({
+      url: '/api/get-exam-scores',
+      type: 'POST',
+      data: {
+        exam_id: exam_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+
+          let view_mark = ``;
+          for (let i=0; i < data.markList.length; i++) {
+            let view_i = `<div class='col-lg-6 col-sm-12 col-xl-6 mb-3'><label for="student_${data.markList[i].student_id}">Student: <b>${data.markList[i].name}</b> (${data.markList[i].student_id})</label> 
+            <input type="hidden" class="form-control" name="student_id_${i+1}" id="student_${i+1}" value="${data.markList[i].student_id}"/> 
+            <input type="number" class="form-control" name="edit_exam_mark_${i+1}" id="exam_mark_${i+1}" value="${data.markList[i].received_mark}" placeholder="Enter Mark here" /></div>`
+            view_mark += view_i;
+          }
+
+        $('.edit-exam-modal-body').html(function () {
+          return (
+            `<div class="row m-2">
+            <h5>Total Students: <b>${data.markList.length}</b></h5><hr><input type="hidden" class="form-control" name="student_count" id="student_count" value="${data.markList.length}"/> </div>
+            <div class="row markList_data m-2"> ${view_mark}</div><div class="row m-2"><a href="../dashboard/exam-marks/edit/${exam_id}/${data.markList.length}" role='button' class='btn btn-warning'>Update</a></div>`
+          )
+        })
+
+        $('#editExamMarksModal').modal('show');
       }, error: function (err) {
         console.log(err);
       }

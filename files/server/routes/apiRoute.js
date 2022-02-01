@@ -491,9 +491,28 @@ apiRouter.post('/get-exam-data', (req, res) => {
     if(err) {
       res.json({msg: 'error', err});
     } else {
-    console.log(exam);
       res.json({msg: 'success', exam: exam});
     }
   })
 })
+
+// Teacher and HM Views Exam Marks
+apiRouter.post('/get-exam-scores', (req, res) => {
+  var getMarks = `SELECT sem.student_id, sem.received_mark, stu.name FROM school_exams_marks AS sem INNER JOIN school_student AS stu ON stu.student_id = sem.student_id WHERE sem.exam_id = '${req.body.exam_id}' AND sem.deleted_at IS NULL`;
+  dbcon.query(getMarks, (err, markList) => {
+    if(err) {
+      res.json({msg: 'error', err});
+    } else {
+      console.log(markList);
+      res.json({msg: 'success', markList: markList});
+    }
+  })
+})
+
+
+
+
+
+
+
 module.exports = apiRouter;
