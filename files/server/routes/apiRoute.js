@@ -86,9 +86,21 @@ apiRouter.post("/get-student-data", (req, res) => {
   });
 });
 
+// get academic years out of the student admission data to show dropdown in collect fee due form.
+apiRouter.post('/get-academic-year-for-id', (req, res) => {
+  var getAcademic = `SELECT academic_year FROM school_student_admission WHERE student_id = '${req.body.student_id}' AND deleted_at IS NULL`;
+  dbcon.query(getAcademic, (err, academics) => {
+    if(err) res.json({msg: 'error', err})
+    else if (academics.length > 0){
+      res.json({msg: 'success', academics: academics});
+    } else {
+      res.json({msg: 'success', academics: academics});
+    }
+  })
+})
 // student enrolled data
 apiRouter.post("/get-student-enrollment-data", (req, res) => {
-  var getStudent = `SELECT ssa.student_id, stu.name, stu.email, stu.mobile_number, ssa.id, ssa.academic_year, ssa.paying_amount, sfs.actual_fee, sfs.class_std, sfs.medium, clr.class_section FROM school_student_admission AS ssa INNER JOIN school_feestructure AS sfs ON sfs.id = ssa.class_medium INNER JOIN school_classroom AS clr ON clr.id = ssa.class_section INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.student_id='${req.body.stuId}'`;
+  var getStudent = `SELECT ssa.student_id, stu.name, stu.email, stu.mobile_number, ssa.id, ssa.paying_amount, batch.batch_name, ssa.actual_fee, sfs.class_std, sfs.medium, clr.class_section FROM school_student_admission AS ssa INNER JOIN school_feestructure AS sfs ON sfs.id = ssa.class_medium INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id INNER JOIN school_classroom AS clr ON clr.id = ssa.class_section INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.student_id='${req.body.stuId}' AND ssa.academic_year = '${req.body.academicYear}'`;
   dbcon.query(getStudent, (err, data) => {
     if (err) {
       res.json({ msg: "error", err });
@@ -276,7 +288,6 @@ apiRouter.post('/edit-week-schedule-preiods', (req, res) => {
   var editSched = `SELECT * FROM school_schedule_template WHERE id='${req.body.sched_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, sfs.class_std, sfs.medium, clr.class_section, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_classroom AS clr ON clr.id = scs.classroom_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'; SELECT week.day, week.period_no, week.period_subject_id, subj.subject_name, week.period_staff_id, staf.name FROM school_week_schedule AS week INNER JOIN school_subjects AS subj ON subj.id = week.period_subject_id INNER JOIN school_staff AS staf ON staf.staff_id = week.period_staff_id WHERE week.class_sec_id='${req.body.class_sec_id}' AND week.day = '${req.body.day_id}' AND week.school_id = '${session.schoolId}' AND week.schedule_tempid = '${req.body.sched_temp_id}' ORDER BY ABS(week.period_no)`;
   dbcon.query(editSched, (err, scheduleData) => {
     if(err) res.json({msg: 'error', err})
-    console.log(scheduleData);
     res.json({msg: 'success', scheduleData: scheduleData});
   })
 })
@@ -485,8 +496,7 @@ apiRouter.post('/get-subjects-from-exam-class', (req, res) => {
 })
 
 apiRouter.post('/get-exam-data', (req, res) => {
-  var getExamData = `SELECT exam.id, exam.exam_name, sfs.class_std, sfs.medium, clr.class_section, exam.exam_type, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, exam.exam_duration, exam.sub_outoff_marks, exam.exam_status FROM school_exams AS exam INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
-  console.log(getExamData);
+  var getExamData = `SELECT exam.id, exam.exam_name, sfs.class_std, sfs.medium, clr.class_section, exam.exam_type, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, exam.exam_duration, exam.sub_outoff_marks, exam.cutoff_mark, exam.exam_status FROM school_exams AS exam INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
   dbcon.query(getExamData, (err, exam) => {
     if(err) {
       res.json({msg: 'error', err});
@@ -503,7 +513,6 @@ apiRouter.post('/get-exam-scores', (req, res) => {
     if(err) {
       res.json({msg: 'error', err});
     } else {
-      console.log(markList);
       res.json({msg: 'success', markList: markList});
     }
   })

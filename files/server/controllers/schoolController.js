@@ -1604,7 +1604,7 @@ exports.allDueCollection = (req, res) => {
   try {
     if (req.method == "GET") {
       // view fee collection records
-      var feeCollected = `SELECT * FROM school_student_admission WHERE school_id='${session.schoolId}'`;
+      var feeCollected = `SELECT * FROM school_student_admission WHERE school_id='${session.schoolId}' AND deleted_at IS NULL`;
       dbcon.query(feeCollected, (err, feeData) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.data = feeData;

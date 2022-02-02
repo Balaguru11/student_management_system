@@ -487,7 +487,6 @@ exports.getStuAttendance = (req, res) => {
       var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT DATE_FORMAT(ssa.date, '%d-%c-%Y') AS date, clr.class_section, sfs.class_std, sfs.medium, ssa.period_no, ssa.attend_status, CONCAT(ssa.attend_status, ': ',  GROUP_CONCAT(ssa.student_affected ORDER BY ssa.attend_status SEPARATOR ', ')) AS student_affect FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.entered_by = '${session.staff_id}' AND ssa.deleted_at IS NULL AND ssa.student_affected != '0' GROUP BY ssa.date, ssa.entered_by, ssa.period_no, ssa.attend_status; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}' AND ssa.academic_year = YEAR(CURDATE())`;
       dbcon.query(StuAttendance, (err, attendances) => {
         if (err) throw err;
-        console.log(attendances);
         res.locals.attendances = attendances;
         return res.render("staffLevel/teacher-add-attendance", {
           title: "Student Attendance Records",
@@ -574,7 +573,6 @@ exports.postStuAttendance = (req, res) => {
         
         // inserting attendance
         var attendanceData = `INSERT INTO school_student_attendance(date, school_id, class_sec, period_no, attend_status, student_affected, entered_by) VALUES ${finalQuery}`; 
-        console.log(attendanceData);
         dbcon.query(attendanceData, (err, attendanceAdded) => {
           if (err) throw err;
           req.flash("success", "Attendance added successfully.");
@@ -618,7 +616,7 @@ exports.viewExamsByHM = (req, res) => {
   let doubt_status = req.body.doubt_status;
   res.locals.staff_role = session.roleId;
   try {
-    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks FROM school_exams AS xam 
+    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam 
     INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
     INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
     INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
@@ -627,7 +625,6 @@ exports.viewExamsByHM = (req, res) => {
     WHERE scs.staff_id_assigned = '${session.staff_id}' AND xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL`;
     dbcon.query(examList, (err, data) => {
       if(err) throw err;
-      console.log(data);
       res.locals.data = data[0];
       res.locals.marks = data[1];
       return res.render('staffLevel/staff-view-exams', {title: 'Staff Viewing Exams'})
@@ -676,7 +673,7 @@ exports.addStuExamMarks = (req, res) => {
   res.locals.err_msg = err_msg;
   let exam_ref_id = req.params.exam_ref_id;
   try {
-    var getStudents = `SELECT xam.id, xam.exam_name, xam.exam_type, xam.exam_conducted_class_sec, sfs.class_std, sfs.medium, clr.class_section, subj.subject_name, xam.exam_date, xam.exam_duration, xam.sub_outoff_marks FROM school_exams AS xam INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE xam.id = '${exam_ref_id}';
+    var getStudents = `SELECT xam.id, xam.exam_name, xam.exam_type, xam.exam_conducted_class_sec, sfs.class_std, sfs.medium, clr.class_section, subj.subject_name, xam.exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE xam.id = '${exam_ref_id}';
 
     SELECT ssad.class_section, stu.student_id, stu.name FROM school_student_admission AS ssad INNER JOIN school_student AS stu ON stu.student_id = ssad.student_id INNER JOIN school_exams AS exam ON exam.exam_conducted_class_sec = ssad.class_section WHERE exam.id = '${exam_ref_id}';
     `;
@@ -742,10 +739,9 @@ exports.editExamMarks = (req, res) => {
     // do
     let updateMarks = "";
     for (let i=1; i <= student_count; i++) {
-      var loop = `UPDATE school_exams_marks SET received_mark = '${req.body[`edit_exam_mark_${i}`]}' WHERE student_id = '${req.body[`student_id_${i}`]}' AND exam_id = '${exam_ref_id}';`;
+      var loop = `UPDATE school_exams_marks SET received_mark='${req.body[`edit_exam_mark_${i}`]}' WHERE student_id='${req.body[`student_id_${i}`]}' AND exam_id='${exam_ref_id}';`;
       updateMarks += loop
     }
-    console.log(updateMarks);
     dbcon.query(updateMarks, (err, updatedMarks) => {
       if(err) throw err;
       req.flash('success', 'Marks updated successfully.');
@@ -1387,7 +1383,7 @@ exports.getAddExamsForm = (req, res) => {
     let session = req.session;
     res.locals.staff_role = session.roleId;
     try {
-      var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.exam_status FROM school_exams AS xam 
+      var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
       INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
       INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
       INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
@@ -1395,7 +1391,6 @@ exports.getAddExamsForm = (req, res) => {
       WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std); SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL`;
       dbcon.query(examList, (err, data) => {
         if(err) throw err;
-        console.log(data);
         res.locals.data = data[0];
         res.locals.classStd = data[1];
         res.locals.marks = data[2];
@@ -1419,7 +1414,7 @@ exports.addNewExam = (req, res) => {
     var query = "";
     if(subjectCount > 0){
       for (let i = 1; i <= subjectCount; i++){
-        var value = `('${session.school_id}', '${req.body.exam_name}', '${req.body.exam_type}', '${req.body[`sec_${i}_id`]}', '${req.body[`subject_${i}_id`]}', '${req.body[`exam_${i}_date`]}', '${req.body[`exam_${i}_duration`]}', '${req.body[`sub_${i}_total`]}', 'scheduled', '${session.staff_id}'),`
+        var value = `('${session.school_id}', '${req.body.exam_name}', '${req.body.exam_type}', '${req.body[`sec_${i}_id`]}', '${req.body[`subject_${i}_id`]}', '${req.body[`exam_${i}_date`]}', '${req.body[`exam_${i}_duration`]}', '${req.body[`sub_${i}_total`]}', '${req.body[`cutoff_${i}_mark`]}', 'scheduled', '${session.staff_id}'),`
         query += value;
       }
     } else {
@@ -1427,7 +1422,7 @@ exports.addNewExam = (req, res) => {
     }
     var query = query.slice(0,-1);
     if(query.length > 0) {
-      var addExam = `INSERT INTO school_exams (school_id, exam_name, exam_type, exam_conducted_class_sec, subject_id, exam_date, exam_duration, sub_outoff_marks, exam_status, created_by) VALUES ${query}`;
+      var addExam = `INSERT INTO school_exams (school_id, exam_name, exam_type, exam_conducted_class_sec, subject_id, exam_date, exam_duration, sub_outoff_marks, cutoff_mark, exam_status, created_by) VALUES ${query}`;
       dbcon.query(addExam, (err, newExam) => {
         if(err) throw err;
         req.flash('success', 'Exams created and scheduled.');
@@ -1452,12 +1447,12 @@ exports.editExamByHM = (req, res) => {
   res.locals.staff_role = session.roleId;
   let exam_id = req.params.exam_id;
   try {
-    var editedExam = `UPDATE school_exams SET exam_date = '${req.body.exam_date_edit}', exam_duration = '${req.body.exam_duration_edit}', sub_outoff_marks = '${req.body.subj_mark_edit}', exam_status = '${req.body.exam_status_edit}' WHERE id = '${exam_id}'`;
-    dbcon.query(editedExam, (err, updated) => {
-      if(err) throw err;
-      req.flash('success', 'Exam has been edited successfully');
-      return res.redirect('/staff/dashboard/exams')
-    })
+      var editedExam = `UPDATE school_exams SET exam_date = '${req.body.exam_date_edit}', exam_duration = '${req.body.exam_duration_edit}', sub_outoff_marks = '${req.body.subj_mark_edit}', cutoff_mark = '${req.body.cutoff_mark_edit}', exam_status = '${req.body.exam_status_edit}' WHERE id = '${exam_id}'`;
+      dbcon.query(editedExam, (err, updated) => {
+        if(err) throw err;
+        req.flash('success', 'Exam has been edited successfully');
+        return res.redirect('/staff/dashboard/exams')
+      })
   } catch (err) {
     console.log(err);
   }

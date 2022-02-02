@@ -190,7 +190,8 @@ exports.postStuProfile = (req, res) => {
             // student mapping with parent login
             dbcon.query(parentLogin, (err, parentLog) => {
               if (err) console.log(err);
-              var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${parentLog[0].insertId}', '${session.student_id}')`;
+              console.log(parentLog);
+              var stuParMap = `INSERT INTO school_parent_student_map(stu_school_id, parent_id, ml_student_id) VALUES ('${session.school_id}', '${parentLog.insertId}', '${session.student_id}')`;
               dbcon.query(stuParMap, (err) => {
                 if (err) throw err;
 
