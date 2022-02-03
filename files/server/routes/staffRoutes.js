@@ -21,7 +21,7 @@ const {
   getStudentsList,
   getClassAssigned, getMyScheduleStaff, 
   getStuAttendance,
-  postStuAttendance, getStudentDoubts, addThreadMsg, viewExamsByHM, addStuExamMarks, postStuExamMarks, editExamMarks, 
+  postStuAttendance, getStudentDoubts, addThreadMsg, viewExamsByHM, addStuExamMarks, postStuExamMarks, releaseAnnualResult, postAnnualResult, editExamMarks, 
   allChangePwd,
   viweFeeStructure,
   viewUserAccounts,
@@ -233,7 +233,8 @@ staffRouter.get('/dashboard/exams', isStaff, isHM, getAddExamsForm); // loads Vi
 staffRouter.post('/dashboard/exams', isStaff, isHM, addNewExam);
 staffRouter.post('/dashboard/exams/edit/:exam_id', isStaff, isHM, editExamByHM);
 staffRouter.get('/dashboard/exams/delete/:exam_id', isStaff, isHM, deleteExamByHM);
-// staffRouter.get('/dashboard/exam-marks/view/:exam_id', isStaff, isHM, viewExamMarks);
+staffRouter.get('/dashboard/release-annual-marks', isStaff, isHM, releaseAnnualResult);
+staffRouter.get('/dashboard/release-annual-marks/:exam_id/:subject_id', isStaff, isHM, postAnnualResult);
 
 
 

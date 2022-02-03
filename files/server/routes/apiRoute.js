@@ -20,9 +20,7 @@ apiRouter.post('/delete-batch-by-id', (req, res) => {
 
 apiRouter.post("/get-class-sections", (req, res) => {
   var getclassection =
-    'SELECT *, (students_strength - students_filled) AS seats_free FROM school_classroom WHERE class_id= "' +
-    req.body.class_id +
-    '" AND students_strength - students_filled != "0"';
+    `SELECT clr.id, clr.class_section, batch.batch_name,  (clr.students_strength - clr.students_filled) AS seats_free FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE clr.class_id= "${req.body.class_id}" AND clr.students_strength - clr.students_filled != "0" AND clr.deleted_at IS NULL`;
   dbcon.query(getclassection, (err, rows) => {
     if (err) {
       res.json({ msg: "error" });
@@ -496,7 +494,7 @@ apiRouter.post('/get-subjects-from-exam-class', (req, res) => {
 })
 
 apiRouter.post('/get-exam-data', (req, res) => {
-  var getExamData = `SELECT exam.id, exam.exam_name, sfs.class_std, sfs.medium, clr.class_section, exam.exam_type, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, exam.exam_duration, exam.sub_outoff_marks, exam.cutoff_mark, exam.exam_status FROM school_exams AS exam INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
+  var getExamData = `SELECT exam.id, exam.exam_name, sfs.class_std, sfs.medium, clr.class_section, exam.exam_type, subj.id AS subject_id, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, exam.exam_duration, exam.sub_outoff_marks, exam.cutoff_mark, exam.exam_status FROM school_exams AS exam INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
   dbcon.query(getExamData, (err, exam) => {
     if(err) {
       res.json({msg: 'error', err});
@@ -508,7 +506,7 @@ apiRouter.post('/get-exam-data', (req, res) => {
 
 // Teacher and HM Views Exam Marks
 apiRouter.post('/get-exam-scores', (req, res) => {
-  var getMarks = `SELECT sem.student_id, sem.received_mark, stu.name FROM school_exams_marks AS sem INNER JOIN school_student AS stu ON stu.student_id = sem.student_id WHERE sem.exam_id = '${req.body.exam_id}' AND sem.deleted_at IS NULL`;
+  var getMarks = `SELECT sem.student_id, sem.received_mark, stu.name, xam.cutoff_mark, xam.sub_outoff_marks FROM school_exams_marks AS sem INNER JOIN school_student AS stu ON stu.student_id = sem.student_id INNER JOIN school_exams AS xam ON xam.id = sem.exam_id WHERE sem.exam_id = '${req.body.exam_id}' AND sem.deleted_at IS NULL`;
   dbcon.query(getMarks, (err, markList) => {
     if(err) {
       res.json({msg: 'error', err});

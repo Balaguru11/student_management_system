@@ -47,8 +47,7 @@
       <option value="">Class Std & Medium:</option>
       <% if(locals.feeData) { for (let i=0; i < locals.feeData.length; i++) { %>
       <option value="<%= locals.feeData[i].id %>">
-        <%= locals.feeData[i].class_std %> std - <%= locals.feeData[i].medium %>
-        Medium
+        <%= locals.feeData[i].class_std %> std - <%= locals.feeData[i].medium %> Medium (<%= locals.feeData[i].batch_name %>)
       </option>
       <% } } %>
     </select>

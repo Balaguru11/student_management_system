@@ -1084,7 +1084,7 @@ exports.getFeeCollection = (req, res) => {
   let session = req.session;
   try {
     if (session.schoolStatus == "Active") {
-      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std);`;
+      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee, batch.batch_name FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' AND sfs.deleted_at IS NULL  ORDER BY ABS(sfs.class_std);`;
       dbcon.query(fee_data, (err, feeData) => {
         if (err) return res.render("server-error", { title: "Server Error" });
 

@@ -606,34 +606,6 @@ exports.getStudentDoubts = (req, res) => {
   }
 }
 
-// Teaching staff viewing Exams created by HM (subjects that are handled by him)
-exports.viewExamsByHM = (req, res) => {
-  let session = req.session;
-  let success_msg = req.flash('success');
-  res.locals.success_msg = success_msg;
-  let err_msg = req.flash('err_msg');
-  res.locals.err_msg = err_msg;
-  let doubt_status = req.body.doubt_status;
-  res.locals.staff_role = session.roleId;
-  try {
-    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam 
-    INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
-    INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
-    INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
-    INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
-    INNER JOIN school_class_subjects AS scs ON scs.deleted_at IS NULL AND scs.subject_id = xam.subject_id AND xam.exam_conducted_class_sec = scs.classroom_id
-    WHERE scs.staff_id_assigned = '${session.staff_id}' AND xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL`;
-    dbcon.query(examList, (err, data) => {
-      if(err) throw err;
-      res.locals.data = data[0];
-      res.locals.marks = data[1];
-      return res.render('staffLevel/staff-view-exams', {title: 'Staff Viewing Exams'})
-    })
-  } catch(err) {
-    console.log(err);
-  }
-}
-
 // adding new thread message by staff
 exports.addThreadMsg = (req, res) => {
   let session = req.session;
@@ -660,6 +632,34 @@ exports.addThreadMsg = (req, res) => {
       }
     })
   } catch (err) {
+    console.log(err);
+  }
+}
+
+// Teaching staff viewing Exams created by HM (subjects that are handled by him)
+exports.viewExamsByHM = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  let doubt_status = req.body.doubt_status;
+  res.locals.staff_role = session.roleId;
+  try {
+    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam 
+    INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
+    INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
+    INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
+    INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
+    INNER JOIN school_class_subjects AS scs ON scs.deleted_at IS NULL AND scs.subject_id = xam.subject_id AND xam.exam_conducted_class_sec = scs.classroom_id
+    WHERE scs.staff_id_assigned = '${session.staff_id}' AND xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL`;
+    dbcon.query(examList, (err, data) => {
+      if(err) throw err;
+      res.locals.data = data[0];
+      res.locals.marks = data[1];
+      return res.render('staffLevel/staff-view-exams', {title: 'Staff Viewing Exams'})
+    })
+  } catch(err) {
     console.log(err);
   }
 }
@@ -700,20 +700,21 @@ exports.postStuExamMarks = (req, res) => {
   let student_count = req.params.students_count;
   try {
     // check duplicate if any
-    var checkMark = `SELECT EXISTS ( SELECT * FROM school_exams_marks WHERE exam_id = '${exam_ref_id}') AS count`;
+    var checkMark = `SELECT EXISTS ( SELECT * FROM school_exams_marks WHERE exam_id = '${exam_ref_id}') AS count; SELECT exam_type FROM school_exams WHERE id='${exam_ref_id}' LIMIT 1`;
     dbcon.query(checkMark, (err, duplicateEntry) => {
       if(err) throw err;
-      else if (duplicateEntry[0].count > 0) {
+      else if (duplicateEntry[0][0].count > 0) {
         req.flash('err_msg', 'Marks for this Exam is already added.')
         return res.redirect('/staff/dashboard/view-exams');
       } else {
         let mark_values = "";
         for (let i = 0; i < student_count; i++) {
-          let new_mark = `('${session.school_id}', '${exam_ref_id}', '${req.body[`student_${i+1}`]}', '${req.body[`exam_mark_${i+1}`]}', '${session.staff_id}'),`
+          let released = duplicateEntry[1][0].exam_type == 'annual_exam' ? 'no' : 'yes';
+          let new_mark = `('${session.school_id}', '${exam_ref_id}', '${req.body[`student_${i+1}`]}', '${req.body[`exam_mark_${i+1}`]}', '${session.staff_id}', '${released}'),`
           mark_values += new_mark;
         }
         mark_values = mark_values.slice(0, -1);
-        var addmarks = `INSERT INTO school_exams_marks (school_id, exam_id, student_id, received_mark, entered_by) VALUES ${mark_values}`;
+        var addmarks = `INSERT INTO school_exams_marks (school_id, exam_id, student_id, received_mark, entered_by, is_released) VALUES ${mark_values}`;
         dbcon.query(addmarks, (err, markAdded) => {
           if(err) throw err;
           req.flash('success', 'Exam Marks added successfully.');
@@ -735,10 +736,14 @@ exports.editExamMarks = (req, res) => {
   res.locals.err_msg = err_msg;
   let exam_ref_id = req.params.exam_ref_id;
   let student_count = req.params.students_count;
+  console.log(`${req.body.edit_exam_mark_1}, ${req.body.edit_exam_mark_2}, ${req.body.edit_exam_mark_3}`);
+  console.log(`${req.body.student_id_1}, ${req.body.student_id_2}, ${req.body.student_id_3}`);
   try {
     // do
     let updateMarks = "";
     for (let i=1; i <= student_count; i++) {
+      console.log(`UPDATE school_exams_marks SET received_mark='${req.body[`edit_exam_mark_${i}`]}' WHERE student_id='${req.body[`student_id_${i}`]}' AND exam_id='${exam_ref_id}';`);
+
       var loop = `UPDATE school_exams_marks SET received_mark='${req.body[`edit_exam_mark_${i}`]}' WHERE student_id='${req.body[`student_id_${i}`]}' AND exam_id='${exam_ref_id}';`;
       updateMarks += loop
     }
@@ -1479,6 +1484,57 @@ exports.deleteExamByHM = (req, res) => {
       req.flash('err_msg', 'This Exam cannot be deleted.');
       return res.redirect('/staff/dashboard/exams')
     }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// Releasing Annual Exam Mark by HM - GET
+exports.releaseAnnualResult = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    var annuals = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
+    INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
+    INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
+    INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
+    INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
+    WHERE xam.school_id = '${session.school_id}' AND xam.exam_type='annual_exam' AND xam.deleted_at IS NULL GROUP BY sfs.class_std, sfs.medium ORDER BY sfs.class_std ASC, sfs.medium ASC, batch.year_from DESC`;
+    dbcon.query(annuals, (err, data) => {
+      if(err) throw err;
+      console.log(data);
+      res.locals.data = data;
+      return res.render('staffLevel/hm-release-result', {title: 'Annual Exam Mark'})
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// HM releases Annual Exam Subject Wise Marks to student and Parent here. This will also increase the student Class, updates fee etc.
+exports.postAnnualResult = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  let exam_id = req.params.exam_id;
+  let subject_id = req.params.subject_id;
+  try {
+    // update is_released NO to YES
+    var releaseMark = `UPDATE school_exams_marks SET is_released = 'yes' WHERE exam_id = '${exam_id}' AND school_id = '${session.school_id}'; SELECT xam.exam_type, xam.id, xam.exam_conducted_class_sec, xam.subject_id FROM school_exams AS xam INNER JOIN school_exams_marks AS sem ON sem.exam_id = xam.id WHERE xam.exam_type = 'annual_exam' AND xam.id = '${exam_id}';`;
+
+    dbcon.query(releaseMark, (err, released) => {
+      if(err) throw err;
+      console.log(released);
+      req.flash('success', 'Exam Mark released successfully');
+      return res.redirect('/staff/dashboard/release-annual-marks');
+    })
   } catch (err) {
     console.log(err);
   }

@@ -1,0 +1,93 @@
+<div class="pt-5">
+  <h4 class="text-center">Release Annual Exam Marks</h4>
+  <br />
+  <table class="table table-light text-center" id="datatable">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th width="200px">Exam Name</th>
+        <th width="200px">Class & Medium</th>
+        <th width="150px">Subject</th>
+        <th width="100px">View Marks</th>
+        <th width="200px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.data.length > 0) { for(var i = 0; i < locals.data.length;
+      i++) { %>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.data[i].exam_name %></td>
+        <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %> (<%= locals.data[i].batch_name %>)</td>
+        <td><%= locals.data[i].subject_name %></td>
+        <td><button data-id="<%= locals.data[i].id %>" logged-in = "<%= locals.staff_role %>" type="button" class="view_exam_mark btn btn-secondary" data-bs-toggle="modal" > <i class="far fa-eye"></i> Marks</button></td> 
+        <td>
+          <button
+            data-id="<%= locals.data[i].id %>"
+            type="button"
+            class="releaseExamMark btn btn-success View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-edit aria-hidden="true"></i> Release Now
+          </button>
+          
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="6" class="text-center">
+          <mark>No Exams found.</mark>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- View Exam Marks modal -->
+<div
+  class="modal fade"
+  id="viewMarksModal"
+  tabindex="-1"
+  aria-labelledby="viewModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">View Exam Marks</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="view-exam-modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Release Annual Exam Marks modal -->
+<div
+  class="modal fade"
+  id="releaseMarksModal"
+  tabindex="-1"
+  aria-labelledby="releaseModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="releaseModalLabel">Release Exam Marks</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="release-marks-modal-body"></div>
+    </div>
+  </div>
+</div>

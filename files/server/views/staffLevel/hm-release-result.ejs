@@ -1,0 +1,34 @@
+<%- include ('../partials/components/staff-sideMenu') %>
+
+<div class="container-fluid p-2">
+    <div class="row d-flex justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-10 mt-3">
+            <% if(locals.err_msg.length > 0) { %>
+                <div class="alert alert-danger alert-dismissible fade show mt-5" role="alert">
+                    <%= err_msg %>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+            <% } %>
+            <% if(locals.success_msg.length > 0) { %>
+              <div class="alert alert-success alert-dismissible fade show mt-5" role="alert">
+                  <%= success_msg %>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+          <% } %>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row mt-5 justify-content-center">
+        <div class="col-lg-11 col-xl-11 col-sm-12">
+            <div class="overflow-auto border">
+                <%- include ('../partials/components/read/hm-release-annual-result') %>
+            </div>
+    </div>
+    </div>
+</div>
+
+    <!-- closing tags from school-sidebarMenu -->
+</div>
+</div>
+</div>

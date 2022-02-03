@@ -246,15 +246,9 @@ $(document).ready(function () {
         );
         $.each(result.class_secs, function (key, value) {
           $("#class_section").append(
-            '<option value="' +
-              value.id +
-              '">' +
-              value.class_section +
-              " Sec - " +
-              value.seats_free +
-              " Seats Left </option>"
+            `<option value="${value.id}">${value.class_section} Sec (${value.batch_name}) | ${value.seats_free} Seats Left </option>`
           );
-        });
+        });s
       },
       error: function (err) {
         console.log(err);
@@ -351,7 +345,8 @@ $(document).ready(function () {
           } else {
             year_options;
           }
-          return (`<div class='mt-1 mb-3'><label for='academic_year'>Academic Year: </label><select id='academic_year' class='form-control' name='academic_year'><option value=''>Select Year</option>${year_options}</select></div>`)
+          $('#academic_year_div').remove();
+          return (`<div class='mt-1 mb-3' id='academic_year_div'><label for='academic_year'>Academic Year: </label><select id='academic_year' class='form-control' name='academic_year'><option value=''>Select Year</option>${year_options}</select></div>`)
         })
       }, error: function (err) {
         console.log(err);
@@ -377,7 +372,7 @@ $(document).ready(function () {
           var max_amount = result.actual_fee - result.earlier_paid;
           $("#student_enroll_data").remove();
           return (
-            `<div class='student_enroll_data' id='student_enroll_data'>            <div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='${result.student_name}' /> </div>                <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='${result.student_email}' /> </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='${result.student_mobile}' /> </div> </div>                                 <div class='mb-3'> <label for='class_medium'>Class & Medium: </label> <input type='text' id='class_medium' class='form-control' name='class_medium' disabled value='${result.class_std} std - ${result.class_med} medium' /> </div>                 <div class='mb-3'><label for='class_section'>Class section: </label> <input type='text' id='class_section' class='form-control' name='class_section' disabled value='${result.class_sec} Section' /> </div>                <div class='mb-3'><label for='course_fee' >Actual fee:</label><input type='number' class='form-control' name='course_fee_disabled' id='course_fee_disabled' value='${result.actual_fee}' disabled /><input type='hidden' class='form-control' name='course_fee' id='course_fee' value='${result.actual_fee}' /></div>                <div class='mb-3'><label for='paid_fee' >Amount Paid so far:</label><input type='number' class='form-control' name='paid_fee' id='paid_fee' value='${result.earlier_paid}' disabled /><input type='hidden' class='form-control' name='paid_fee_hide' id='paid_fee_hide' value='${result.earlier_paid}' /></div>                <div class='mb-1'><label for='paying_fee'>Amount Paying now:</label><input type='number' class='form-control' name='paying_fee' id='paying_fee' min='0' max='${max_amount}' /></div>                <input type='hidden' id='admission_id' name='admission_id' value='${result.admission_id}'></div>`
+            `<div class='student_enroll_data' id='student_enroll_data'>            <div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='${result.student_name}' /> </div>                <div class='row g-3 mb-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='${result.student_email}' /> </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='${result.student_mobile}' /> </div> </div>                                 <div class='mb-3'> <label for='class_medium'>Class & Medium: </label> <input type='text' id='class_medium' class='form-control' name='class_medium' disabled value='${result.class_std} std - ${result.class_med} medium' /> </div>                 <div class='mb-3'><label for='class_section'>Class section: </label> <input type='text' id='class_section' class='form-control' name='class_section' disabled value='${result.class_sec} Section' /> </div>                <div class='mb-3'><label for='course_fee' >Actual fee:</label><input type='number' class='form-control' name='course_fee_disabled' id='course_fee_disabled' value='${result.actual_fee}' disabled /><input type='hidden' class='form-control' name='course_fee' id='course_fee' value='${result.actual_fee}' /></div>                <div class='mb-3'><label for='paid_fee' >Amount Paid so far:</label><input type='number' class='form-control' name='paid_fee' id='paid_fee' value='${result.earlier_paid}' disabled /><input type='hidden' class='form-control' name='paid_fee_hide' id='paid_fee_hide' value='${result.earlier_paid}' /></div>                <div class='mb-1'><label for='paying_fee'>Amount Paying now:</label><input type='number' class='form-control' name='paying_fee' id='paying_fee' min='0' max='${max_amount}' /></div>                <input type='hidden' id='admission_id' name='admission_id' value='${result.admission_id}'></div>`
           );
         });
       },
@@ -1649,7 +1644,16 @@ $(document).ready(function () {
             $('#exam_plan').html("<p class='text-danger'>Please select at least one Class std with subjects mapped to it.</p>")
             $('#create_exam_button').attr('disabled', 'disabled');
           }
-          $('.my_date_picker').datepicker();
+          $('.my_date_picker').datepicker({
+            dateFormat: 'yy-mm-dd',
+            timeFormat: 'HH:mm:ss',
+            onShow: function () {
+                this.setOptions({
+                    maxDate:$('#tdate').val()?$('#tdate').val():false,
+                    maxTime:$('#tdate').val()?$('#tdate').val():false
+                });
+            }
+      });
         })
       }, error: function (err) {
         $('#exam_plan').html("<p>No Subject Found</p>")
@@ -1667,8 +1671,9 @@ $(document).on('change', '.subject_total, .cutoff_mark', function () {
 })
 
 // HM edits an Exam
-$(document).ready(function () {
- $('.editExam').on('click', function () {
+$(document).on('click', '.editExam', function () {
+// $(document).ready(function () {
+//  $('.editExam').on('click', function () {
    var exam_id = $(this).attr('data-id');
    $.ajax({
      url: '/api/get-exam-data',
@@ -1680,7 +1685,6 @@ $(document).ready(function () {
       $('.edit-exam-modal-body').html(function () {
         return (
           `<div class='row m-3 p-1 rounded bg-warning'><h5>${data.exam[0].exam_name}</h5><hr><span><p>Exam type: ${data.exam[0].exam_type}</p><p>Subject: <b>${data.exam[0].subject_name}</b></p><p>Class Sec: <b>${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium - ${data.exam[0].class_section} Section</b></p></span></div><div>
-          
           <form id='editExam-form' action='../dashboard/exams/edit/${data.exam[0].id}' method='POST'> <div class='row m-3'> 
           <div class='mb-3'> <label for='exam_date_edit'>Exam Date:</label> <input type='text' class='my_date_picker form-control' name='exam_date_edit' id='exam_date_edit' value='${data.exam[0].exam_date}' /> </div> <div class='mb-3'> <label for='exam_duration_edit'>Exam Duration (in Mins):</label> <input type='number' class='form-control' name='exam_duration_edit' id='exam_duration_edit' placeholder='Exam duration in Mins.' value='${data.exam[0].exam_duration}' /> </div>  <div class='mb-3'> <label for='subj_mark_edit'>Total Marks:</label> <input type='number' class='form-control' name='subj_mark_edit' id='subj_mark_edit' placeholder='Total marks' value='${data.exam[0].sub_outoff_marks}' /> </div><div class='mb-3'> <label for='cutoff_mark_edit'>Pass Mark:</label> <input type='number' class='form-control' name='cutoff_mark_edit' id='cutoff_mark_edit' placeholder='Pass mark' value='${data.exam[0].cutoff_mark}' min='1' max='${data.exam[0].sub_outoff_marks}' /> </div> <div class='mb-3'> <label for='exam_status_edit'>Exam Status:</label> <select id='exam_status_edit' class='form-control' name='exam_status_edit' value='${data.exam[0].exam_status}' > <option value='scheduled' >Scheduled</option> <option value='postponed'>Postponed</option> <option value='completed' class='text-white mark bg-success'>Completed</option> <option value='cancelled'>Cancelled</option> <option value='onhold'>Withheld (On Hold)</option> </select> <span class='error' id='class_error' >Please choose a Status.</span > </div> <div class='mb-3'> <button id='create_exam_button' class='btn btn-secondary' type='submit' value='submit'> Update Exam </button> </div> </form></div>`
         )
@@ -1692,7 +1696,7 @@ $(document).ready(function () {
      }
    })
  }) 
-})
+// })
 
 // HM deletes an Exam
 $(document).ready(function () {
@@ -1733,7 +1737,10 @@ $(document).ready(function () {
 
           let view_mark = ``;
           for (let i=0; i < data.markList.length; i++) {
-            let view_i = `<tr><th scope="row">${i+1}</th><td><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</td><td>${data.markList[i].received_mark}</td></tr>`
+            const pass_fail = data.markList[i].received_mark >= data.markList[i].cutoff_mark
+            let mark_status = pass_fail ? "Pass" : "Fail";
+
+            let view_i = `<tr><th scope="row">${i+1}</th><td><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</td><td>${data.markList[i].received_mark}</td><td>${mark_status}</td></tr>`
             view_mark += view_i;
           }
 
@@ -1741,7 +1748,7 @@ $(document).ready(function () {
           return (
             `<div class="row m-2"><div class='col-8'>
             <h5>Total Students: <b>${data.markList.length}</b></h5></div><div class='col-4'><button data-id="${exam_id}" logged-in = "${staff_role}" type="button" class="edit_exam_mark btn btn-warning" id="mark-edit-button" data-bs-toggle="modal" ><i class="far fa-edit"></i> Marks</button></div><hr></div>
-            <div class="row markList_data m-2"><table class='text-center table table-light'><thead><tr><th scope='col'>S.No</th><th width='200px'>Student Name</th><th width='200px'>Marks</th></tr></thead><tbody>${view_mark}</tbody></table></div>`
+            <div class="row markList_data m-2"><table class='text-center table table-light'><thead><tr><th scope='col'>S.No</th><th width='200px'>Student Name</th><th width='200px'>Marks</th><th>Status</th></tr></thead><tbody>${view_mark}</tbody></table></div>`
           )
         })
 
@@ -1774,7 +1781,10 @@ $(document).ready(function () {
 
           let view_mark = ``;
           for (let i=0; i < data.markList.length; i++) {
-            let view_i = `<tr><th scope="row">${i+1}</th><td><label for="student_${data.markList[i].student_id}"><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</label><input type="hidden" class="form-control" name="student_id_${i+1}" id="student_${i+1}" value="${data.markList[i].student_id}"/></td><td><input type="number" class="form-control" name="edit_exam_mark_${i+1}" id="exam_mark_${i+1}" value="${data.markList[i].received_mark}" placeholder="Enter Mark here" /></td></tr>`
+            const pass_fail = data.markList[i].received_mark >= data.markList[i].cutoff_mark
+            let mark_status = pass_fail ? "Pass" : "Fail";
+
+            let view_i = `<tr><th scope="row">${i+1}</th><td><label for="student_${data.markList[i].student_id}"><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</label><input type="hidden" class="form-control" name="student_id_${i+1}" id="student_${i+1}" value="${data.markList[i].student_id}" /></td><td><input type="number" class="form-control" name="edit_exam_mark_${i+1}" id="exam_mark_${i+1}" value="${data.markList[i].received_mark}" placeholder="Enter Mark here" max='${data.markList[i].sub_outoff_marks}' /><td>${mark_status}</td></td></tr>`
             view_mark += view_i;
           }
 
@@ -1782,12 +1792,36 @@ $(document).ready(function () {
           return (
             `<div class="row m-2">
             <h5>Total Students: <b>${data.markList.length}</b></h5><hr><input type="hidden" class="form-control" name="student_count" id="student_count" value="${data.markList.length}"/> </div>
-            <div class="row markList_data m-2"><table class='text-center table table-light'><thead><tr><th scope='col'>S.No</th><th width='200px'>Student Name</th><th width='200px'>Marks</th></tr></thead><tbody>${view_mark}</tbody>
+            <div class="row markList_data m-2"><table class='text-center table table-light'><thead><tr><th scope='col'>S.No</th><th width='200px'>Student Name</th><th width='200px'>Marks</th><th>Status</th></tr></thead><tbody>${view_mark}</tbody>
             </table></div><div class="row m-2"><a href="../dashboard/exam-marks/edit/${exam_id}/${data.markList.length}" role='button' class='btn btn-warning'>Update</a></div>`
           )
         })
 
         $('#editExamMarksModal').modal('show');
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
+
+// HM releases ANNUAL EXAM MARK
+$(document).ready(function () {
+  $('.releaseExamMark').on('click', function () {
+    var exam_id = $(this).attr('data-id');
+    $.ajax({
+      url: '/api/get-exam-data',
+      type: 'POST',
+      data: {
+        exam_id: exam_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        $('.release-marks-modal-body').html(function () {
+          return (
+            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='exam_status_hidden' id='exam_status_hidden' value='${data.exam[0].exam_status}'/><p class='text-center mt-3 mb-3'><b>Would you like to RELEASE ANNUAL EXAM MARKS of ${data.exam[0].subject_name} for ${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium ?</b></p></div><div class='justify-content-center row mb-3'><div class='row col-5 m-1'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='row col-5 m-1'><a href='../dashboard/release-annual-marks/${data.exam[0].id}/${data.exam[0].subject_id}' role='button' class='btn btn-primary btn-block'>Release Now</a></div></div></div>`
+          )
+        })
+        $('#releaseMarksModal').modal('show');
       }, error: function (err) {
         console.log(err);
       }
