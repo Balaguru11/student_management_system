@@ -11,7 +11,7 @@ const {
   showStuProfile,
   getStuProfileEdit,
   postEditStuProfile,
-  allAdmissionDue, allChangePwd, getMyAttendance, getStaffProfile, askMyStaff, myDoubtsList, addThreadMsg
+  allAdmissionDue, allChangePwd, getMyAttendance, getStaffProfile, askMyStaff, myDoubtsList, addThreadMsg, getExamsAndMarks
 } = require("../controllers/studentController");
 
 // Student Loging in - POST
@@ -39,5 +39,8 @@ studentRouter.all("/admission-fee-payment", isStudent, allAdmissionDue);
 
 // attendance show for student
 studentRouter.get('/dashboard/my-attendance', isStudent, getMyAttendance);
+
+// Big Exam Marks
+studentRouter.get('/dashboard/exam-marks', isStudent, getExamsAndMarks);
 
 module.exports = studentRouter;

@@ -589,3 +589,29 @@ exports.addThreadMsg = (req, res) => {
     console.log(err);
   }
 }
+
+exports.getExamsAndMarks = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  res.locals.student_id = session.student_id;
+  try {
+    // see all the Exams added to his class section. // See his own Marks as well.
+    var examsAndMarks = `SELECT xam.id, xam.exam_name, xam.exam_type, xam.subject_id, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
+    INNER JOIN school_student_admission AS ssad ON ssad.class_section = xam.exam_conducted_class_sec 
+    INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id 
+    WHERE ssad.student_id = '${session.student_id}' AND ssad.school_id = '${session.school_id}' AND ssad.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL GROUP BY exam_id`;
+
+    dbcon.query(examsAndMarks, (err, myExamsList) => {
+      if(err) throw err
+      console.log(myExamsList);
+      res.locals.myExamsList = myExamsList[0];
+      res.locals.marks = myExamsList[1];
+      return res.render('studentLevel/student-viewing-exams', {title: 'Exams & Marks'})
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}

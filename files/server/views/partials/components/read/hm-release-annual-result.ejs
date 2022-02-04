@@ -8,6 +8,7 @@
         <th width="200px">Exam Name</th>
         <th width="200px">Class & Medium</th>
         <th width="150px">Subject</th>
+        <th width="150px">Conducted on</th>
         <th width="100px">View Marks</th>
         <th width="200px">Actions</th>
       </tr>
@@ -20,6 +21,7 @@
         <td><%= locals.data[i].exam_name %></td>
         <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %> (<%= locals.data[i].batch_name %>)</td>
         <td><%= locals.data[i].subject_name %></td>
+        <td><%= locals.data[i].exam_date %></td>
         <td><button data-id="<%= locals.data[i].id %>" logged-in = "<%= locals.staff_role %>" type="button" class="view_exam_mark btn btn-secondary" data-bs-toggle="modal" > <i class="far fa-eye"></i> Marks</button></td> 
         <td>
           <button
@@ -28,9 +30,8 @@
             class="releaseExamMark btn btn-success View"
             data-bs-toggle="modal"
           >
-            <i class="far fa-edit aria-hidden="true"></i> Release Now
+          <i class="fas fa-paper-plane"></i> Release Now
           </button>
-          
         </td>
       </tr>
       <% } } else { %>

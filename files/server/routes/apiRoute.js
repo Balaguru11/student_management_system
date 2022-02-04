@@ -516,6 +516,18 @@ apiRouter.post('/get-exam-scores', (req, res) => {
   })
 })
 
+// Student viewing exam mark of an exam
+apiRouter.post('/get-my-exam-marks', (req, res) => {
+  var getMyMark = `SELECT * FROM school_exams_marks WHERE student_id = '${req.body.student_id}' AND exam_id = '${req.body.exam_id}' AND deleted_at IS NULL; SELECT stu.name, stu.father_name, DATE_FORMAT(stu.date_of_birth, '%d-%c-%Y') AS date_of_birth, ssad.academic_year,  FROM School_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id WHERE stu.student_id = '${req.body.student_id}' AND ssad.academic_year = YEAR(CURDATE())`;
+  dbcon.query(getMyMark, (err, markList) => {
+    if(err) {
+      res.json({msg: 'error', err});
+    } else {
+      console.log(markList);
+      res.json({msg: 'success', markList: markList})
+    }
+  })
+})
 
 
 

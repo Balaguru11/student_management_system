@@ -237,7 +237,6 @@ staffRouter.get('/dashboard/release-annual-marks', isStaff, isHM, releaseAnnualR
 staffRouter.get('/dashboard/release-annual-marks/:exam_id/:subject_id', isStaff, isHM, postAnnualResult);
 
 
-
 // message to staff by HM
 // staffRouter.get('/dashboard/message-staff', isStaff, getStaffMsgForm);
 

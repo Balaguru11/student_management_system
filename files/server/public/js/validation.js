@@ -1723,8 +1723,7 @@ $(document).ready(function () {
 })
 
 // HM & TEACHER Views EXAM MARKS .view_exam_mark
-$(document).ready(function () {
-  $('.view_exam_mark').on('click', function () {
+$(document).on('click', '.view_exam_mark', function () {
     var exam_id = $(this).attr('data-id');
     var staff_role = $(this).attr('logged-in');
     $.ajax({
@@ -1764,7 +1763,6 @@ $(document).ready(function () {
       }
     })
   })
-})
 
 // TEACHER EDITS Exam Marks  .edit_exam_mark
 $(document).ready(function () {
@@ -1818,7 +1816,7 @@ $(document).ready(function () {
       success: function (data) {
         $('.release-marks-modal-body').html(function () {
           return (
-            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='exam_status_hidden' id='exam_status_hidden' value='${data.exam[0].exam_status}'/><p class='text-center mt-3 mb-3'><b>Would you like to RELEASE ANNUAL EXAM MARKS of ${data.exam[0].subject_name} for ${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium ?</b></p></div><div class='justify-content-center row mb-3'><div class='row col-5 m-1'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='row col-5 m-1'><a href='../dashboard/release-annual-marks/${data.exam[0].id}/${data.exam[0].subject_id}' role='button' class='btn btn-primary btn-block'>Release Now</a></div></div></div>`
+            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='exam_status_hidden' id='exam_status_hidden' value='${data.exam[0].exam_status}'/><p class='text-center mt-3 mb-3'><b>Would you like to RELEASE ANNUAL EXAM MARKS of ${data.exam[0].subject_name} for ${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium ?</b></p></div><div class='justify-content-center row mb-3'><div class='row col-5 m-1'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='row col-5 m-1'><a href='../dashboard/release-annual-marks/${data.exam[0].id}/${data.exam[0].subject_id}' role='button' class='btn btn-primary btn-block'><i class="fas fa-paper-plane"></i> Release Now</a></div></div></div>`
           )
         })
         $('#releaseMarksModal').modal('show');
@@ -1826,5 +1824,29 @@ $(document).ready(function () {
         console.log(err);
       }
     })
+  })
+})
+
+// STUDENT SEEING HIS MARK SHEET
+$(document).on('click', '.view_my_mark', function () {
+  var student_id = $(this).attr('logged-in');
+  var exam_id = $(this).attr('data-id');
+  $.ajax({
+    url: '/api/get-my-exam-marks',
+    type: 'POST',
+    data: {
+      student_id: student_id,
+      exam_id: exam_id,
+    }, dataType: 'JSON',
+    success: function (data) {
+      $('.view-myExamMarks-modal-body').html(function () {
+        return (
+          `<p class='m-2'>Showing Mark sheet Here</p>`
+        )
+        $('#viewMyMarksModal').modal('show');
+      })
+    }, error: function (err) {
+      console.log(err);
+    }
   })
 })
