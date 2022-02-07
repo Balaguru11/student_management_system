@@ -1,0 +1,65 @@
+<div>
+  <h4 class="text-center">View Batches</h4>
+  <br />
+  <table class="table table-light text-center" id="datatable">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th scope="col">Exam Name</th>
+        <th scope="col">Exam Type</th>
+        <th width="200px">Delete</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.masterList.length > 0) { for(var i = 0; i < locals.masterList.length;
+      i++) { %>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.masterList[i].exam_name %></td>
+        <td><%= locals.masterList[i].exam_type %></td>
+        <td>
+          <button
+            data-id="<%= locals.masterList[i].id %>"
+            type="button"
+            class="deleteExamMaster btn btn-danger View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-trash-alt" aria-hidden="true"></i>
+          </button>
+        </td>
+      </tr>
+
+      <% } } else { %>
+      <tr>
+        <td colspan="4" class="text-center">No Exam Master created yet.</td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- delete modal -->
+<div
+  class="modal fade"
+  id="deleteExamMasterModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteExamMasterModalLabel">
+          Deleting A Batch
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="delete-exam-master-modal-body"></div>
+    </div>
+  </div>
+</div>

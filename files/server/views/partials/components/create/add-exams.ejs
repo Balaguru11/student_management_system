@@ -6,9 +6,26 @@
                 </p>
                 <hr />
               </div>
+
+              <div class="mb-3">
+                <label for="exam_master">Exam Master:</label>
+                <select id="exam_master" class="form-control" name="exam_master" required>
+                  <option value="">Select One</option>
+                  <% if (locals.masterOptions.length > 0) { for (let m = 0; m < locals.masterOptions.length; m++) { %>
+                    <option value="<%= locals.masterOptions[m].id %>"><%= locals.masterOptions[m].exam_name %></option>
+                  <% } } %>
+                </select>
+                <span class="error" id="class_error"
+                  >Please choose Exam Master.</span
+                >
+              </div>
+              <div class="card" id="exam-master-data">
+                <!-- append Exam Master data here -->
+              </div>
+
               <div class="row">
                 <div class="col mb-3">
-                  <label for="exam_name">Name the Exam:</label>
+                  <label for="exam_name">Exam Master:</label>
                   <input
                     type="text"
                     class="form-control"
@@ -20,20 +37,7 @@
                     >Exam Name should not be empty.</span
                   >
                 </div>
-                <div class="col mb-3">
-                  <label for="exam_type">Choose Exam Type:</label>
-                  <select id="exam_type" class="form-control" name="exam_type" required>
-                    <option value="">Select One</option>
-                    <option value="term_exam">Mid Term Exam</option>
-                    <option value="quarterly_exam">Quarterly Exam</option>
-                    <option value="half_yearly_exam">Half Yearly Exam</option>
-                    <option value="model_exam">Model Exam</option>
-                    <option value="annual_exam">Annual Exam</option>
-                  </select>
-                  <span class="error" id="class_error"
-                    >Please choose an exam type.</span
-                  >
-                </div>
+                
               </div>
               <div class="mb-3">
                 <label for="exam_conducted_for">Exam Scheduling for:</label>

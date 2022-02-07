@@ -646,13 +646,14 @@ exports.viewExamsByHM = (req, res) => {
   let doubt_status = req.body.doubt_status;
   res.locals.staff_role = session.roleId;
   try {
-    var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam 
+    var examList = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam 
+    INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id 
     INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
     INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
     INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
     INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
     INNER JOIN school_class_subjects AS scs ON scs.deleted_at IS NULL AND scs.subject_id = xam.subject_id AND xam.exam_conducted_class_sec = scs.classroom_id
-    WHERE scs.staff_id_assigned = '${session.staff_id}' AND xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL GROUP BY exam_id`;
+    WHERE scs.staff_id_assigned = '${session.staff_id}' AND xmas.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL GROUP BY exam_id`;
     dbcon.query(examList, (err, data) => {
       if(err) throw err;
       res.locals.data = data[0];
@@ -1379,6 +1380,50 @@ exports.postAddClassroom = async (req, res) => {
   }
 };
 
+// HM adds Exam Master - GET
+exports.getExamMaster = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    var examMasters = `SELECT * FROM school_exams_master WHERE school_id = '${session.school_id}' AND deleted_at IS NULL`
+    dbcon.query(examMasters, (err, masterList) => {
+      if(err) throw err;
+      res.locals.masterList = masterList;
+      return res.render('staffLevel/hm-adds-exam-master', {title: 'Exam Master'})
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// HM adds Exam Master - POST
+exports.postExamMaster = (req, res) => {
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    if(req.body.exam_name.length > 3) {
+      var insertMaster = `INSERT INTO school_exams_master (school_id, exam_name, exam_type) VALUES ('${session.school_id}', '${req.body.exam_name}', '${req.body.exam_type}')`
+      dbcon.query(insertMaster, (err, insertedMaster) => {
+        if(err) throw err
+        return res.redirect('/staff/dashboard/exam-master');
+      })
+    } else {
+      req.flash('err_msg', 'Name should be more than 3 characters long.');
+      return res.redirect('/staff/dashboard/exam-master');
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 // Add Big Exams and View list
 exports.getAddExamsForm = (req, res) => {
     let err_msg = req.flash("err_msg");
@@ -1388,18 +1433,20 @@ exports.getAddExamsForm = (req, res) => {
     let session = req.session;
     res.locals.staff_role = session.roleId;
     try {
-      var examList = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
+      var examList = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
+      INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id
       INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
       INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
       INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
       INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
-      WHERE xam.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std); SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL GROUP BY exam_id`;
+      WHERE xmas.school_id = '${session.school_id}' AND xam.deleted_at IS NULL; SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std); SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL GROUP BY exam_id; SELECT * FROM school_exams_master WHERE school_id = '${session.school_id}' AND deleted_at IS NULL`;
       dbcon.query(examList, (err, data) => {
         if(err) throw err;
         console.log(data);
         res.locals.data = data[0];
         res.locals.classStd = data[1];
         res.locals.marks = data[2];
+        res.locals.masterOptions = data[3];
         return res.render('staffLevel/hm-add-exams', {title: 'Exams List'})
       })
     } catch(err) {
@@ -1499,12 +1546,13 @@ exports.releaseAnnualResult = (req, res) => {
   let session = req.session;
   res.locals.staff_role = session.roleId;
   try {
-    var annuals = `SELECT xam.id, xam.exam_name, xam.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
+    var annuals = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
+    INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id 
     INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
     INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
     INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
     INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
-    WHERE xam.school_id = '${session.school_id}' AND xam.exam_type='annual_exam' AND xam.deleted_at IS NULL GROUP BY sem.exam_id ORDER BY sfs.class_std ASC, sfs.medium ASC, batch.year_from DESC; SELECT exam_id FROM school_exams_marks WHERE is_released = 'no' AND school_id = '${session.school_id}' GROUP BY exam_id`;
+    WHERE xmas.school_id = '${session.school_id}' AND xam.exam_type='annual_exam' AND xam.deleted_at IS NULL GROUP BY sem.exam_id ORDER BY sfs.class_std ASC, sfs.medium ASC, batch.year_from DESC; SELECT exam_id FROM school_exams_marks WHERE is_released = 'no' AND school_id = '${session.school_id}' GROUP BY exam_id`;
     dbcon.query(annuals, (err, data) => {
       if(err) throw err;
       console.log(data[1]);

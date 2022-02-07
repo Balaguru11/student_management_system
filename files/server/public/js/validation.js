@@ -1168,7 +1168,16 @@ $(document).ready(function() {
 
 // date Picker JQuery UI
 $(document).ready(function() {
-    $(".my_date_picker").datepicker();
+    $(".my_date_picker").datepicker({
+      dateFormat: 'yy-mm-dd',
+      timeFormat: 'HH:mm:ss'
+      // onShow: function () {
+      //     this.setOptions({
+      //         // maxDate:$('#tdate').val()?$('#tdate').val():false,
+      //         // maxTime:$('#tdate').val()?$('#tdate').val():false
+      //     });
+      // }
+  })
 })
 
 // Password Reset student Account Modal for School Login
@@ -1843,8 +1852,8 @@ $(document).on('click', '.view_my_mark', function () {
         return (
           `<p class='m-2'>Showing Mark sheet Here</p>`
         )
-        $('#viewMyMarksModal').modal('show');
       })
+      $('#viewMyMarksModal').modal('show');
     }, error: function (err) {
       console.log(err);
     }
