@@ -34,7 +34,7 @@ const {
   getMapSubStaff,
   postMapSubStaff,
   viewClassSections,
-  postAddClassroom, getExamMaster, postExamMaster, getAddExamsForm, addNewExam, editExamByHM, deleteExamByHM, 
+  postAddClassroom, getExamMaster, postExamMaster, deleteExamMaster, getAddExamsForm, addNewExam, editExamByHM, deleteExamByHM, 
   getAllStaffList,
   putFeeStructure,
   deleteFeeStructure,
@@ -231,6 +231,7 @@ staffRouter.post("/dashboard/sections", isStaff, isHM, postAddClassroom);
 // HM creating Exam Master
 staffRouter.get('/dashboard/exam-master', isStaff, isHM, getExamMaster);
 staffRouter.post('/dashboard/exam-master', isStaff, isHM, postExamMaster);
+staffRouter.get('/dashboard/exam-master/delete/:ex_master_id', isStaff, isHM, deleteExamMaster);
 
 // HM creates Big Exams
 staffRouter.get('/dashboard/exams', isStaff, isHM, getAddExamsForm); // loads View and add form at the same time.

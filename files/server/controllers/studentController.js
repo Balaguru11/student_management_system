@@ -599,10 +599,11 @@ exports.getExamsAndMarks = (req, res) => {
   res.locals.student_id = session.student_id;
   try {
     // see all the Exams added to his class section. // See his own Marks as well.
-    var examsAndMarks = `SELECT xam.id, xam.exam_name, xam.exam_type, xam.subject_id, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
+    var examsAndMarks = `SELECT xam.id, xmas.exam_name, xmas.exam_type, xam.subject_id, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
+    INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id 
     INNER JOIN school_student_admission AS ssad ON ssad.class_section = xam.exam_conducted_class_sec 
     INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id 
-    WHERE ssad.student_id = '${session.student_id}' AND ssad.school_id = '${session.school_id}' AND ssad.deleted_at IS NULL; SELECT exam_id, COUNT(received_mark) AS entries FROM school_exams_marks WHERE deleted_at IS NULL GROUP BY exam_id`;
+    WHERE ssad.student_id = '${session.student_id}' AND ssad.school_id = '${session.school_id}' AND ssad.deleted_at IS NULL GROUP BY xam.ex_master_id; SELECT sem.exam_id, subj.subject_name, xam.sub_outoff_marks, xam.cutoff_mark, sem.received_mark, sem.subject_result FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE sem.student_id = '${session.student_id}' AND sem.deleted_at IS NULL`;
 
     dbcon.query(examsAndMarks, (err, myExamsList) => {
       if(err) throw err

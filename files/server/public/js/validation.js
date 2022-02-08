@@ -1593,16 +1593,54 @@ $(document).ready(function () {
   })
 })
 
-// parent Header menu On hover navigation dropdown - not working
+// Delete Exam Master
+$(document).on('click', '.deleteExamMaster', function () {
+  var xMaster_id = $(this).attr('data-id');
+  $.ajax({
+    url: '/api/get-exam-master-data',
+    type: 'POST',
+    data: {
+      xMaster_id: xMaster_id,
+    }, dataType: 'JSON',
+    success: function (data) {
+      $('.delete-exam-master-modal-body').html(function () {
+        return (
+          `<div class='container'><div class='row'><p class='text-center mt-3 mb-3'><b>Do you want to delete '${data.masterData[0].exam_name}' of type '${data.masterData[0].exam_type}' ?</b></p></div><div class='row mb-3'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/exam-master/delete/${data.masterData[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
+        )
+      })
+      $('#deleteExamMasterModal').modal('show');
+    }, error: function (err) {
+      console.log(err);
+    }
+  })
+})
+
+// getting Exam Master data from Add Exam Screen after selecting the Exam master 
 $(document).ready(function () {
-  $('.parent_student').on('mouseover', function () {
-    
+  $('#exam_master').on('change', function () {
+    var xMaster_id = $(this).val();
+    $.ajax({
+      url: '/api/get-exam-master-data',
+      type: 'POST',
+      data: {
+        xMaster_id: xMaster_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        $('#appended_master').remove();
+        $('#exam_master_data').append(function () {
+          return (
+            `<div id='appended_master' class='m-1'><p>Exam Name: <b>${data.masterData[0].exam_name}</b> | Exam Type: <b>${data.masterData[0].exam_type}</b></p></div>`
+          )
+        })
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
   })
 })
 
 // Adding EXAM - Gettimng subject rows after class sec
-$(document).ready(function () {
-  $('#exam_conducted_for').on('change', function () {
+$(document).on('change', '#exam_conducted_for', function () {
     var exam_std = $(this).val();
     console.log(exam_std);
     $.ajax({
@@ -1669,7 +1707,6 @@ $(document).ready(function () {
       }
     })
   })
-})
 
 $(document).on('change', '.subject_total, .cutoff_mark', function () {
   var count = $('#subject_count').val();
@@ -1681,8 +1718,6 @@ $(document).on('change', '.subject_total, .cutoff_mark', function () {
 
 // HM edits an Exam
 $(document).on('click', '.editExam', function () {
-// $(document).ready(function () {
-//  $('.editExam').on('click', function () {
    var exam_id = $(this).attr('data-id');
    $.ajax({
      url: '/api/get-exam-data',
@@ -1704,8 +1739,7 @@ $(document).on('click', '.editExam', function () {
        console.log(err);
      }
    })
- }) 
-// })
+ })
 
 // HM deletes an Exam
 $(document).ready(function () {
@@ -1745,10 +1779,7 @@ $(document).on('click', '.view_exam_mark', function () {
 
           let view_mark = ``;
           for (let i=0; i < data.markList.length; i++) {
-            const pass_fail = data.markList[i].received_mark >= data.markList[i].cutoff_mark
-            let mark_status = pass_fail ? "Pass" : "Fail";
-
-            let view_i = `<tr><th scope="row">${i+1}</th><td><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</td><td>${data.markList[i].received_mark}</td><td>${mark_status}</td></tr>`
+            let view_i = `<tr><th scope="row">${i+1}</th><td><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</td><td>${data.markList[i].received_mark}</td><td>${data.markList[i].subject_result}</td></tr>`
             view_mark += view_i;
           }
 
@@ -1788,10 +1819,10 @@ $(document).ready(function () {
 
           let view_mark = ``;
           for (let i=0; i < data.markList.length; i++) {
-            const pass_fail = data.markList[i].received_mark >= data.markList[i].cutoff_mark
-            let mark_status = pass_fail ? "Pass" : "Fail";
+            // const pass_fail = data.markList[i].received_mark >= data.markList[i].cutoff_mark
+            // let mark_status = pass_fail ? "Pass" : "Fail";
 
-            let view_i = `<tr><th scope="row">${i+1}</th><td><label for="student_${data.markList[i].student_id}"><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</label><input type="hidden" class="form-control" name="student_id_${i+1}" id="student_${i+1}" value="${data.markList[i].student_id}" /></td><td><input type="number" class="form-control" name="edit_exam_mark_${i+1}" id="exam_mark_${i+1}" value="${data.markList[i].received_mark}" placeholder="Enter Mark here" max='${data.markList[i].sub_outoff_marks}' /><td>${mark_status}</td></td></tr>`
+            let view_i = `<tr><th scope="row">${i+1}</th><td><label for="student_${data.markList[i].student_id}"><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</label><input type="hidden" class="form-control" name="student_id_${i+1}" id="student_${i+1}" value="${data.markList[i].student_id}" /></td><td><input type="hidden" class="form-control" name="cutoff_mark" id="cutoff_mark" value="${data.markList[i].cutoff_mark}" /><input type="number" class="form-control" name="edit_exam_mark_${i+1}" id="exam_mark_${i+1}" value="${data.markList[i].received_mark}" placeholder="Enter Mark here" max='${data.markList[i].sub_outoff_marks}' /><td>${data.markList[i].subject_result}</td></td></tr>`
             view_mark += view_i;
           }
 
@@ -1859,3 +1890,6 @@ $(document).on('click', '.view_my_mark', function () {
     }
   })
 })
+
+
+

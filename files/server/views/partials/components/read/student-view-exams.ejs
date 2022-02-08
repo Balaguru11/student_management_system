@@ -54,6 +54,56 @@
       <% } %>
     </tbody>
   </table>
+
+  <table class="table table-light text-center" id="datatable">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th width="200px">Exam Name</th>
+        <th width="100px">Exam Type</th>
+        <th width="200px">Subject</th>
+        <th width="150px">When?</th>
+        <th width="100px">Duration</th>
+        <th width="100px">Marks</th>
+        <th width="100px">Status</th>
+        <th width="100px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.myExamsList.length > 0) { for (var i = 0; i < locals.myExamsList.length;
+      i++) { %>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.myExamsList[i].exam_name %></td>
+        <td><%= locals.myExamsList[i].exam_type %></td>
+        <td><%= locals.myExamsList[i].exam_status %></td>
+        <td>
+           <% if (locals.myExamsList[i].exam_status == 'completed') { %>
+            <% var mapped = locals.marks.map(obj => obj.exam_id).indexOf(locals.myExamsList[i].id) %>
+            <% if (mapped != '-1') { %>
+            <button data-id="<%= locals.myExamsList[i].id %>" logged-in = "<%= locals.student_id %>" type="button" class="view_my_mark btn btn-info" data-bs-toggle="modal" >Mark Sheet</button>
+            <% } else { %>
+              <a
+              class="btn btn-secondary"
+              href="#" onclick="return false;"
+              ><i class="fas fa-plus-circle"></i> Mark Sheet</a>
+          <% } } else if (locals.myExamsList[i].exam_status != 'completed') { %>
+            <a 
+            class="btn btn-secondary"
+            href="#" onclick="return false;"
+            ><i class="fas fa-plus-circle"></i> Mark Sheet</a>
+         <% } %>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center">
+          <mark>No Exams found.</mark>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
 </div>
 
 <!-- View My Exam Marks modal -->

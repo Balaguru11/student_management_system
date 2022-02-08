@@ -8,40 +8,27 @@
               </div>
 
               <div class="mb-3">
-                <label for="exam_master">Exam Master:</label>
+                <% if (locals.masterOptions.length > 0) { %>
+                <label for="exam_master mb-1">Choose Exam Master:</label>
                 <select id="exam_master" class="form-control" name="exam_master" required>
                   <option value="">Select One</option>
-                  <% if (locals.masterOptions.length > 0) { for (let m = 0; m < locals.masterOptions.length; m++) { %>
+                  <% for (let m = 0; m < locals.masterOptions.length; m++) { %>
                     <option value="<%= locals.masterOptions[m].id %>"><%= locals.masterOptions[m].exam_name %></option>
-                  <% } } %>
+                  <% } %>
                 </select>
                 <span class="error" id="class_error"
                   >Please choose Exam Master.</span
                 >
+                <% } else { %>
+                  <a href="/staff/dashboard/exam-master" role="button" class="btn btn-primary">Add Exam Master</a>
+                <% } %>
               </div>
-              <div class="card" id="exam-master-data">
+              <div id="exam_master_data">
                 <!-- append Exam Master data here -->
-              </div>
-
-              <div class="row">
-                <div class="col mb-3">
-                  <label for="exam_name">Exam Master:</label>
-                  <input
-                    type="text"
-                    class="form-control"
-                    name="exam_name"
-                    id="exam_name"
-                    placeholder="Name anything. For identification purpose only"
-                  />
-                  <span class="error" id="exam_name_error"
-                    >Exam Name should not be empty.</span
-                  >
-                </div>
-                
               </div>
               <div class="mb-3">
                 <label for="exam_conducted_for">Exam Scheduling for:</label>
-                <select id="exam_conducted_for" class="js-example-basic-multiple js-example-responsive form-control" name="exam_conducted_for[]" multiple="multiple">
+                <select id="exam_conducted_for" class="js-example-basic-multiple js-example-responsive form-control" name="exam_conducted_for[]" multiple="multiple" >
                   <option value="" disabled>Choose at least one</option>
                   <% if(locals.classStd.length > 0) {
                     for (let i=0; i < locals.classStd.length; i++) { %>
