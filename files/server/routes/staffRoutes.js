@@ -94,7 +94,7 @@ staffRouter.post('/dashboard/add-doubt-thread-message', isStaff, isTeacher, addT
 staffRouter.get('/dashboard/view-exams', isStaff, isTeacher, viewExamsByHM);
 staffRouter.get('/dashboard/exam-marks/add/:exam_ref_id', isStaff, isTeacher, addStuExamMarks);
 staffRouter.post('/dashboard/exam-marks/add/:exam_ref_id/:students_count', isStaff, isTeacher, postStuExamMarks);
-staffRouter.get('/dashboard/exam-marks/edit/:exam_ref_id/:students_count', isStaff, isTeacher, editExamMarks);
+staffRouter.put('/dashboard/exam-marks/edit/:exam_ref_id/:students_count', isStaff, isTeacher, editExamMarks);
 
 // staffRouter.get('/dashboard/student-performance', isStaff, getStuPerformReport);
 
@@ -240,7 +240,6 @@ staffRouter.post('/dashboard/exams/edit/:exam_id', isStaff, isHM, editExamByHM);
 staffRouter.get('/dashboard/exams/delete/:exam_id', isStaff, isHM, deleteExamByHM);
 staffRouter.get('/dashboard/release-annual-marks', isStaff, isHM, releaseAnnualResult);
 staffRouter.get('/dashboard/release-annual-marks/:exam_id/:subject_id', isStaff, isHM, postAnnualResult);
-
 
 // message to staff by HM
 // staffRouter.get('/dashboard/message-staff', isStaff, getStaffMsgForm);

@@ -740,12 +740,14 @@ exports.editExamMarks = (req, res) => {
   res.locals.err_msg = err_msg;
   let exam_ref_id = req.params.exam_ref_id;
   let student_count = req.params.students_count;
+  console.log(req.body);
   try {
     let updateMarks = "";
     for (let i=1; i <= student_count; i++) {
-      // console.log(`UPDATE school_exams_marks SET received_mark='${req.body[`edit_exam_mark_${i}`]}' WHERE student_id='${req.body[`student_id_${i}`]}' AND exam_id='${exam_ref_id}';`);
 
       let sub_result = `${req.body[`edit_exam_mark_${i}`]}` >= `${req.body.cutoff_mark}` ? 'Pass' : 'Fail';
+
+      console.log(`UPDATE school_exams_marks SET received_mark='${req.body[`edit_exam_mark_${i}`]}', subject_result = '${sub_result}' WHERE student_id='${req.body[`student_id_${i}`]}' AND exam_id='${exam_ref_id}';`);
 
       var loop = `UPDATE school_exams_marks SET received_mark='${req.body[`edit_exam_mark_${i}`]}', subject_result = '${sub_result}' WHERE student_id='${req.body[`student_id_${i}`]}' AND exam_id='${exam_ref_id}';`;
       updateMarks += loop

@@ -599,7 +599,7 @@ exports.getExamsAndMarks = (req, res) => {
   res.locals.student_id = session.student_id;
   try {
     // see all the Exams added to his class section. // See his own Marks as well.
-    var examsAndMarks = `SELECT xam.id, xmas.exam_name, xmas.exam_type, xam.subject_id, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
+    var examsAndMarks = `SELECT xam.id, xam.ex_master_id, xam.exam_conducted_class_sec, xmas.exam_name, xmas.exam_type, xam.subject_id, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
     INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id 
     INNER JOIN school_student_admission AS ssad ON ssad.class_section = xam.exam_conducted_class_sec 
     INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id 

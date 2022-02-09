@@ -528,9 +528,29 @@ apiRouter.post('/get-exam-scores', (req, res) => {
   })
 })
 
+// Student Viewing Exam Schedule from Exam screen
+apiRouter.post('/get-my-exam-schedule', (req, res) => {
+  var examSched = `SELECT subj.id, subj.subject_name, xam.exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE xam.exam_conducted_class_sec = '${req.body.class_sec}' AND xam.ex_master_id = '${req.body.exam_master_id}' AND xam.deleted_at IS NULL`;
+  dbcon.query(examSched, (err, scheduledExams) => {
+    if (err) res.json({msg: 'error', err});
+    else if (scheduledExams.length != 0) {
+      console.log(scheduledExams)
+      res.json({msg: 'success', scheduledExams: scheduledExams});
+    } else {
+      res.json({msg: 'success', scheduledExams: scheduledExams});
+    }
+  })
+})
+
 // Student viewing exam mark of an exam
 apiRouter.post('/get-my-exam-marks', (req, res) => {
-  var getMyMark = `SELECT subj.subject_name, sem.received_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE sem.student_id = '${req.body.student_id}' AND sem.exam_id = '${req.body.exam_id}' AND sem.is_released = 'yes' AND sem.deleted_at IS NULL; SELECT * FROM school_exams_marks WHERE student_id = '${req.body.student_id}' AND exam_id = '${req.body.exam_id}' AND deleted_at IS NULL; SELECT stu.name, stu.father_name, DATE_FORMAT(stu.date_of_birth, '%d-%c-%Y') AS date_of_birth, ssad.academic_year FROM School_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id WHERE stu.student_id = '${req.body.student_id}' AND ssad.academic_year = YEAR(CURDATE())`;
+  var getMyMark = `SELECT subj.id AS subj_id, subj.subject_name, sem.received_mark, xam.exam_date, xam.exam_duration, xam.exam_status, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem 
+  INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
+  INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id 
+  INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id
+  WHERE sem.student_id = '${req.body.student_id}' AND xam.ex_master_id = '${req.body.exam_master_id}' AND sem.is_released = 'yes' AND xam.exam_conducted_class_sec = '${req.body.class_sec}' AND sem.deleted_at IS NULL;
+  SELECT subj.id, subj.subject_name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id = scs.subject_id WHERE scs.classroom_id = '${req.body.class_sec}' AND scs.deleted_at IS NULL;
+  SELECT stu.name, stu.father_name, DATE_FORMAT(stu.date_of_birth, '%d-%c-%Y') AS date_of_birth, ssad.academic_year FROM School_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id WHERE stu.student_id = '${req.body.student_id}' AND ssad.academic_year = YEAR(CURDATE())`;
   dbcon.query(getMyMark, (err, markList) => {
     if(err) {
       res.json({msg: 'error', err});
