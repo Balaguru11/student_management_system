@@ -39,14 +39,6 @@
           >
             <i class="far fa-edit aria-hidden="true"></i>
           </button>
-          <button
-            data-id="<%= locals.data[i].id %>"
-            type="button"
-            class="deleteExam btn btn-danger View"
-            data-bs-toggle="modal"
-          >
-            <i class="far fa-trash-alt" aria-hidden="true"></i>
-          </button>
           <% } else if (locals.data[i].exam_status == 'completed') { %>
             <% var mapped = locals.marks.map(obj => obj.exam_id).indexOf(locals.data[i].id) %>
               <% if (mapped == '-1') { %>

@@ -506,7 +506,7 @@ apiRouter.post('/get-exam-master-data', (req, res) => {
 })
 
 apiRouter.post('/get-exam-data', (req, res) => {
-  var getExamData = `SELECT exam.id, xmas.exam_name, sfs.class_std, sfs.medium, clr.class_section, xmas.exam_type, subj.id AS subject_id, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, exam.exam_duration, exam.sub_outoff_marks, exam.cutoff_mark, exam.exam_status FROM school_exams AS exam INNER JOIN school_exams_master AS xmas ON xmas.id = exam.ex_master_id INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
+  var getExamData = `SELECT exam.id, xmas.exam_name, sfs.class_std, sfs.medium, clr.class_section, xmas.exam_type, subj.id AS subject_id, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_format_date, exam.exam_date AS exam_utc, exam.exam_duration, exam.sub_outoff_marks, exam.cutoff_mark, exam.exam_status FROM school_exams AS exam INNER JOIN school_exams_master AS xmas ON xmas.id = exam.ex_master_id INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
   dbcon.query(getExamData, (err, exam) => {
     if(err) {
       res.json({msg: 'error', err});
@@ -530,7 +530,7 @@ apiRouter.post('/get-exam-scores', (req, res) => {
 
 // Student Viewing Exam Schedule from Exam screen
 apiRouter.post('/get-my-exam-schedule', (req, res) => {
-  var examSched = `SELECT subj.id, subj.subject_name, xam.exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE xam.exam_conducted_class_sec = '${req.body.class_sec}' AND xam.ex_master_id = '${req.body.exam_master_id}' AND xam.deleted_at IS NULL`;
+  var examSched = `SELECT subj.id, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE xam.exam_conducted_class_sec = '${req.body.class_sec}' AND xam.ex_master_id = '${req.body.exam_master_id}' AND xam.deleted_at IS NULL`;
   dbcon.query(examSched, (err, scheduledExams) => {
     if (err) res.json({msg: 'error', err});
     else if (scheduledExams.length != 0) {

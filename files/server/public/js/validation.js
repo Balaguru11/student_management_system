@@ -1169,8 +1169,13 @@ $(document).ready(function() {
 // date Picker JQuery UI
 $(document).ready(function() {
     $(".my_date_picker").flatpickr({
+      minDate: "today",
+      maxDate: new Date().fp_incr(120),
       enableTime: true,
-      dateFormat: "Y-m-d H:i",
+      time_24hr: true,
+      minTime: "05:00",
+      maxTime: "22:30",
+      dateFormat: "d-m-Y H:i",
   })
 })
 
@@ -1686,10 +1691,15 @@ $(document).on('change', '#exam_conducted_for', function () {
             $('#create_exam_button').attr('disabled', 'disabled');
           }
           $('.my_date_picker').flatpickr({
+            minDate: "today",
+            maxDate: new Date().fp_incr(120),
             enableTime: true,
-            dateFormat: "Y-m-d H:i",
-        });
-        })
+            time_24hr: true,
+            minTime: "05:00",
+            maxTime: "22:30",
+            dateFormat: "d-m-Y H:i",
+          })
+      })
       }, error: function (err) {
         $('#exam_plan').html("<p>No Subject Found</p>")
       }
@@ -1718,10 +1728,33 @@ $(document).on('click', '.editExam', function () {
         return (
           `<div class='row m-3 p-1 rounded bg-warning'><h5>${data.exam[0].exam_name}</h5><hr><span><p>Exam type: ${data.exam[0].exam_type}</p><p>Subject: <b>${data.exam[0].subject_name}</b></p><p>Class Sec: <b>${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium - ${data.exam[0].class_section} Section</b></p></span></div><div>
           <form id='editExam-form' action='../dashboard/exams/edit/${data.exam[0].id}' method='POST'> <div class='row m-3'> 
-          <div class='mb-3'> <label for='exam_date_edit'>Exam Date:</label> <input type='text' class='my_date_picker form-control' name='exam_date_edit' id='exam_date_edit' value='${data.exam[0].exam_date}' /> </div> <div class='mb-3'> <label for='exam_duration_edit'>Exam Duration (in Mins):</label> <input type='number' class='form-control' name='exam_duration_edit' id='exam_duration_edit' placeholder='Exam duration in Mins.' value='${data.exam[0].exam_duration}' /> </div>  <div class='mb-3'> <label for='subj_mark_edit'>Total Marks:</label> <input type='number' class='form-control' name='subj_mark_edit' id='subj_mark_edit' placeholder='Total marks' value='${data.exam[0].sub_outoff_marks}' /> </div><div class='mb-3'> <label for='cutoff_mark_edit'>Pass Mark:</label> <input type='number' class='form-control' name='cutoff_mark_edit' id='cutoff_mark_edit' placeholder='Pass mark' value='${data.exam[0].cutoff_mark}' min='1' max='${data.exam[0].sub_outoff_marks}' /> </div> <div class='mb-3'> <label for='exam_status_edit'>Exam Status:</label> <select id='exam_status_edit' class='form-control' name='exam_status_edit' value='${data.exam[0].exam_status}' > <option value='scheduled' >Scheduled</option> <option value='postponed'>Postponed</option> <option value='completed' class='text-white mark bg-success'>Completed</option> <option value='cancelled'>Cancelled</option> <option value='onhold'>Withheld (On Hold)</option> </select> <span class='error' id='class_error' >Please choose a Status.</span > </div> <div class='mb-3'> <button id='create_exam_button' class='btn btn-secondary' type='submit' value='submit'> Update Exam </button> </div> </form></div>`
+          <div class='mb-3'> <label for='exam_date_edit'>Exam Date:</label> <input type='text' class='my_date_picker form-control' name='exam_date_edit' id='exam_date_edit' value='${data.exam[0].exam_format_date}' /> <input type='hidden' class='form-control' name='exam_date_utc' id='exam_date_utc' value='${data.exam[0].exam_utc}' /> </div> <div class='mb-3'> <label for='exam_duration_edit'>Exam Duration (in Mins):</label> <input type='number' class='form-control' name='exam_duration_edit' id='exam_duration_edit' placeholder='Exam duration in Mins.' value='${data.exam[0].exam_duration}' /> </div>  <div class='mb-3'> <label for='subj_mark_edit'>Total Marks:</label> <input type='number' class='form-control' name='subj_mark_edit' id='subj_mark_edit' placeholder='Total marks' value='${data.exam[0].sub_outoff_marks}' /> </div><div class='mb-3'> <label for='cutoff_mark_edit'>Pass Mark:</label> <input type='number' class='form-control' name='cutoff_mark_edit' id='cutoff_mark_edit' placeholder='Pass mark' value='${data.exam[0].cutoff_mark}' min='1' max='${data.exam[0].sub_outoff_marks}' /> </div> <div class='mb-3'> <label for='exam_status_edit'>Exam Status:</label> <select id='exam_status_edit' class='form-control' name='exam_status_edit' value='${data.exam[0].exam_status}'> <option value='scheduled' >Scheduled</option> <option value='postponed'>Postponed</option> <option value='cancelled'>Cancelled</option> <option value='onhold'>Withheld (On Hold)</option> </select> <span class='error' id='class_error' >Please choose a Status.</span > </div> <div class='mb-3'> <button id='create_exam_button' class='btn btn-secondary' type='submit' value='submit'> Update Exam </button> </div> </form></div>`
         )
       })
-      $('.my_date_picker').flatpickr();
+      // when matching date - check the time inside and get the option added.
+      var curr_time = +new Date();
+      console.log(curr_time); // ms
+      var exam_start_ms = +new Date(data.exam[0].exam_utc); 
+      var exam_end_ms = (data.exam[0].exam_duration*60*1000)
+      console.log(`Start: ${exam_start_ms}, End: ${exam_end_ms}`)
+      if(( exam_start_ms + exam_end_ms) < curr_time ){
+        console.log('Yes');
+        $('#exam_status_edit').append(
+          `<option value='completed' class='text-white mark bg-success'>Completed</option>`
+        )
+      } else {
+        console.log('No');
+      }
+ 
+      $('.my_date_picker').flatpickr({
+        minDate: "today",
+        maxDate: new Date().fp_incr(120),
+        enableTime: true,
+        time_24hr: true,
+        minTime: "05:00",
+        maxTime: "22:30",
+        dateFormat: "d-m-Y H:i",
+    });
       $('#editExamModal').modal('show');
      }, error: function (err) {
        console.log(err);
@@ -1861,7 +1894,7 @@ $(document).ready(function () {
   })
 })
 
-// STUDENT SEEING HIS EXAM SCHEDULE 
+// STUDENT SEEING HIS EXAM SCHEDULE - not working
 $(document).on('click', '.view_exam_sched', function () {
   var student_id = $(this).attr('logged-in');
   var exam_master_id = $(this).attr('data-id');
@@ -1875,12 +1908,20 @@ $(document).on('click', '.view_exam_sched', function () {
       class_sec: class_sec,
     }, dataType: 'JSON',
     success: function (data) {
+      var exam_sched = "";
+      for (let x = 0; x < data.scheduledExams.length; x++ ){
+        let tr = `<tr><td>${x+1}</td><td>${data.scheduledExams[x].subject_name}</td><td>${data.scheduledExams[x].exam_date}</td><td>${data.scheduledExams[x].exam_duration}</td><td>${data.scheduledExams[x].exam_status}</td></tr>`
+        exam_sched += tr;
+      }
+
       $('.viewExamSched-modal-body').html(function () { 
         return (
           `<div class='m-2 border border-secondary border-rounded'><table class='table table-light text-center '>
-          <thead><tr><th scope='col'>S.No</th><th scope='200px'>Subject</th><th scope='200px'>Exam Date & Time</th><th scope='200px'>Exam Duration</th><th scope='200px'>Status (Latest Updated)</th></tr></thead><tbody></tbody></table></div>`
+          <thead><tr><th scope='col'>S.No</th><th scope='200px'>Subject</th><th scope='200px'>Exam Date & Time</th><th scope='200px'>Exam Duration</th><th scope='200px'>Status (Latest Updated)</th></tr></thead><tbody>${exam_sched}</tbody></table></div>`
         )
       })
+
+      
       $('#viewExamSchedModal').modal('show');
     }, error: function (err) {
       console.log(err);
@@ -1889,61 +1930,61 @@ $(document).on('click', '.view_exam_sched', function () {
 })
 
 // STUDENT SEEING HIS MARK SHEET
-$(document).on('click', '.view_my_mark', function () {
-  var student_id = $(this).attr('logged-in');
-  var exam_master_id = $(this).attr('data-id');
-  var class_sec = $(this).attr('class-sec');
-  $.ajax({
-    url: '/api/get-my-exam-marks',
-    type: 'POST',
-    data: {
-      student_id: student_id,
-      exam_master_id: exam_master_id,
-      class_sec: class_sec,
-    }, dataType: 'JSON',
-    success: function (data) {
-      var mark_data = "";
-      let fail_count = 0;
-      let max_total = 0;
-      let secured_total = 0;
-      for (let s=0; s < data.markList[1].length; s++) {
-        let mark_index = data.markList[0].findIndex(obj => obj.subj_id == `${data.markList[1][s].id}`);
-        console.log(mark_index);
-        let received_mark = 'To be updated'
-        let subject_result = 'To be updated'
-        let final_result = "";
-        if(mark_index != '-1') {
-          received_mark = `${data.markList[0][mark_index].received_mark}`;
-          subject_result = `${data.markList[0][mark_index].received_mark}` > `${data.markList[0][mark_index].cutoff_mark}` ? 'Pass' : 'Fail'
-          subject_result == 'Fail' ? fail_count++ : fail_count;
-          max_total += data.markList[0][mark_index].sub_outoff_marks
-          secured_total += data.markList[0][mark_index].received_mark
-        } else {
-          received_mark;
-          subject_result;
-        }
-        let mark_row = `<tr>
-        <th scope="row">${s+1}</th>
-        <td>${data.markList[1][s].subject_name}</td>
-        <td>${data.markList[0][mark_index].sub_outoff_marks}</td>
-        <td>${data.markList[0][mark_index].cutoff_mark}</td>
-        <td>${received_mark}</td>
-        <td>${subject_result}</td>
-        </tr>`
-        mark_data += mark_row;
-      }
+// $(document).on('click', '.view_my_mark', function () {
+//   var student_id = $(this).attr('logged-in');
+//   var exam_master_id = $(this).attr('data-id');
+//   var class_sec = $(this).attr('class-sec');
+//   $.ajax({
+//     url: '/api/get-my-exam-marks',
+//     type: 'POST',
+//     data: {
+//       student_id: student_id,
+//       exam_master_id: exam_master_id,
+//       class_sec: class_sec,
+//     }, dataType: 'JSON',
+//     success: function (data) {
+//       var mark_data = "";
+//       let fail_count = 0;
+//       let max_total = 0;
+//       let secured_total = 0;
+//       for (let s=0; s < data.markList[1].length; s++) {
+//         let mark_index = data.markList[0].findIndex(obj => obj.subj_id == `${data.markList[1][s].id}`);
+//         console.log(mark_index);
+//         let received_mark = 'To be updated'
+//         let subject_result = 'To be updated'
+//         let final_result = "";
+//         if(mark_index != '-1') {
+//           received_mark = `${data.markList[0][mark_index].received_mark}`;
+//           subject_result = `${data.markList[0][mark_index].received_mark}` > `${data.markList[0][mark_index].cutoff_mark}` ? 'Pass' : 'Fail'
+//           subject_result == 'Fail' ? fail_count++ : fail_count;
+//           max_total += data.markList[0][mark_index].sub_outoff_marks
+//           secured_total += data.markList[0][mark_index].received_mark
+//         } else {
+//           received_mark;
+//           subject_result;
+//         }
+//         let mark_row = `<tr>
+//         <th scope="row">${s+1}</th>
+//         <td>${data.markList[1][s].subject_name}</td>
+//         <td>${data.markList[0][mark_index].sub_outoff_marks}</td>
+//         <td>${data.markList[0][mark_index].cutoff_mark}</td>
+//         <td>${received_mark}</td>
+//         <td>${subject_result}</td>
+//         </tr>`
+//         mark_data += mark_row;
+//       }
 
-      final_result = fail_count == 0 ? 'Pass' : 'Fail';
+//       final_result = fail_count == 0 ? 'Pass' : 'Fail';
       
-      $('.view-myExamMarks-modal-body').html(function () {
-        return (
-          `<div class='card bg-info m-1 p-3'><div clas='card-body'><div class='row'><div class='col-6'><h5 class='display-6'>${data.markList[2][0].name}</h5><p>Date of Birth: ${data.markList[2][0].date_of_birth}</p></div><div class='col-6'><p class='display-6'>Your Result: ${final_result}</p><p>Academic Year: ${data.markList[2][0].academic_year}</p></div></div></div></div><div class='align-center mx-1'><table class='table table-dark text-center '>
-          <thead> <tr><th scope='col'>S.No</th><th scope='200px'>Subject</th><th scope='200px'>Max. Mark</th><th scope='200px'>Pass Mark</th><th scope='200px'>Secured Mark</th><th scope='200px'>Result</th></tr></thead><tbody>${mark_data}<tr class='bg-info text-white'><td>*</td><td>Total</td><td>${max_total}</td><td>-</td><td>${secured_total}</td><td>${final_result}</td></tr></tbody></table></div>`
-        )
-      })
-      $('#viewMyMarksModal').modal('show');
-    }, error: function (err) {
-      console.log(err);
-    }
-  })
-})
+//       $('.view-myExamMarks-modal-body').html(function () {
+//         return (
+//           `<div class='card bg-info m-1 p-3'><div clas='card-body'><div class='row'><div class='col-6'><h5 class='display-6'>${data.markList[2][0].name}</h5><p>Date of Birth: ${data.markList[2][0].date_of_birth}</p></div><div class='col-6'><p class='display-6'>Your Result: ${final_result}</p><p>Academic Year: ${data.markList[2][0].academic_year}</p></div></div></div></div><div class='align-center mx-1'><table class='table table-dark text-center '>
+//           <thead> <tr><th scope='col'>S.No</th><th scope='200px'>Subject</th><th scope='200px'>Max. Mark</th><th scope='200px'>Pass Mark</th><th scope='200px'>Secured Mark</th><th scope='200px'>Result</th></tr></thead><tbody>${mark_data}<tr class='bg-info text-white'><td>*</td><td>Total</td><td>${max_total}</td><td>-</td><td>${secured_total}</td><td>${final_result}</td></tr></tbody></table></div>`
+//         )
+//       })
+//       $('#viewMyMarksModal').modal('show');
+//     }, error: function (err) {
+//       console.log(err);
+//     }
+//   })
+// })

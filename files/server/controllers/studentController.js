@@ -3,6 +3,10 @@ const dbcon = require("../config/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 const sendMail = require("../config/email.config");
+const fs = require('fs');
+const pdf = require('html-pdf');
+const options = { format: 'A4' };
+var html = fs.readFileSync('./views/studentLevel/student-view-marksheet.ejs', 'utf8');
 
 // student loggin into his account
 exports.postStuLogin = async (req, res) => {
@@ -611,6 +615,104 @@ exports.getExamsAndMarks = (req, res) => {
       res.locals.myExamsList = myExamsList[0];
       res.locals.marks = myExamsList[1];
       return res.render('studentLevel/student-viewing-exams', {title: 'Exams & Marks'})
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+
+// student viewing his marksheet
+exports.viewMarkSheet = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  res.locals.student_id = session.student_id;
+  let student_id = req.params.student_id;
+  let exam_master_id = req.params.exam_master_id;
+  let class_sec = req.params.class_sec;
+  console.log(`${student_id}, ${exam_master_id}, ${class_sec}`)
+  try {
+    var getMyMark = `SELECT subj.id AS subj_id, subj.subject_name, sem.received_mark, xam.exam_date, xam.exam_duration, xam.exam_status, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem 
+    INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
+    INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id 
+    INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id
+    WHERE sem.student_id = '${student_id}' AND xam.ex_master_id = '${exam_master_id}' AND sem.is_released = 'yes' AND xam.exam_conducted_class_sec = '${class_sec}' AND sem.deleted_at IS NULL;
+    SELECT subj.id, subj.subject_name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id = scs.subject_id WHERE scs.classroom_id = '${class_sec}' AND scs.deleted_at IS NULL;
+    SELECT stu.name, stu.father_name, DATE_FORMAT(stu.date_of_birth, '%d-%c-%Y') AS date_of_birth, ssad.academic_year FROM School_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id WHERE stu.student_id = '${student_id}' AND ssad.academic_year = YEAR(CURDATE())`;
+    dbcon.query(getMyMark, (err, markList) => {
+      if(err) throw err;
+      else if (markList[0].length != 0) {
+        console.log(markList);
+        var mark_data = "";
+        let fail_count = 0;
+        let max_total = 0;
+        let secured_total = 0;
+        for (let s=0; s < markList[1].length; s++) {
+          let mark_index = markList[0].findIndex(obj => obj.subj_id == `${markList[1][s].id}`);
+          let received_mark = 'To be updated'
+          let subject_result = 'To be updated'
+          let final_result = "";
+          if(mark_index != '-1') {
+            received_mark = `${markList[0][mark_index].received_mark}`;
+            subject_result = `${markList[0][mark_index].received_mark}` > `${markList[0][mark_index].cutoff_mark}` ? 'Pass' : 'Fail'
+            subject_result == 'Fail' ? fail_count++ : fail_count;
+            max_total += markList[0][mark_index].sub_outoff_marks
+            secured_total += markList[0][mark_index].received_mark
+          } else {
+            received_mark;
+            subject_result;
+          }
+          let mark_row = `<tr>
+          <th scope="row">${s+1}</th>
+          <td>${markList[1][s].subject_name}</td>
+          <td>${markList[0][mark_index].sub_outoff_marks}</td>
+          <td>${markList[0][mark_index].cutoff_mark}</td>
+          <td>${received_mark}</td>
+          <td>${subject_result}</td>
+          </tr>`
+          mark_data += mark_row;
+        }
+
+        final_result = fail_count == 0 ? 'Pass' : 'Fail';
+        res.locals.max_total = max_total;
+        res.locals.secured_total = secured_total;
+        res.locals.mark_data = mark_data;
+        res.locals.final_result = final_result;
+        res.locals.markList = markList;
+        return res.render('studentLevel/student-view-marksheet', {title: 'My Marksheet'})
+      } else {
+        var mark_data = `<tr><td colspan="6" class="text-center">
+          <mark>Marks Not released yet.</mark></td></tr>`;
+        res.locals.markList = markList;
+        res.locals.mark_data = mark_data;
+        return res.render('studentLevel/student-view-marksheet', {title: 'My Marksheet'})
+      }
+    })
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// student downloading marksheet
+exports.dlMarkSheet = (req, res) => {
+  let session = req.session;
+  let success_msg = req.flash('success');
+  res.locals.success_msg = success_msg;
+  let err_msg = req.flash('err_msg');
+  res.locals.err_msg = err_msg;
+  res.locals.student_id = session.student_id;
+  try {
+    res.render('studentLevel/student-view-marksheet', function (err, html) {
+      pdf.create(html, options).toFile(`./public/uploads/marksheet_pdf_${session.student_id}.pdf`, (err, result) => {
+        if (err) throw err;
+        console.log(res);
+        var datafile = fs.readFileSync(`./public/uploads/marksheet_pdf_${session.student_id}.pdf`);
+        res.header('content-type', 'application/pdf');
+        res.send(datafile);
+      })
     })
   } catch (err) {
     console.log(err);

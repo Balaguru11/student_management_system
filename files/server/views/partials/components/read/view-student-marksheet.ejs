@@ -1,0 +1,51 @@
+<div class="m-1">
+  <div class='card bg-info m-1 p-3'>
+    <div clas='card-body'>
+      <div class='row'>
+        <div class='col-6'>
+          <h5 class='display-6'><%= locals.markList[2][0].name %></h5>
+          <p>Date of Birth: <%= locals.markList[2][0].date_of_birth %></p>
+        </div>
+        <div class='col-6'>
+          <p class='display-6'>Your Result: <%= locals.final_result %></p>
+          <p>Academic Year: <%= locals.markList[2][0].academic_year %></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class='align-center mx-1'>
+    <table class='table table-dark text-center '>
+    <thead>
+      <tr>
+        <th scope='col'>S.No</th>
+        <th scope='200px'>Subject</th>
+        <th scope='200px'>Max. Mark</th>
+        <th scope='200px'>Pass Mark</th>
+        <th scope='200px'>Secured Mark</th>
+        <th scope='200px'>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%- locals.mark_data %>
+      <% if (locals.markList[0].length > 0) { %>
+        <tr class='bg-info text-white'>
+          <td>*</td>
+          <td>Total</td>
+          <td><%= locals.max_total %></td>
+          <td>-</td>
+          <td><%= locals.secured_total %></td>
+          <td><%= locals.final_result %></td>
+        </tr>
+      <% } %>
+     
+    </tbody>
+  </table>
+  <form action="/student/dashboard/download-marksheet" method="POST">
+    <button class="btn btn-secondary" type="submit">
+      Download PDF
+    </button>
+  </form>
+
+</div>
+
+</div>

@@ -1468,6 +1468,7 @@ exports.getAddExamsForm = (req, res) => {
       dbcon.query(examList, (err, data) => {
         if(err) throw err;
         console.log(data);
+        
         res.locals.data = data[0];
         res.locals.classStd = data[1];
         res.locals.marks = data[2];
