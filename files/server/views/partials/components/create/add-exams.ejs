@@ -11,7 +11,7 @@
                 <% if (locals.masterOptions.length > 0) { %>
                 <label for="exam_master mb-1">Choose Exam Master:</label>
                 <select id="exam_master" class="form-control" name="exam_master" required>
-                  <option value="">Select One</option>
+                  <option value="0">Select One</option>
                   <% for (let m = 0; m < locals.masterOptions.length; m++) { %>
                     <option value="<%= locals.masterOptions[m].id %>"><%= locals.masterOptions[m].exam_name %></option>
                   <% } %>

@@ -1616,6 +1616,7 @@ $(document).on('click', '.deleteExamMaster', function () {
 
 // getting Exam Master data from Add Exam Screen after selecting the Exam master 
 $(document).ready(function () {
+  $('#create_exam_button, #exam_conducted_for').attr('disabled', 'disabled');
   $('#exam_master').on('change', function () {
     var xMaster_id = $(this).val();
     $.ajax({
@@ -1625,12 +1626,24 @@ $(document).ready(function () {
         xMaster_id: xMaster_id,
       }, dataType: 'JSON',
       success: function (data) {
-        $('#appended_master').remove();
-        $('#exam_master_data').append(function () {
-          return (
-            `<div id='appended_master' class='m-1'><p>Exam Name: <b>${data.masterData[0].exam_name}</b> | Exam Type: <b>${data.masterData[0].exam_type}</b></p></div>`
-          )
+        if (xMaster_id == "0"){
+          $('#appended_master').remove();
+          $('#appended_master_error').remove();
+          $('#exam_master_data').append(function () {
+            return (
+              `<div id='appended_master_error' class='m-1'><p class='bg-danger '>Please select Exam master.</p></div>`
+            )
+          })
+        } else {
+          $('#exam_conducted_for').removeAttr('disabled');
+          $('#appended_master_error').remove();
+          $('#appended_master').remove();
+          $('#exam_master_data').append(function () {
+            return (
+              `<div id='appended_master' class='m-1'><p>Exam Name: <b>${data.masterData[0].exam_name}</b> | Exam Type: <b>${data.masterData[0].exam_type}</b></p></div>`
+            )
         })
+        }
       }, error: function (err) {
         console.log(err);
       }
@@ -1641,7 +1654,6 @@ $(document).ready(function () {
 // Adding EXAM - Gettimng subject rows after class sec
 $(document).on('change', '#exam_conducted_for', function () {
     var exam_std = $(this).val();
-    console.log(exam_std);
     $.ajax({
       url: '/api/get-subjects-from-exam-class',
       type: 'POST',
@@ -1656,11 +1668,11 @@ $(document).on('change', '#exam_conducted_for', function () {
               $('#exam_plan').append(`<div class='m-2 p-2 border border-secondary rounded'><p class='std-exam-plan' id='std_exam_plan_${data.std[s].id}'><b>Exam Plan for ${data.std[s].class_std} STD - ${data.std[s].medium} Medium (${data.std[s].batch_name})</b></p><hr><div class='std_${data.std[s].id}' id='std_${data.std[s].id}'></div></div>`)
             }
           } else {
-            // $('#exam_plan').html("").append("<p class='text-danger'>Please select at least one Class std.</p>")
             $('#create_exam_button').attr('disabled', 'disabled');
           }
 
           if(data.subjects.length > 0) {
+            $('#no_subject_alert').remove();
             for (let i = 0; i < data.subjects.length; i++) {
               $('#std_'+data.subjects[i].std_id).append(`
               <div id='subject_list subject_${i+1}' class='m-1 row g-3 align-middle subject_row'>
@@ -1687,7 +1699,8 @@ $(document).on('change', '#exam_conducted_for', function () {
             $('#create_exam_button').removeAttr('disabled');
 
           } else {
-            $('#exam_plan').html("<p class='text-danger'>Please select at least one Class std with subjects mapped to it.</p>")
+            $('#subject_list').remove();
+            $('#exam_plan').html("<p class='text-danger' id='no_subject_alert'>Please select at least one Class std with subjects mapped to it.</p>")
             $('#create_exam_button').attr('disabled', 'disabled');
           }
           $('.my_date_picker').flatpickr({
@@ -1711,6 +1724,66 @@ $(document).on('change', '.subject_total, .cutoff_mark', function () {
   for (let i=1; i <= count; i++) {
     var subject_total = $('#sub_total_'+i).val();
     $('#cutoff_'+i).attr('min', '0').attr('max', `${subject_total}`);
+  }
+})
+
+// While adding exams to the sec, check for duplicate exams
+$(document).on('change', '#exam_conducted_for', function () {
+  var exam_std = $('#exam_conducted_for').val();
+  var xMaster_id = $('#exam_master').val();
+  if (xMaster_id == 0){
+    $('#exam_conducted_for').attr('disabled', 'disabled');
+    $('#exam_conducted_for').val('')
+    $('#appended_master').remove();
+    $('#appended_master_error').remove();
+    $('#exam_master_data').append(function () {
+      return (
+        `<div id='appended_master_error' class='bg-danger m-1'><p>Please select Exam master.</p></div>`
+      )
+    })
+  } else {
+    $('#exam_conducted_for').removeAttr('disabled');
+    $('#appended_master_error').remove();
+    $.ajax({
+      url: '/api/duplicate-exam-check',
+      type: 'POST',
+      data: {
+        exam_std: exam_std,
+        xMaster_id: xMaster_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        if (exam_std.length == 1){
+          $('#no_std_alert').remove();
+          for (let l=0; l < data.duplicate.length; l++){
+            $('#duplicate_alert').remove();
+            $('#std_'+data.duplicate[l].class_id).css("pointer-events", 'none').append(
+              `<p class='bg-danger p-2' id='duplicate_alert'>We have found these exams in the list below. You can edit the same instead of recreating again. Or Slecet / Create a new Exam Master to proceed further.</p>`);
+            $('#create_exam_button').attr('disabled', 'disabled');
+          }
+        }
+        else if(exam_std.length > 1){
+          $.each(data.duplicate, function (key, value) {
+            if(data.duplicate[key].length > 0){
+              $('#no_std_alert').remove();
+              for (let l=0; l < data.duplicate[key].length; l++){
+                $('#duplicate_alert').remove();
+                $('#std_'+data.duplicate[key][l].class_id).css("pointer-events", 'none').append(
+                  `<p class='bg-danger p-2' id='duplicate_alert'>We have found these exams in the list below. You can edit the same instead of recreating again. Or Slecet / Create a new Exam Master to proceed further.</p>`);
+                $('#create_exam_button').attr('disabled', 'disabled');
+              }
+            } else {
+              $('#create_exam_button').attr('disabled', 'disabled');
+            }
+          })
+        } else if (exam_std.length === 'undefined' || 0) {
+          $('#exam_plan').remove();
+        } else {
+          $('#exam_plan').remove();
+        }
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
   }
 })
 
@@ -1860,8 +1933,6 @@ $(document).ready(function () {
             <button id="edit_exam_mark_button" class="btn btn-secondary" type="submit" value="submit">Update Mark</button></div></form></div>`
           )
         })
-    
-
         $('#editExamMarksModal').modal('show');
       }, error: function (err) {
         console.log(err);

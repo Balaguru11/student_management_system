@@ -493,6 +493,29 @@ apiRouter.post('/get-subjects-from-exam-class', (req, res) => {
   })
 })
 
+// duplicate exams
+apiRouter.post('/duplicate-exam-check', (req, res) => {
+  let exam_stds = req.body.exam_std;
+  let findDuplicate = "";
+  if(exam_stds.length > 0) {
+    for (let i=0; i < exam_stds.length; i++){
+      findDuplicate += `SELECT xam.id, xam.exam_conducted_class_sec, clr.class_id, xam.subject_id, xam.exam_status FROM school_exams AS xam INNER JOIN school_classroom AS clr On clr.id = xam.exam_conducted_class_sec WHERE clr.class_id = '${exam_stds[i]}' AND xam.ex_master_id = '${req.body.xMaster_id}' AND xam.deleted_at IS NULL; `
+    }
+    dbcon.query(findDuplicate, (err, duplicate) => {
+      if (err) res.json({msg: 'error', err})
+      else if (duplicate.length > 0) {
+        console.log(duplicate);
+        res.json({msg: 'Duplicates', duplicate: duplicate});
+      } else {
+        res.json({msg: 'None', duplicate: 0});
+      }
+    })
+  } else {
+    findDuplicate;
+    res.json({msg: 'error', duplicate: 'No Class secelcted'});
+  }
+})
+
 // get Exam Master Data
 apiRouter.post('/get-exam-master-data', (req, res) => {
   var examMaster = `SELECT * FROM school_exams_master WHERE id = '${req.body.xMaster_id}'`;
