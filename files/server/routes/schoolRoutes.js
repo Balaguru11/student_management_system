@@ -8,7 +8,7 @@ const {
   getCreateSchool,
   postCreateSchool,
   getSchoolLogin,
-  postSchoolLogin,
+  postSchoolLogin, 
   getSchoolDashBoard, getCreateNewBatch, postCreateNewBatch, deleteBatch, 
   postAddClassroom,
   postAddUser,

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+  <title>Student Management | My Marksheet</title>
+  <script
+    src="https://kit.fontawesome.com/c03ec31dc2.js"
+    crossorigin="anonymous"
+  ></script>
+  <link
+    rel="stylesheet"
+    href="//cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"
+  />
+  <script src="//cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>-->
+  <link rel="stylesheet" href="/css/style.css" />
+  <script src="/js/validation.js"></script> 
+</head>
+
+<body>
+    <div class="container p-0 m-0">
+        <!-- <div class="row"> -->
+            <nav class="navbar fixed-top navbar-expand-lg navbar-light bg-dark">
+    <div class="container">
+        <a href="/" class="navbar-brand text-white">School Management Tool</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon">   
+                <i class="fas fa-bars" style="color:#fff; font-size:28px;"></i>
+            </span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a href="/" class="nav-link active text-white" aria-current="page">Home</a>
+                </li>
+                <!-- default Menus -->
+                
+                
+                <!-- Active school related menus -->
+                
+                
+                <!-- inactive school menu -->
+                
+        
+                <!-- staff Active menu-->
+                
+
+                <!-- inactive staff menu -->
+                
+
+                <!-- student Active menu -->
+                
+                    <li class="nav-item">
+                        <a href="/student/dashboard/my-doubts" class="nav-link active text-white border border-success rounded" aria-current="page">Doubt Messages <span class="badge badge-success bg-success">1</span><span class="sr-only">unread messages</span></a>
+                    </li>
+                
+
+                <!-- Student Inactive menu -->
+
+                <!-- Parent Active menu -->
+                
+
+                <!-- parent Inactive Menu -->
+
+                
+                    <li class="nav-item">
+                        <a href="/logout" class="nav-link active text-white" aria-current="page">Logout</a>
+                    </li>
+                
+                
+
+            </ul>
+        </div>
+    </div>
+</nav>
+        <!-- </div> -->
+        
+        <div class="container-fluid">
+  <div class="row flex-nowrap">
+    <div class="col-auto col-md-3 col-lg-2 col-xl-2 px-sm-2 px-0 bg-light pt-5">
+      <div
+        class="
+          d-flex
+          flex-column
+          align-items-center align-items-sm-start
+          px-3
+          pt-2
+          mt-2
+          text-white
+          sticky-top
+        "
+      >
+        <a
+          href="#"
+          class="
+            d-flex
+            align-items-center
+            pb-3
+            mb-md-0
+            me-md-auto
+            text-dark text-decoration-none
+          "
+        >
+          <span class="fs-5 d-none d-sm-inline">Menu</span>
+        </a>
+        <ul
+          class="
+            nav nav-pills
+            flex-column
+            mb-sm-auto mb-0
+            align-items-center align-items-sm-start
+            mt-3
+          "
+          id="menu"
+        >
+          <li>
+            <a href="/student/dashboard" class="nav-link align-middle px-0">
+              <i class="fas fa-home"></i>
+              <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/student/profile-create"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-id-card"></i>
+              <span class="ms-1 d-none d-sm-inline">Profile</span></a
+            >
+          </li>
+
+          <li>
+            <a
+              href="/student/admission-fee-payment"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-id-card"></i>
+              <span class="ms-1 d-none d-sm-inline">Pay Fee Due</span></a
+            >
+          </li>
+          <li>
+            <a
+              href="/student/dashboard/my-staff"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-users"></i>
+              <span class="ms-1 d-none d-sm-inline">My Staff</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/student/dashboard/my-doubts"
+              class="nav-link px-0 align-middle"
+            >
+            <i class="far fa-comments"></i>
+              <span class="ms-1 d-none d-sm-inline">My Doubts</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/student/dashboard/my-attendance"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-book-medical"></i>
+              <span class="ms-1 d-none d-sm-inline">My Attendance</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/student/dashboard/class-test-marks"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="far fa-address-book"></i>
+              <span class="ms-1 d-none d-sm-inline">Class Tests</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/student/dashboard/exam-marks"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="far fa-address-book"></i>
+              <span class="ms-1 d-none d-sm-inline">Exams & Marks</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/student/dashboard/my-report"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-rupee-sign"></i>
+              <span class="ms-1 d-none d-sm-inline">My Report</span>
+            </a>
+          </li>
+          <li>
+            <a
+              href="/student/dashboard/my-performance"
+              class="nav-link px-0 align-middle"
+            >
+              <i class="fas fa-rupee-sign"></i>
+              <span class="ms-1 d-none d-sm-inline">Where I Stand?</span>
+            </a>
+          </li>
+        </ul>
+        <hr />
+      </div>
+    </div>
+    <div class="row">
+      <!-- </div>
+    </div>
+</div> -->
+
+<div class="container-fluid p-2">
+    <div class="row d-flex justify-content-center">
+        <div class="col-lg-6 col-md-8 col-sm-10 mt-3">
+            
+            
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="row mt-5 justify-content-center">
+
+        <div class="col-xl-10 col-lg-10 col-sm-12 overflow-auto border">
+            
+          <div class="m-1">
+  <div class='card bg-info m-1 p-3'>
+    <div clas='card-body'>
+      <div class='row'>
+        <div class='col-6'>
+          <h5 class='display-6'>Vijay Kumar</h5>
+          <p>Date of Birth: 21-5-2006</p>
+        </div>
+        <div class='col-6'>
+          <p class='display-6'>Your Result: Pass</p>
+          <p>Academic Year: 2022</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class='align-center mx-1'>
+    <table class='table table-dark text-center '>
+    <thead>
+      <tr>
+        <th scope='col'>S.No</th>
+        <th scope='200px'>Subject</th>
+        <th scope='200px'>Max. Mark</th>
+        <th scope='200px'>Pass Mark</th>
+        <th scope='200px'>Secured Mark</th>
+        <th scope='200px'>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+          <th scope="row">1</th>
+          <td>Maths</td>
+          <td>100</td>
+          <td>35</td>
+          <td>50</td>
+          <td>Pass</td>
+          </tr><tr>
+          <th scope="row">2</th>
+          <td>Tamil</td>
+          <td>150</td>
+          <td>70</td>
+          <td>84</td>
+          <td>Pass</td>
+          </tr>
+      
+        <tr class='bg-info text-white'>
+          <td>*</td>
+          <td>Total</td>
+          <td>250</td>
+          <td>-</td>
+          <td>134</td>
+          <td>Pass</td>
+        </tr>
+      
+     
+    </tbody>
+  </table>
+  <form action="/student/dashboard/download-marksheet" method="POST">
+    <button class="btn btn-secondary" type="submit">
+      Download PDF
+    </button>
+  </form>
+
+</div>
+
+</div>
+
+        </div>
+    </div>
+</div>
+    <!-- closing tags from school-sidebarMenu -->
+</div>
+</div>
+</div>
+
+        <div class="mt-5">
+    <footer class="footer py-2 sticky-bottom bg-secondary">
+        <p class="text-white">&copy; Balaguru</p>
+    </footer>
+</div>
+        
+        <!-- <div></div> -->
+    </div> 
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+</body>
+</html>

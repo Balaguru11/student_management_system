@@ -11,7 +11,7 @@ const {
   showStuProfile,
   getStuProfileEdit,
   postEditStuProfile,
-  allAdmissionDue, allChangePwd, getMyAttendance, getStaffProfile, askMyStaff, myDoubtsList, addThreadMsg, getExamsAndMarks, viewMarkSheet, dlMarkSheet
+  allAdmissionDue, allChangePwd, getMyAttendance, getStaffProfile, askMyStaff, myDoubtsList, addThreadMsg, getExamsAndMarks, viewMarkSheet, pdfMarkSheet, dlMarkSheet
 } = require("../controllers/studentController");
 
 // Student Loging in - POST
@@ -43,7 +43,9 @@ studentRouter.get('/dashboard/my-attendance', isStudent, getMyAttendance);
 // Big Exam Marks
 studentRouter.get('/dashboard/exam-marks', isStudent, getExamsAndMarks);
 
-studentRouter.get('/dashboard/marksheet/:student_id/:exam_master_id/:class_sec', isStudent, viewMarkSheet);
+studentRouter.get('/dashboard/marksheet/:student_id/:exam_master_id/:class_sec/view', isStudent, viewMarkSheet);
+studentRouter.post('/dashboard/marksheet/:student_id/:exam_master_id/:class_sec/pdf', isStudent, pdfMarkSheet);
+
 studentRouter.post('/dashboard/download-marksheet', isStudent, dlMarkSheet);
 
 module.exports = studentRouter;

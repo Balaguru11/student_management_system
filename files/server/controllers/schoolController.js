@@ -30,7 +30,7 @@ exports.postCreateSchool = async (req, res) => {
           const passwordEntered = req.body.schoolPassword;
           const passwordHash = bcrypt.hashSync(`${passwordEntered}`, 10);
 
-          const sql = `INSERT INTO school_add_school(school_name, board, email, city, school_login, school_secrete, status) VALUES ('${req.body.schoolName}', '${req.body.board}', '${req.body.email}', '${req.body.schoolLocation}', '${req.body.schoolUserName}', '${passwordHash}', 'Inactive');`;
+          const sql = `INSERT INTO school_add_school(school_logo, school_name, board, school_established_in, email,	school_enquiry, map_location_url, city_state, school_login, school_secrete, status) VALUES ('${req.body.school_logo}','${req.body.schoolName}', '${req.body.board}', '${req.body.established_in}', '${req.body.email}', '${req.body.school_contact}', '${req.body.map_location}',  '${req.body.schoolLocation}', '${req.body.schoolUserName}', '${passwordHash}', 'Inactive');`;
 
           dbcon.query(sql, function (err, result) {
             if (err) {
@@ -54,7 +54,7 @@ exports.postCreateSchool = async (req, res) => {
                     from: process.env.MAIL_USERNAME,
                     to: req.body.email,
                     subject: "School Created.",
-                    html: `<p>School Username: ${req.body.schoolName}</p>`,
+                    html: `<p>School Username: ${req.body.schoolUserName}</p>`,
                   })
                     .then((result) => {
                       req.flash("success", "Mail has been sent");
@@ -160,7 +160,6 @@ exports.postSchoolLogin = async (req, res) => {
 exports.getSchoolDashBoard = (req, res) => {
   try {
     let session = req.session;
-    //flashing welcome message
     let welcome_msg = req.flash("welcome");
     res.locals.welcome_msg = welcome_msg;
     let err_msg = req.flash("err_msg");

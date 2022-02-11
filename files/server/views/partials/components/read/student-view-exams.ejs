@@ -26,7 +26,7 @@
             <% if (mapped != '-1') { %>
               <button data-id="<%= locals.myExamsList[i].ex_master_id %>" logged-in = "<%= locals.student_id %>" class-sec = '<%= locals.myExamsList[i].exam_conducted_class_sec %>' type="button" class="view_exam_sched btn btn-info" data-bs-toggle="modal">Exam Schedule</button>
             
-            <a role="button" href="./marksheet/<%= locals.student_id %>/<%= locals.myExamsList[i].ex_master_id %>/<%= locals.myExamsList[i].exam_conducted_class_sec %>" class="btn btn-primary"><i class="far fa-eye"></i> Mark Sheet</a>
+            <a role="button" href="./marksheet/<%= locals.student_id %>/<%= locals.myExamsList[i].ex_master_id %>/<%= locals.myExamsList[i].exam_conducted_class_sec %>/view" class="btn btn-primary"><i class="far fa-eye"></i> Mark Sheet</a>
             <% } else { %>
               <button data-id="<%= locals.myExamsList[i].ex_master_id %>" logged-in = "<%= locals.student_id %>" class-sec = '<%= locals.myExamsList[i].exam_conducted_class_sec %>' type="button" class="view_exam_sched btn btn-info" data-bs-toggle="modal" >Exam Schedule</button>
               <a

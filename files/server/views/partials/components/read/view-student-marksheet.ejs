@@ -40,11 +40,13 @@
      
     </tbody>
   </table>
-  <form action="/student/dashboard/download-marksheet" method="POST">
+  <% if (locals.markList[0].length > 0) { %>
+  <form action="/student/dashboard/marksheet/<%= locals.student_id %>/<%= locals.markList[0][0].ex_master_id %>/<%= locals.markList[0][0].exam_conducted_class_sec %>/pdf" method="POST">
     <button class="btn btn-secondary" type="submit">
-      Download PDF
+      Download Marksheet
     </button>
   </form>
+  <% } %>
 
 </div>
 
