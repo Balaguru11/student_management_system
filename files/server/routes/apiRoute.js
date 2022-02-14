@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 const con = require("../config/database");
 
-apiRouter.post('/delete-batch-by-id', (req, res) => {
+apiRouter.post('/get-batch-data-by-id', (req, res) => {
   var getBatch = `SELECT * FROM school_batch_mgmt WHERE id = '${req.body.batch_id}'`;
   dbcon.query(getBatch, (err, batch) => {
     if(err) res.json({msg: 'error', err})
@@ -14,6 +14,21 @@ apiRouter.post('/delete-batch-by-id', (req, res) => {
       res.json({msg: 'success', batch: batch})
     } else {
       res.json({msg: 'error', err })
+    }
+  })
+})
+
+// get Fee structure data while creating class_std
+apiRouter.post('/get-fee-structure-data', (req, res) => {
+  let session = req.session;
+  let school = session.school_id || session.schoolId;
+  var data = `SELECT * FROM school_feestructure WHERE school_id = '${school}' AND medium = '${req.body.medium}' AND batch_id = '${req.body.batch_id}' AND class_std = '${req.body.class_std}' AND deleted_at IS NULL`;
+  dbcon.query(data, (err, foundFee) => {
+    if(err) res.json({msg: 'error', err});
+    else if (foundFee.length > 0){
+      res.json({msg: 'success', foundFee: foundFee})
+    } else {
+      res.json({msg: 'success', foundFee: foundFee})
     }
   })
 })

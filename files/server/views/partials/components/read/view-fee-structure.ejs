@@ -1,14 +1,15 @@
-<div>
+<div class="mt-2">
   <h4 class="text-center">View Class Standards</h4>
   <br />
   <table class="table table-light text-center" id="datatable">
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th scope="col">Class</th>
-        <th scope="col">Medium</th>
-        <th scope="col">Batch Name</th>
-        <th scope="col">Fees</th>
+        <th width="100px">Class</th>
+        <th width="200px">Medium</th>
+        <th width="100px">Fees</th>
+        <th width="250px">Batch Name</th>
+        <th width="300px">Academic Year</th>
         <th width="200px">Actions</th>
       </tr>
     </thead>
@@ -19,8 +20,9 @@
         <th scope="row"><%= (i+1) %></th>
         <td><%= locals.data[i].class_std %></td>
         <td><%= locals.data[i].medium %></td>
-        <td><%= locals.data[i].batch_name %></td>
         <td><%= locals.data[i].actual_fee %></td>
+        <td><%= locals.data[i].batch_name %></td>
+        <td><%= locals.data[i].academic_from %> / <%= locals.data[i].academic_to %></td>
         <td>
           <button
             data-id="<%= locals.data[i].id %>"

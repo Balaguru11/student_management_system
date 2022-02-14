@@ -127,7 +127,7 @@ $(document).ready(function () {
   $('.deleteBatch').on('click', function () {
     var batch_id = $(this).attr('data-id');
     $.ajax({
-      url: '/api/delete-batch-by-id',
+      url: '/api/get-batch-data-by-id',
       type: 'POST',
       data: {
         batch_id: batch_id,
@@ -144,6 +144,148 @@ $(document).ready(function () {
         console.log(err);
       }
     })
+  })
+})
+
+// Add Class std, dynamic fields
+$(document).ready(function () {
+  $('#class_std, #batch_id, #medium, #academic_month').on('change', function () {
+    var batch_id = $('#batch_id').val();
+    var class_std = $('#class_std').val();
+    if(class_std > 11){
+      $('#class_std_dyna').before(function () {
+        $('#std_error').remove();
+        $('#add_fee_struc').attr('disabled', 'disabled');
+        return(`<p class='alert alert-danger' id='std_error'>Could not add more than 11 th standard.</p>`);
+      })
+    } else {
+      $('#add_fee_struc').removeAttr('disabled');
+      $('#std_error').remove();
+    }
+    var medium = $('#medium').val();
+    var acmf = $('#academic_month').val();
+    var academic_month_f = +acmf;
+    $.ajax({
+      url: '/api/get-batch-data-by-id',
+      type: 'POST',
+      data: {
+        batch_id: batch_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        let academic_month_e, year_correction;
+        if(academic_month_f != 0){
+          let sum = academic_month_f + 11;
+          if(sum <= 12){
+            academic_month_e = sum;
+            year_correction = 0
+          } else {
+            academic_month_e = sum - 12;
+            year_correction = 1;
+          }
+        }
+        let class_std_row = ""
+        let class_stdd = 0
+        let cc = parseInt(class_std); // 5
+        for (let i = data.batch[0].year_from; i < data.batch[0].year_to; i++) {
+
+        class_stdd = `${i}` == `${data.batch[0].year_from}` ? cc : class_stdd+1
+          
+           class_std_row += `<tr id='${i}'>
+            <th><input type="number" class="form-control class_std" name="class_std_${i}" id="class_std_${i}" value = "${class_stdd}" disabled/><input type="hidden" class="form-control class_std" name="class_std_hide_${i}" id="class_std_${i}" value = "${class_stdd}"/></th>
+            <td class='text-center'>${medium}</td>
+            <td><input type="number" class="form-control" name="fee_${i}" id="fee_${i}" placeholder="Rs / Year" required/></td>
+            <td>
+            <input
+                        type="text"
+                        class="form-control"
+                        name="academic_from_${i}"
+                        id="academic_from"
+                        placeholder="MM - YYYY" 
+                        value="${academic_month_f}-${i}" disabled
+                      />
+            <input
+                      type="hidden"
+                      class="form-control"
+                      name="academic_from_hide_${i}"
+                      id="academic_from"
+                      value="${academic_month_f}-${i}"
+                    />
+            </td>
+            <td>
+            <input
+                        type="text" disabled
+                        class="form-control"
+                        name="academic_to_${i}"
+                        id="academic_to"
+                        placeholder="MM - YYYY"
+                        value="${academic_month_e}-${i+year_correction}"
+                      />
+            <input
+                      type="hidden"
+                      class="form-control"
+                      name="academic_to_hide_${i}"
+                      id="academic_to"
+                      value="${academic_month_e}-${i+year_correction}"
+                    />
+            </td>
+            </tr>`
+        }
+        
+        $('#class_std_dyna').after(function () {
+          $('.class_std_batch').remove();
+          return (
+            `<div class='class_std_batch'><div class='border border-success rounded p-3'><b>This Batch will consist of ${data.batch[0].year_to - data.batch[0].year_from} Class standard(s). You are required to fill all the ${data.batch[0].year_to - data.batch[0].year_from} row(s) to create new class standard.</b></div><table class='table table-light text-center mt-3 mb-3'><thead><tr><th width="200px">Class Std</th><th width="200px">Medium</th><th width="200px">Fees</th><th width="200px">Academic Year (From)</th><th width="200px">Academic Year (To)</th></tr></thead><tbody><input
+                    type="hidden"
+                    name="year_from"
+                    id="year_from"
+                    value="${data.batch[0].year_from}"
+                  /><input
+                  type="hidden"
+                  name="year_to"
+                  id="year_to"
+                  value="${data.batch[0].year_to}"
+                />
+            ${class_std_row}</tbody></table></div>`
+          )
+        })
+        
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
+
+// checking duplicate entry in class_std
+$(document).on('change', '#class_std, #batch_id, #medium, #academic_month', function () { 
+  var batch_id = $('#batch_id').val();
+  var class_std = $('#class_std').val();
+  var medium = $('#medium').val();
+  $.ajax({
+    url: '/api/get-fee-structure-data',
+    type: 'POST', 
+    data: {
+      batch_id: batch_id,
+      class_std: class_std,
+      medium: medium,
+    }, dataType: 'JSON',
+    success: function (data) {
+      if(data.foundFee.length > 0){
+        $('.class_std_batch, .class_duplicate').remove();
+        $('#add_fee_struc').attr('disabled', 'disabled');
+        $('#class_std_dyna').after(function () {
+          return (
+            `<p class="alert alert-danger class_duplicate">Class Standard already exists.</p>`
+          )
+        })
+      } else {
+        $('.class_duplicate').remove();
+        $('#add_fee_struc').removeAttr('disabled');
+
+      }
+    }, error: function (err) {
+      console.log(err);
+    }
   })
 })
 
@@ -1167,7 +1309,7 @@ $(document).ready(function() {
 });
 
 // date Picker JQuery UI
-$(document).ready(function() {
+$(document).ready(function() { // deafult
     $(".my_date_picker").flatpickr({
       minDate: "today",
       maxDate: new Date().fp_incr(120),
@@ -1176,6 +1318,14 @@ $(document).ready(function() {
       minTime: "05:00",
       maxTime: "22:30",
       dateFormat: "d-m-Y H:i",
+  })
+})
+
+// flat pickr for class std
+$(document).ready(function () {
+  $('#academic_from, #academic_to').flatpickr({
+    dateFormat: "m-Y",
+    allowInput: true,
   })
 })
 
