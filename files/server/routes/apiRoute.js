@@ -63,6 +63,35 @@ apiRouter.post("/get-class-fee", (req, res) => {
   });
 });
 
+// check new or old student
+apiRouter.post("/get-student-type", (req, res) => {
+  var checkstudentType = `SELECT EXISTS (SELECT * FROM school_student_admission WHERE student_id="${req.body.student_id}" AND deleted_at IS NULL) AS count`;
+  dbcon.query(checkstudentType, (err, studentType) => {
+    if (err) {
+      res.json({ msg: "error", err });
+    } else if (studentType[0].count != 0){
+      console.log(studentType.length);
+      res.json({ msg: "success", studentType: studentType });
+    } else {
+      res.json({ msg: "success", studentType: studentType });
+    }
+  });
+});
+
+// New student - Seeing all class standards for the current year.
+apiRouter.post('/get-class-medium-for-current-year', (req, res) => {
+  let session = req.session;
+  let school = session.schoolId || session.school_id
+  var getClassMedium = `SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name, batch.year_from, batch.year_to FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${school}' AND sfs.std_year = '${req.body.current_year}'`;
+  dbcon.query(getClassMedium, (err, classMediums) => {
+    if (err) {
+      res.json({ msg: "error", err });
+    } else {
+      res.json({ msg: "success", classMediums: classMediums });
+    }
+  });
+})
+
 apiRouter.post("/get-paid-amount", (req, res) => {
   var getPaidAmount = `SELECT paying_amount FROM school_student_admission WHERE student_id="${req.body.student_id}" AND academic_year="${req.body.academic_year}" AND class_medium="${req.body.class_id}"`;
   dbcon.query(getPaidAmount, (err, result) => {

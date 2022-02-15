@@ -282,14 +282,14 @@ exports.postAddFeeStructure = (req, res) => {
 
           let query_full = "";
           for(let c = year_from; c < year_to; c++ ){
-            let query_part = `('${session.schoolId}', '${req.body[`class_std_hide_${c}`]}', '${req.body.medium}', '${req.body[`fee_${c}`]}', '${req.body.batch_id}', '${req.body[`academic_from_hide_${c}`]}', '${req.body[`academic_to_hide_${c}`]}'),`
+            let query_part = `('${session.schoolId}', '${req.body[`class_std_hide_${c}`]}', '${req.body.medium}', '${req.body[`fee_${c}`]}', '${req.body.batch_id}', '${req.body[`std_year_${c}`]}', '${req.body[`academic_from_hide_${c}`]}', '${req.body[`academic_to_hide_${c}`]}'),`
             query_full += query_part;
           }
 
           query_full = query_full.slice(0, -1);
           console.log(query_full);
 
-          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee, batch_id, academic_from, academic_to) VALUES ${query_full}`;
+          var addFeeQuery = `INSERT INTO school_feestructure(school_id, class_std, medium, actual_fee, batch_id, std_year, academic_from, academic_to) VALUES ${query_full}`;
           dbcon.query(addFeeQuery, (err, response) => {
             if (err) return res.render("server-error", { title: "Server Error" });
             else {
@@ -1077,7 +1077,7 @@ exports.getFeeCollection = (req, res) => {
   let session = req.session;
   try {
     if (session.schoolStatus == "Active") {
-      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee, batch.batch_name FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' AND sfs.deleted_at IS NULL  ORDER BY ABS(sfs.class_std);`;
+      var fee_data = `SELECT DISTINCT clr.school_id, clr.class_id, sfs.id, sfs.class_std, sfs.medium, sfs.actual_fee, batch.batch_name FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON clr.class_id = sfs.id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std);`;
       dbcon.query(fee_data, (err, feeData) => {
         if (err) return res.render("server-error", { title: "Server Error" });
 
@@ -1103,19 +1103,18 @@ exports.getFeeCollection = (req, res) => {
 
 // postFeeCollection
 exports.postFeeCollection = (req, res) => {
-  //flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
-  // flashing success_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   try {
-    var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'; SELECT * FROM school_student WHERE student_id='${req.body.stuId}'`;
+    var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'AND deleted_at IS NULL; SELECT * FROM school_student WHERE student_id='${req.body.stuId}' AND deleted_at IS NULL`;
     dbcon.query(selectStud, (err, student) => {
-      if (err) return res.render("server-error", { title: "Server Error" });
+      if (err) throw err;
+      // return res.render("server-error", { title: "Server Error" });
       // admission table is for new enrollment only. So, checking if the data is already available
-      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}' AND academic_year='${req.body.academic_year}') AS count`;
+      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}') AS count`;
       dbcon.query(checkAdmission, (err, data) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         else if (data[0].count == 0) {
@@ -1124,12 +1123,12 @@ exports.postFeeCollection = (req, res) => {
             req.body.actual_fee_hide - req.body.fee_paying;
           let payment_status = payment_pending == 0 ? "No Due" : "Due";
 
-          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0][0].school_id}', '${student[0][0].id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.schoolId}')`;
+          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${session.schoolId}', '${student[0][0].id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.current_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.schoolId}')`;
           dbcon.query(admissionQuery, (err, respo) => {
             if (err)
               return res.render("server-error", { title: "Server Error" });
             //updating student status in main_login
-            var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
+            var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0][0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
             dbcon.query(studUpdateLogin, (err, result) => {
               if (err)
                 return res.render("server-error", { title: "Server Error" });

@@ -196,6 +196,12 @@ $(document).ready(function () {
             <td><input type="number" class="form-control" name="fee_${i}" id="fee_${i}" placeholder="Rs / Year" required/></td>
             <td>
             <input
+                        type="hidden"
+                        name="std_year_${i}"
+                        placeholder="MM - YYYY" 
+                        value="${i}"
+                      />
+            <input
                         type="text"
                         class="form-control"
                         name="academic_from_${i}"
@@ -370,38 +376,10 @@ $(document).ready(function () {
   });
 });
 
-// dynamic select opption based on selected option in HTML form
-$(document).ready(function () {
-  $("#class_medium").on("change", function () {
-    var class_medium = this.value;
-    $("#class_section").html("");
-    $.ajax({
-      url: "/api/get-class-sections",
-      type: "POST",
-      data: {
-        class_id: class_medium,
-      },
-      dataType: "json",
-      success: function (result) {
-        $("#class_section").html(
-          '<option value="">Select Class Section here.</option>'
-        );
-        $.each(result.class_secs, function (key, value) {
-          $("#class_section").append(
-            `<option value="${value.id}">${value.class_section} Sec (${value.batch_name}) | ${value.seats_free} Seats Left </option>`
-          );
-        });s
-      },
-      error: function (err) {
-        console.log(err);
-      },
-    });
-  });
-});
+
 
 // dynamic select opption based on selected option in HTML form
-$(document).ready(function () {
-  $("#class_medium").on("change", function () {
+$(document).on("change", "#class_medium_newad", function () {
     var class_medium_1 = this.value;
     $("#actual_fee").val("");
     $.ajax({
@@ -413,15 +391,9 @@ $(document).ready(function () {
       dataType: "json",
       success: function (data) {
         $("#fee-one, #fee-two").remove();
-        $("#class_section").after(function () {
+        $(".student_type").after(function () {
           return (
-            "<div class='mb-3' id='fee-one'><label class='mt-3'>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='" +
-            data.class_fee +
-            "'disabled /><input type='hidden' class='form-control' name='actual_fee_hide' id='actual_fee_hide' value='" +
-            data.class_fee +
-            "'/></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' max=" +
-            data.class_fee +
-            "><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>"
+            `<div class='mb-3' id='fee-one'><label>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='${data.class_fee}'disabled /><input type='hidden' class='form-control' name='actual_fee_hide' id='actual_fee_hide' value='${data.class_fee}'/></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' max=${data.class_fee}><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>`
           );
         });
       },
@@ -429,16 +401,95 @@ $(document).ready(function () {
         console.log(err);
       },
     });
-  });
 });
 
-// combining one
+// getting student Type Admission / Academic Fee payment
 $(document).ready(function () {
-  $("#stuId, #academic_year, #class_medium").on("change", function () {
+  $('#stuId').on('keyup', function () {
     var student_id = $("#stuId").val();
-    var academic = $("#academic_year").val();
-    var class_med = $("#class_medium").val();
-    $("#fee_earlier").val("");
+    $.ajax({
+      url: '/api/get-student-type',
+      type: 'POST', 
+      data: {
+        student_id: student_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        if(data.studentType[0].count != 0) {
+          $('.student_type').remove();
+          $('#new_enrollment').after(function () {
+            return (
+              `<p class="border border-warning m-2 text-center display-6 student_type" id="student_old" data-id="student_old">Enrolled Student</p>`
+            )
+          })
+         } else {
+          $('.student_type').remove();
+          $('#new_enrollment').after(function () {           return (
+              `<div class='student_type'><p class="border border-success m-2 text-center display-6" id="student_new" data-id="student_new"><i class="fas fa-smile-plus"></i> New Student</p>
+              <div class="mt-3 mb-3" id="select_class">
+              <label for="class_medium">Select Class:</label>
+              <select id="class_medium_newad" class="form-control" name="class_medium" required ></select>
+              <span class="error" id="class_medium_error"
+                >Please choose Class & medium.</span
+              >
+            </div>
+            <div class="mb-3">
+            <label for='class_section_newad'>Choose A Section</label>
+              <select
+                id="class_section_newad"
+                class="form-control"
+                name="class_section"
+                required
+              ></select>
+              <span class="error" id="class_medium_error"
+                >Please choose Class & medium.</span
+              >
+            </div></div>
+              `
+            )
+          })
+        }
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
+
+// dynamic select opption based on selected option in HTML form
+$(document).on("change", "#class_medium_newad", function () {
+    var class_medium = $('#class_medium_newad').val();
+    console.log(class_medium);
+    $.ajax({
+      url: "/api/get-class-sections",
+      type: "POST",
+      data: {
+        class_id: class_medium,
+      },
+      dataType: "json",
+      success: function (result) {
+        $("#class_section_newad").html(
+          '<option value="">Select Class Section here.</option>'
+        );
+        $.each(result.class_secs, function (key, value) {
+          $("#class_section_newad").append(
+            `<option value="${value.id}">${value.class_section} Sec (${value.batch_name}) | ${value.seats_free} Seats Left </option>`
+          );
+        });s
+      },
+      error: function (err) {
+        console.log(err);
+      },
+    });
+});
+
+// getting fee data from the student admission
+$(document).on("change", "#stuId, #academic_year, #class_medium", function () {
+  var student_id = $("#stuId").val();
+  var academic = $("#academic_year").val();
+  var class_med = $("#class_medium").val();
+  var student_type = $('.student_type').data('id');
+  $("#fee_earlier").val("");
+  if(student_type == 'student_old'){
     $.ajax({
       url: "/api/get-paid-amount",
       type: "POST",
@@ -451,6 +502,7 @@ $(document).ready(function () {
       success: function (data) {
         // show data in the element.
         $("#actual_fee").after(function () {
+          $('.form-group').remove();
           return (
             "<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='" +
             data.amount_earlier_paid +
@@ -462,8 +514,35 @@ $(document).ready(function () {
         console.log(err);
       },
     });
-  });
-}); // last close
+  } else {
+    var current_year = $('#current_year').val();
+    $.ajax({
+      url: '/api/get-class-medium-for-current-year',
+      type: 'POST',
+      data: {
+        current_year: current_year,
+      }, dataType: 'JSON',
+      success: function (data) {
+        let class_med_options = `<option value="">Class Std & Medium:</option>`;
+        if(data.classMediums.length > 0){
+          $('#class_medium_newad').removeAttr('disabled');
+          $('.no_class_alert').remove();
+            for (let i=0; i < data.classMediums.length; i++){
+              let clo = `<option value="${data.classMediums[i].id}">${data.classMediums[i].class_std} STD - ${data.classMediums[i].medium} Medium (${data.classMediums[i].batch_name})</option>`
+              class_med_options += clo;
+            }
+            $('#class_medium_newad').append(`${class_med_options}`)
+        } else {
+          $('#class_medium_newad').attr('disabled', 'disabled').after(
+            `<small class='alert alert-warning no_class_alert'>No class standard found</small>`
+          )
+        }
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  }
+});
 
 // Dynamic getting student data for fee due module from admission table
 $(document).ready(function () {
@@ -496,34 +575,33 @@ $(document).ready(function () {
     })
   })
 })
-  
-// $(document).ready(function () {
-  $(document).on("change", "#academic_year", function () {
-    var student_id = $("#stuId_due").val();
-    var academicYear = $("#academic_year").val();
-    $.ajax({
-      url: "/api/get-student-enrollment-data",
-      type: "POST",
-      data: {
-        stuId: student_id,
-        academicYear: academicYear,
-      },
-      dataType: "Json",
-      success: function (result) {
-        $("#academic_year").after(function () {
-          var max_amount = result.actual_fee - result.earlier_paid;
-          $("#student_enroll_data").remove();
-          return (
-            `<div class='student_enroll_data' id='student_enroll_data'>            <div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='${result.student_name}' /> </div>                <div class='row g-3 mb-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='${result.student_email}' /> </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='${result.student_mobile}' /> </div> </div>                                 <div class='mb-3'> <label for='class_medium'>Class & Medium: </label> <input type='text' id='class_medium' class='form-control' name='class_medium' disabled value='${result.class_std} std - ${result.class_med} medium' /> </div>                 <div class='mb-3'><label for='class_section'>Class section: </label> <input type='text' id='class_section' class='form-control' name='class_section' disabled value='${result.class_sec} Section' /> </div>                <div class='mb-3'><label for='course_fee' >Actual fee:</label><input type='number' class='form-control' name='course_fee_disabled' id='course_fee_disabled' value='${result.actual_fee}' disabled /><input type='hidden' class='form-control' name='course_fee' id='course_fee' value='${result.actual_fee}' /></div>                <div class='mb-3'><label for='paid_fee' >Amount Paid so far:</label><input type='number' class='form-control' name='paid_fee' id='paid_fee' value='${result.earlier_paid}' disabled /><input type='hidden' class='form-control' name='paid_fee_hide' id='paid_fee_hide' value='${result.earlier_paid}' /></div>                <div class='mb-1'><label for='paying_fee'>Amount Paying now:</label><input type='number' class='form-control' name='paying_fee' id='paying_fee' min='0' max='${max_amount}' /></div>                <input type='hidden' id='admission_id' name='admission_id' value='${result.admission_id}'></div>`
-          );
-        });
-      },
-      error: function (err) {
-        console.log("No Student found.");
-      },
-    });
+
+// fee due collection
+$(document).on("change", "#academic_year", function () {
+  var student_id = $("#stuId_due").val();
+  var academicYear = $("#academic_year").val();
+  $.ajax({
+    url: "/api/get-student-enrollment-data",
+    type: "POST",
+    data: {
+      stuId: student_id,
+      academicYear: academicYear,
+    },
+    dataType: "Json",
+    success: function (result) {
+      $("#academic_year").after(function () {
+        var max_amount = result.actual_fee - result.earlier_paid;
+        $("#student_enroll_data").remove();
+        return (
+          `<div class='student_enroll_data' id='student_enroll_data'>            <div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='${result.student_name}' /> </div>                <div class='row g-3 mb-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='${result.student_email}' /> </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='${result.student_mobile}' /> </div> </div>                                 <div class='mb-3'> <label for='class_medium'>Class & Medium: </label> <input type='text' id='class_medium' class='form-control' name='class_medium' disabled value='${result.class_std} std - ${result.class_med} medium' /> </div>                 <div class='mb-3'><label for='class_section'>Class section: </label> <input type='text' id='class_section' class='form-control' name='class_section' disabled value='${result.class_sec} Section' /> </div>                <div class='mb-3'><label for='course_fee' >Actual fee:</label><input type='number' class='form-control' name='course_fee_disabled' id='course_fee_disabled' value='${result.actual_fee}' disabled /><input type='hidden' class='form-control' name='course_fee' id='course_fee' value='${result.actual_fee}' /></div>                <div class='mb-3'><label for='paid_fee' >Amount Paid so far:</label><input type='number' class='form-control' name='paid_fee' id='paid_fee' value='${result.earlier_paid}' disabled /><input type='hidden' class='form-control' name='paid_fee_hide' id='paid_fee_hide' value='${result.earlier_paid}' /></div>                <div class='mb-1'><label for='paying_fee'>Amount Paying now:</label><input type='number' class='form-control' name='paying_fee' id='paying_fee' min='0' max='${max_amount}' /></div>                <input type='hidden' id='admission_id' name='admission_id' value='${result.admission_id}'></div>`
+        );
+      });
+    },
+    error: function (err) {
+      console.log("No Student found.");
+    },
   });
-// });
+});
 
 // Open Modal to view Student Profile
 $(document).ready(function () {

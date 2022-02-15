@@ -8,9 +8,16 @@
     <hr />
   </div>
 <!-- card to search for student data and display -->
-  <div class="card p-1 bg-info">
+  <div class="card p-1 bg-info" id="new_enrollment">
     <div class="mt-1 mb-3">
       <label for="student_id" class="p-2">Student ID: </label>
+      <input
+      type="hidden"
+      class="form-control"
+      name="current_year"
+      id="current_year"
+      value="<%= moment().format('YYYY') %>"
+    />
       <input
         type="number"
         class="form-control"
@@ -23,20 +30,19 @@
   </div>
 
   <!-- <div class="mt-3 mb-3">
-    <label for="academic_year">Academic Year: </label>
+    <label for="academic_from">Academic Year: </label>
     <input
       type="text"
       class="form-control"
       name="academic_year"
-      id="academic_year"
-      value="<%= new Date().getFullYear(); %>"
+      id="academic_from"
     />
     <span class="error" id="academic_year"
       >Please enter the academic year.</span
     >
   </div> -->
   
-  <div class="mt-3 mb-3">
+  <!-- <div class="mt-3 mb-3" id="select_class">
     <label for="class_medium">Select Class:</label>
     <select
       id="class_medium"
@@ -67,7 +73,7 @@
     <span class="error" id="class_medium_error"
       >Please choose Class & medium.</span
     >
-  </div>
+  </div> -->
 
   <div class="mt-3 mb-3">
     <label for="fee_paid_date">Payment Date: </label>
