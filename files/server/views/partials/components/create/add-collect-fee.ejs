@@ -7,16 +7,30 @@
     <h2 class="text-center">Admission / Academic Fee</h2>
     <hr />
   </div>
+  <div class="mt-3 mb-3">
+    <label for="fee_paid_date">Payment Date: </label>
+    <input
+      type="text"
+      class="form-control"
+      disabled
+      name="fee_paid_date"
+      id="fee_paid_date"
+      value="<%- moment().format('DD-MM-YYYY'); %>"
+    />
+    <span class="error" id="fee_paid_date"
+      >Please enter the date when the fee received to the School Bank Account.</span
+    >
+  </div>
 <!-- card to search for student data and display -->
   <div class="card p-1 bg-info" id="new_enrollment">
     <div class="mt-1 mb-3">
-      <label for="student_id" class="p-2">Student ID: </label>
+      <label for="student_id" class="p-2">Enter Student ID: </label>
       <input
       type="hidden"
       class="form-control"
       name="current_year"
       id="current_year"
-      value="<%= moment().format('YYYY') %>"
+      value="<%= moment().format('YYYY') %> "
     />
       <input
         type="number"
@@ -75,22 +89,8 @@
     >
   </div> -->
 
-  <div class="mt-3 mb-3">
-    <label for="fee_paid_date">Payment Date: </label>
-    <input
-      type="text"
-      class="form-control"
-      disabled
-      name="fee_paid_date"
-      id="fee_paid_date"
-      value="<%= new Date().getDate(); %>-<%= new Date().getMonth()+1; %>-<%= new Date().getFullYear(); %>"
-    />
-    <span class="error" id="fee_paid_date"
-      >Please enter the date when the fee received to the School Bank
-      Account.</span
-    >
-  </div>
-    <div class="mb-3">
+  
+    <!-- <div class="mb-3">
       <select
         id="payment_mode"
         class="form-control"
@@ -108,9 +108,9 @@
         >Please select the Payment Mode.</span
       >
     </div>
-  <div class="mt-3 mb-3">
-    <button class="btn btn-secondary" type="submit" value="submit">
+  <div class="mb-3">
+    <button class="btn btn-secondary" type="submit" id="admission_fee_button"  value="submit">
       Add Fee Record
     </button>
-  </div>
+  </div> -->
 </form>

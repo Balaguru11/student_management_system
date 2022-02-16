@@ -35,7 +35,7 @@ apiRouter.post('/get-fee-structure-data', (req, res) => {
 
 apiRouter.post("/get-class-sections", (req, res) => {
   var getclassection =
-    `SELECT clr.id, clr.class_section, batch.batch_name,  (clr.students_strength - clr.students_filled) AS seats_free FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE clr.class_id= "${req.body.class_id}" AND clr.students_strength - clr.students_filled != "0" AND clr.deleted_at IS NULL`;
+    `SELECT clr.id, clr.class_section, batch.id AS batch_id, batch.batch_name,  (clr.students_strength - clr.students_filled) AS seats_free FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE clr.class_id= "${req.body.class_id}" AND clr.students_strength - clr.students_filled != "0" AND clr.deleted_at IS NULL`;
   dbcon.query(getclassection, (err, rows) => {
     if (err) {
       res.json({ msg: "error" });
@@ -63,26 +63,11 @@ apiRouter.post("/get-class-fee", (req, res) => {
   });
 });
 
-// check new or old student
-apiRouter.post("/get-student-type", (req, res) => {
-  var checkstudentType = `SELECT EXISTS (SELECT * FROM school_student_admission WHERE student_id="${req.body.student_id}" AND deleted_at IS NULL) AS count`;
-  dbcon.query(checkstudentType, (err, studentType) => {
-    if (err) {
-      res.json({ msg: "error", err });
-    } else if (studentType[0].count != 0){
-      console.log(studentType.length);
-      res.json({ msg: "success", studentType: studentType });
-    } else {
-      res.json({ msg: "success", studentType: studentType });
-    }
-  });
-});
-
 // New student - Seeing all class standards for the current year.
 apiRouter.post('/get-class-medium-for-current-year', (req, res) => {
   let session = req.session;
   let school = session.schoolId || session.school_id
-  var getClassMedium = `SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name, batch.year_from, batch.year_to FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${school}' AND sfs.std_year = '${req.body.current_year}'`;
+  var getClassMedium = `SELECT sfs.id, sfs.class_std, sfs.medium, batch.id AS batch_id, batch.batch_name, batch.year_from, batch.year_to FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${school}' AND sfs.std_year = '${req.body.current_year}'`;
   dbcon.query(getClassMedium, (err, classMediums) => {
     if (err) {
       res.json({ msg: "error", err });
@@ -93,56 +78,99 @@ apiRouter.post('/get-class-medium-for-current-year', (req, res) => {
 })
 
 apiRouter.post("/get-paid-amount", (req, res) => {
-  var getPaidAmount = `SELECT paying_amount FROM school_student_admission WHERE student_id="${req.body.student_id}" AND academic_year="${req.body.academic_year}" AND class_medium="${req.body.class_id}"`;
-  dbcon.query(getPaidAmount, (err, result) => {
+  var getPaidAmount = `SELECT ssad.id, ssad.batch_id, ssad.actual_fee, sfs.id AS std_id, sfs.class_std, sfs.medium, sfs.batch_id, ssad.paying_amount, ssad.payment_status FROM school_student_admission AS ssad INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium WHERE ssad.student_id="${req.body.student_id}" AND ssad.deleted_at IS NULL ORDER BY ssad.id`;
+  // AND academic_year="${req.body.academic_year}" AND class_medium="${req.body.class_id}"
+  dbcon.query(getPaidAmount, (err, admissionData) => {
     if (err) {
       res.json({ msg: "error", err });
     } else {
-      let amountPaid = 0;
-      for (let i = 0; i < result.length; i++) {
-        amountPaid = amountPaid + result[i].paying_amount;
-      }
+      // let amountPaid = 0;
+      // for (let i = 0; i < result.length; i++) {
+      //   amountPaid = amountPaid + result[i].paying_amount;
+      // }
+      console.log(admissionData);
       res.json({
-        msg: "success",
-        amount_earlier_paid: amountPaid,
+        msg: "success", admissionData: admissionData,
+        // amount_earlier_paid: amountPaid,
       });
     }
   });
 });
 
-apiRouter.post("/get-student-data", (req, res) => {
-  var getStudent = `SELECT name, mobile_number, email FROM school_student WHERE student_id='${req.body.stuId}'`;
-  dbcon.query(getStudent, (err, data) => {
+//Getting next class std row if the due is 0
+apiRouter.post('/get-next-std-row-id', (req, res) => {
+  let session = req.session;
+  let school = session.schoolId || session.school_id;
+  var nextClass = `SELECT * FROM school_feestructure WHERE school_id = '${school}' AND class_std = '${req.body.next_class}' AND medium = '${req.body.medium}' AND batch_id = '${req.body.batch_id}' AND deleted_at IS NULL; SELECT * FROM school_batch_mgmt WHERE id='${req.body.batch_id}'`;
+  dbcon.query(nextClass, (err, nextClassRow) => {
+    if(err) {
+      res.json({msg: 'error', err})
+    } else {
+      res.json({msg: 'success', nextClassRow: nextClassRow[0], batchData: nextClassRow[1] })
+    }
+  })
+})
+
+// Admission Module - NEW development API
+//getting student data & admission data here
+apiRouter.post('/get-student-admission-data', (req, res) => {
+  var getStudent = `SELECT name, mobile_number, email FROM school_student WHERE student_id='${req.body.student_id}' AND deleted_at IS NULL; SELECT * FROM school_student_admission WHERE student_id="${req.body.student_id}" AND deleted_at IS NULL`;
+  dbcon.query(getStudent, (err, stuDataAdmi) => {
     if (err) {
       res.json({ msg: "error" });
-    } else if (data.length == 1) {
+    } else {
       res.json({
         msg: "success",
-        student_name: data[0].name,
-        student_mobile: data[0].mobile_number,
-        student_email: data[0].email,
+        studentData: stuDataAdmi[0],
+        studentType: stuDataAdmi[1],
       });
-    } else {
+    }
+  });
+})
+
+// getting student data from school_student
+apiRouter.post("/get-student-data", (req, res) => {
+  var getStudent = `SELECT name, mobile_number, email FROM school_student WHERE student_id='${req.body.stuId}' AND deleted_at IS NULL;`
+  dbcon.query(getStudent, (err, studentData) => {
+    if (err) {
       res.json({ msg: "error" });
+    } else {
+      res.json({
+        msg: "success",
+        studentData: studentData,
+      });
     }
   });
 });
 
-// get academic years out of the student admission data to show dropdown in collect fee due form.
-apiRouter.post('/get-academic-year-for-id', (req, res) => {
-  var getAcademic = `SELECT academic_year FROM school_student_admission WHERE student_id = '${req.body.student_id}' AND deleted_at IS NULL`;
-  dbcon.query(getAcademic, (err, academics) => {
-    if(err) res.json({msg: 'error', err})
-    else if (academics.length > 0){
-      res.json({msg: 'success', academics: academics});
+// check new or old student
+apiRouter.post("/get-student-type", (req, res) => {
+  var checkstudentType = `SELECT * FROM school_student_admission WHERE student_id="${req.body.student_id}" AND deleted_at IS NULL`;
+  dbcon.query(checkstudentType, (err, studentType) => {
+    if (err) {
+      res.json({ msg: "error", err });
     } else {
-      res.json({msg: 'success', academics: academics});
+      res.json({ msg: "success", studentType: studentType });
+    }
+  });
+});
+
+
+// get academic years out of the student admission data to show dropdown in collect fee due form.
+apiRouter.post('/get-payment-records-for-student', (req, res) => {
+  var getPaymentData = `SELECT sfs.class_std, sfs.medium, sfs.id FROM school_student_admission AS ssad INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium WHERE ssad.student_id = '${req.body.student_id}' AND ssad.payment_status = 'Due' AND ssad.deleted_at IS NULL`;
+  dbcon.query(getPaymentData, (err, payments) => {
+    if(err) res.json({msg: 'error', err})
+    else if (payments.length > 0){
+      res.json({msg: 'success', payments: payments});
+    } else {
+      res.json({msg: 'success', payments: payments});
     }
   })
 })
 // student enrolled data
 apiRouter.post("/get-student-enrollment-data", (req, res) => {
-  var getStudent = `SELECT ssa.student_id, stu.name, stu.email, stu.mobile_number, ssa.id, ssa.paying_amount, batch.batch_name, ssa.actual_fee, sfs.class_std, sfs.medium, clr.class_section FROM school_student_admission AS ssa INNER JOIN school_feestructure AS sfs ON sfs.id = ssa.class_medium INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id INNER JOIN school_classroom AS clr ON clr.id = ssa.class_section INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.student_id='${req.body.stuId}' AND ssa.academic_year = '${req.body.academicYear}'`;
+  var getStudent = `SELECT ssa.student_id, stu.name, stu.email, stu.mobile_number, ssa.id, ssa.paying_amount, batch.batch_name, ssa.actual_fee, sfs.class_std, sfs.medium, clr.class_section FROM school_student_admission AS ssa INNER JOIN school_feestructure AS sfs ON sfs.id = ssa.class_medium INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id INNER JOIN school_classroom AS clr ON clr.id = ssa.class_section INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.student_id='${req.body.stuId}' AND ssa.class_medium = '${req.body.class_id}'`;
   dbcon.query(getStudent, (err, data) => {
     if (err) {
       res.json({ msg: "error", err });
@@ -153,7 +181,6 @@ apiRouter.post("/get-student-enrollment-data", (req, res) => {
         student_name: data[0].name,
         student_mobile: data[0].mobile_number,
         student_email: data[0].email,
-        academic_year: data[0].academic_year,
         class_std: data[0].class_std,
         class_med: data[0].medium,
         class_sec: data[0].class_section,
@@ -299,7 +326,8 @@ apiRouter.post("/get-staff-assigned-to-subject", (req, res) => {
 // insert query on focusout of period entries in week schedule
 apiRouter.post('/insert-week-schedule-by-period', (req, res) => {
   let session = req.session;
-  var checkData = `SELECT * FROM school_week_schedule WHERE school_id='${session.schoolId}' AND day='${req.body.day}' AND period_no = '${req.body.period_no}' AND period_staff_id='${req.body.staff}' AND deleted_at IS NULL`;
+  let school = session.schoolId || session.school_id
+  var checkData = `SELECT * FROM school_week_schedule WHERE school_id='${school}' AND day='${req.body.day}' AND period_no = '${req.body.period_no}' AND period_staff_id='${req.body.staff}' AND deleted_at IS NULL`;
   dbcon.query(checkData, (err, dataFound) => {
     if(err) res.json({msg: 'error', err});
     else if(dataFound.length != 0){
@@ -313,7 +341,8 @@ apiRouter.post('/insert-week-schedule-by-period', (req, res) => {
 // view Subject - Staff for a specific Week Schedule on View button click
 apiRouter.post('/view-week-schedule-period-staff', (req, res) => {
   let session = req.session;
-  var weekSchedFind = `SELECT week.day, week.period_no, week.period_subject_id, subj.subject_name, week.period_staff_id, staf.name FROM school_week_schedule AS week INNER JOIN school_subjects AS subj ON subj.id = week.period_subject_id INNER JOIN school_staff AS staf ON staf.staff_id = week.period_staff_id WHERE week.class_sec_id='${req.body.class_sec_id}' AND week.day = '${req.body.day_id}' AND week.school_id = '${session.schoolId}' AND week.schedule_tempid = '${req.body.sched_tempid}' ORDER BY ABS(week.period_no)`;
+  let school = session.schoolId || session.school_id
+  var weekSchedFind = `SELECT week.day, week.period_no, week.period_subject_id, subj.subject_name, week.period_staff_id, staf.name FROM school_week_schedule AS week INNER JOIN school_subjects AS subj ON subj.id = week.period_subject_id INNER JOIN school_staff AS staf ON staf.staff_id = week.period_staff_id WHERE week.class_sec_id='${req.body.class_sec_id}' AND week.day = '${req.body.day_id}' AND week.school_id = '${school}' AND week.schedule_tempid = '${req.body.sched_tempid}' ORDER BY ABS(week.period_no)`;
   dbcon.query(weekSchedFind, (err, schedule) => {
     if(err) res.json({msg: 'error', err});
     else if (schedule.length > 0){
@@ -327,7 +356,8 @@ apiRouter.post('/view-week-schedule-period-staff', (req, res) => {
 // edit Week schedule from View list
 apiRouter.post('/edit-week-schedule-preiods', (req, res) => {
   let session = req.session;
-  var editSched = `SELECT * FROM school_schedule_template WHERE id='${req.body.sched_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, sfs.class_std, sfs.medium, clr.class_section, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_classroom AS clr ON clr.id = scs.classroom_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'; SELECT week.day, week.period_no, week.period_subject_id, subj.subject_name, week.period_staff_id, staf.name FROM school_week_schedule AS week INNER JOIN school_subjects AS subj ON subj.id = week.period_subject_id INNER JOIN school_staff AS staf ON staf.staff_id = week.period_staff_id WHERE week.class_sec_id='${req.body.class_sec_id}' AND week.day = '${req.body.day_id}' AND week.school_id = '${session.schoolId}' AND week.schedule_tempid = '${req.body.sched_temp_id}' ORDER BY ABS(week.period_no)`;
+  let school = session.schoolId || session.school_id
+  var editSched = `SELECT * FROM school_schedule_template WHERE id='${req.body.sched_temp_id}'; SELECT scs.subject_id, sub.subject_name, scs.classroom_id, sfs.class_std, sfs.medium, clr.class_section, scs.staff_id_assigned, ssf.name FROM school_class_subjects AS scs INNER JOIN school_subjects AS sub ON sub.id=scs.subject_id INNER JOIN school_classroom AS clr ON clr.id = scs.classroom_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_staff AS ssf ON ssf.staff_id=scs.staff_id_assigned WHERE scs.classroom_id = '${req.body.class_sec_id}'; SELECT week.day, week.period_no, week.period_subject_id, subj.subject_name, week.period_staff_id, staf.name FROM school_week_schedule AS week INNER JOIN school_subjects AS subj ON subj.id = week.period_subject_id INNER JOIN school_staff AS staf ON staf.staff_id = week.period_staff_id WHERE week.class_sec_id='${req.body.class_sec_id}' AND week.day = '${req.body.day_id}' AND week.school_id = '${school}' AND week.schedule_tempid = '${req.body.sched_temp_id}' ORDER BY ABS(week.period_no)`;
   dbcon.query(editSched, (err, scheduleData) => {
     if(err) res.json({msg: 'error', err})
     res.json({msg: 'success', scheduleData: scheduleData});
@@ -376,11 +406,12 @@ apiRouter.post("/delete-class-section", (req, res) => {
 // OPEN EDIT MODAL for Subject Class Staff Mapping section
 apiRouter.post("/edit-subclassstaff-mapping", (req, res) => {
   let session = req.session;
+  let school = session.schoolId || session.school_id
   var mapFetch = `SELECT map.id, subj.id AS subject_id, subj.subject_name, sml.id AS prim_id, sml.username AS primary_staff, sml2.username AS secondary_staff, sml2.id AS sec_id, clr.id AS classsec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_class_subjects AS map 
   INNER JOIN school_classroom AS clr ON clr.id=map.classroom_id
   INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id 
   INNER JOIN school_subjects AS subj ON subj.id=map.subject_id INNER JOIN school_main_login AS sml ON sml.id=map.staff_id_assigned 
-  INNER JOIN school_main_login AS sml2 ON sml2.id=map.secondary_staff_assigned WHERE map.id='${req.body.mapping_id}' AND map.school_id='${session.schoolId}'; SELECT * FROM school_main_login WHERE school_id = '${session.schoolId}' AND role_id_fk='8' AND status='Active' AND deleted_at IS NULL`;
+  INNER JOIN school_main_login AS sml2 ON sml2.id=map.secondary_staff_assigned WHERE map.id='${req.body.mapping_id}' AND map.school_id='${school}'; SELECT * FROM school_main_login WHERE school_id = '${school}' AND role_id_fk='8' AND status='Active' AND deleted_at IS NULL`;
   dbcon.query(mapFetch, (err, mapData) => {
     if (err) res.json({ msg: "error", err });
     else {
@@ -434,7 +465,8 @@ apiRouter.post('/get-parent-account-data', (req, res) => {
 // get parent account data and mapped date
 apiRouter.post('/get-parent-account-mapped-data', (req, res) => {
   let session = req.session;
-var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.body.parent_id}' AND role_id_fk='5'; SELECT stu.school_id, spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.body.parent_id}' AND spam.deleted_at IS NULL; SELECT stu.school_id, stu.name AS student_name, stu.student_id FROM school_student AS stu INNER JOIN school_main_login AS sml ON sml.id = stu.student_id WHERE sml.school_id='${session.schoolId}' AND sml.status='Active' AND sml.deleted_at IS NULL AND sml.role_id_fk = '1'`;
+  let school = session.schoolId || session.school_id
+var parentMapData = `SELECT * FROM school_main_login WHERE id='${req.body.parent_id}' AND role_id_fk='5'; SELECT stu.school_id, spam.ml_student_id, stu.name AS student_name FROM school_parent_student_map AS spam INNER JOIN school_student AS stu ON stu.student_id = spam.ml_student_id WHERE spam.parent_id='${req.body.parent_id}' AND spam.deleted_at IS NULL; SELECT stu.school_id, stu.name AS student_name, stu.student_id FROM school_student AS stu INNER JOIN school_main_login AS sml ON sml.id = stu.student_id WHERE sml.school_id='${school}' AND sml.status='Active' AND sml.deleted_at IS NULL AND sml.role_id_fk = '1'`;
   dbcon.query(parentMapData, (err, parMapData) => {
     if(err) res.json({msg: 'error', err});
     else if(parMapData[0].length != 0){

@@ -1114,7 +1114,7 @@ exports.postFeeCollection = (req, res) => {
       if (err) throw err;
       // return res.render("server-error", { title: "Server Error" });
       // admission table is for new enrollment only. So, checking if the data is already available
-      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}') AS count`;
+      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}' AND class_medium = '${req.body.class_medium}' AND deleted_at IS NULL) AS count`;
       dbcon.query(checkAdmission, (err, data) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         else if (data[0].count == 0) {
@@ -1123,10 +1123,10 @@ exports.postFeeCollection = (req, res) => {
             req.body.actual_fee_hide - req.body.fee_paying;
           let payment_status = payment_pending == 0 ? "No Due" : "Due";
 
-          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${session.schoolId}', '${student[0][0].id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.current_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.schoolId}')`;
+          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, batch_id, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${session.schoolId}', '${student[1][0].student_id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.batch_id}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.schoolId}')`;
           dbcon.query(admissionQuery, (err, respo) => {
-            if (err)
-              return res.render("server-error", { title: "Server Error" });
+            if (err) throw err;
+              // return res.render("server-error", { title: "Server Error" });
             //updating student status in main_login
             var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0][0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
             dbcon.query(studUpdateLogin, (err, result) => {

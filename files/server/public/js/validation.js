@@ -343,31 +343,46 @@ $(document).ready(function () {
   })
 })
 
-// Dynamic getting student data from fee-collection module
+
+// Admission Module New developemnt
+// getting student data - student admission data with student_type
 $(document).ready(function () {
-  $("#stuId").on("change", function () {
+  $("#stuId").on("keyup", function () {
     var student_id = this.value;
-    // $("#mobile, #name, #email").val("");
     $.ajax({
-      url: "/api/get-student-data",
+      url: "/api/get-student-admission-data",
       type: "POST",
       data: {
-        stuId: student_id,
+        student_id: student_id,
       },
       dataType: "Json",
       success: function (result) {
-        $("#stuId").after(function () {
-          $("#student_data").remove();
-          return (
-            "<div class='student_data' id='student_data'><div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='" +
-            result.student_name +
-            "' /> </div> <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='" +
-            result.student_email +
-            "' /> <span class='error' id='email_error' >Please enter the Student's Email.</span > </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='" +
-            result.student_mobile +
-            "' /> <span class='error' id='mobile_error' >Please enter the Student's 10 Digit Mobile Number.</span > </div> </div></div>"
-          );
-        });
+        let stu_type = `<p class="text-center display-6 student_type" data-id="student_unknown">Unknown User</p>`;
+        // if student found in student table
+        if(result.studentData.length != 0) {
+          // getting student type from 2nd query
+         if(result.studentType.length != 0){
+          stu_type = `<p class="text-center display-6 student_type" data-id="student_enrolled">Enrolled Student</p>`
+        } else {
+          stu_type = `<p class="text-center display-6 student_type" data-id="student_new">New Student</p>`
+        }
+          $("#student_data, .new_enroll_fields").remove();
+          $('#admission_fee_button').removeAttr('disabled')
+          $("#stuId").after(function () {
+            return (
+              `<div class='student_data' id='student_data'><div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='${result.studentData[0].name}' /> </div> <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='${result.studentData[0].email}' /> <span class='error' id='email_error' >Please enter the Student's Email.</span > </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='${result.studentData[0].mobile_number}' /> <span class='error' id='mobile_error' >Please enter the Student's 10 Digit Mobile Number.</span > </div> </div>
+              <div class="border border-warning m-2" >${stu_type}</div>
+              </div>`
+            );
+          });
+        } else {
+          $("#student_data, .new_enroll_fields").remove();
+          $('#admission_fee_button').attr('disabled', 'disabled');
+          $("#stuId").after(function () {
+            return (`<div class='student_data' id='student_data'>
+            <div class="border border-warning m-2">${stu_type}</div></div>`)
+          })
+        }
       },
       error: function (err) {
         console.log("No Student found");
@@ -376,137 +391,81 @@ $(document).ready(function () {
   });
 });
 
-
-
-// dynamic select opption based on selected option in HTML form
-$(document).on("change", "#class_medium_newad", function () {
-    var class_medium_1 = this.value;
-    $("#actual_fee").val("");
-    $.ajax({
-      url: "/api/get-class-fee",
-      type: "POST",
-      data: {
-        class_id: class_medium_1,
-      },
-      dataType: "json",
-      success: function (data) {
-        $("#fee-one, #fee-two").remove();
-        $(".student_type").after(function () {
-          return (
-            `<div class='mb-3' id='fee-one'><label>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='${data.class_fee}'disabled /><input type='hidden' class='form-control' name='actual_fee_hide' id='actual_fee_hide' value='${data.class_fee}'/></div><div class='mb-3' id='fee-two'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' max=${data.class_fee}><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>`
-          );
-        });
-      },
-      error: function (err) {
-        console.log(err);
-      },
-    });
-});
-
-// getting student Type Admission / Academic Fee payment
-$(document).ready(function () {
-  $('#stuId').on('keyup', function () {
-    var student_id = $("#stuId").val();
-    $.ajax({
-      url: '/api/get-student-type',
-      type: 'POST', 
-      data: {
-        student_id: student_id,
-      }, dataType: 'JSON',
-      success: function (data) {
-        if(data.studentType[0].count != 0) {
-          $('.student_type').remove();
-          $('#new_enrollment').after(function () {
-            return (
-              `<p class="border border-warning m-2 text-center display-6 student_type" id="student_old" data-id="student_old">Enrolled Student</p>`
-            )
-          })
-         } else {
-          $('.student_type').remove();
-          $('#new_enrollment').after(function () {           return (
-              `<div class='student_type'><p class="border border-success m-2 text-center display-6" id="student_new" data-id="student_new"><i class="fas fa-smile-plus"></i> New Student</p>
-              <div class="mt-3 mb-3" id="select_class">
-              <label for="class_medium">Select Class:</label>
-              <select id="class_medium_newad" class="form-control" name="class_medium" required ></select>
-              <span class="error" id="class_medium_error"
-                >Please choose Class & medium.</span
-              >
-            </div>
-            <div class="mb-3">
-            <label for='class_section_newad'>Choose A Section</label>
-              <select
-                id="class_section_newad"
-                class="form-control"
-                name="class_section"
-                required
-              ></select>
-              <span class="error" id="class_medium_error"
-                >Please choose Class & medium.</span
-              >
-            </div></div>
-              `
-            )
-          })
-        }
-      }, error: function (err) {
-        console.log(err);
-      }
-    })
-  })
-})
-
-// dynamic select opption based on selected option in HTML form
-$(document).on("change", "#class_medium_newad", function () {
-    var class_medium = $('#class_medium_newad').val();
-    console.log(class_medium);
-    $.ajax({
-      url: "/api/get-class-sections",
-      type: "POST",
-      data: {
-        class_id: class_medium,
-      },
-      dataType: "json",
-      success: function (result) {
-        $("#class_section_newad").html(
-          '<option value="">Select Class Section here.</option>'
-        );
-        $.each(result.class_secs, function (key, value) {
-          $("#class_section_newad").append(
-            `<option value="${value.id}">${value.class_section} Sec (${value.batch_name}) | ${value.seats_free} Seats Left </option>`
-          );
-        });s
-      },
-      error: function (err) {
-        console.log(err);
-      },
-    });
-});
+// appending academic / admission fields based on the student_type:
 
 // getting fee data from the student admission
-$(document).on("change", "#stuId, #academic_year, #class_medium", function () {
+$(document).on("change", "#stuId", function () {
   var student_id = $("#stuId").val();
-  var academic = $("#academic_year").val();
-  var class_med = $("#class_medium").val();
   var student_type = $('.student_type').data('id');
-  $("#fee_earlier").val("");
-  if(student_type == 'student_old'){
+  if(student_type == 'student_enrolled'){
     $.ajax({
       url: "/api/get-paid-amount",
       type: "POST",
       data: {
         student_id: student_id,
-        academic_year: academic,
-        class_id: class_med,
+        // academic_year: academic,
+        // class_id: class_med,
       },
       dataType: "Json",
       success: function (data) {
+        var lastRecord = data.admissionData.length-1;
+        if(data.admissionData[lastRecord].payment_status == 'Due') {
+          $('.new_enroll_fields').remove();
+          $('#new_enrollment').after(function () {
+            return (
+              `<div class='bg bg-danger text-center m-2 p-2 new_enroll_fields'><p class='text-white'><b>You have Rs. ${data.admissionData[lastRecord].actual_fee - data.admissionData[lastRecord].paying_amount} Due for ${data.admissionData[lastRecord].class_std} STD - ${data.admissionData[lastRecord].medium} Medium Class. You are asked to close the due to get promoted to next class.</b></p><br><p class='display-6 text-white'>Do you want to pay now ?</p><a href='/school/dashboard/fee-due-collection' class='btn btn-warning' role='button'>Pay Fee Due Now</a></div>`
+            )
+          })
+        } else {
+          // check EXAM RESULT HERE - NEED to do
+          // JUST PROMOTING without checking the Exam Result for now.
+            var next_class = parseInt(data.admissionData[lastRecord].class_std) + 1
+            var medium = data.admissionData[lastRecord].medium;
+            var batch_id = data.admissionData[lastRecord].batch_id;
+            // getting next std row id and data
+            $.ajax({
+              url: '/api/get-next-std-row-id',
+              type: 'POST',
+              data: {
+                next_class: next_class,
+                medium: medium,
+                batch_id: batch_id,
+              }, dataType: 'JSON',
+              success: function (data) {
+                if(data.nextClassRow.length == 1) {
+                  $('.new_enroll_fields').remove();
+                  $('#new_enrollment').after(function () {
+                  return (
+                    `<div class='new_enroll_fields'>
+                    <div class="mt-3 mb-3" id="select_class">
+                    <label for="class_medium">Promoting To:</label>
+                    <select id="class_medium_newad" class="form-control" name="class_medium_newad" required ><option>Select Class Here</option><option value='${data.nextClassRow[0].id}'>${data.nextClassRow[0].class_std} STD - ${data.nextClassRow[0].medium} Medium (${data.batchData[0].batch_name})</option></select>
+                    </div>
+                    <div class="mb-3">
+                    <label for='class_section_newad'>Choose A Section</label> <select id="class_section_newad" class="form-control" name="class_section" required ></select><span class="error" id="class_medium_error">Please choose Class & medium.</span ></div></div>`
+                  )
+                })
+              } else {
+                $('.new_enroll_fields').remove();
+                $('#new_enrollment').after(function () {
+                  return (
+                    `<div class='new_enroll_fields'>
+                    <b class='bg bg-success text-center'>You have successfully completed the classes in our School. You can collect Transfer Certificate.</b>
+                    </div>`
+                  )
+                })
+              }
+              }, error: function (err) {
+                console.log(err);
+              }
+            })
+        // })
+        }
         // show data in the element.
         $("#actual_fee").after(function () {
           $('.form-group').remove();
           return (
-            "<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='" +
-            data.amount_earlier_paid +
-            "' disabled /></div>"
+            `<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='${data.amount_earlier_paid}' disabled /></div>`
           );
         });
       },
@@ -514,7 +473,7 @@ $(document).on("change", "#stuId, #academic_year, #class_medium", function () {
         console.log(err);
       },
     });
-  } else {
+  } else if (student_type == 'student_new') {
     var current_year = $('#current_year').val();
     $.ajax({
       url: '/api/get-class-medium-for-current-year',
@@ -523,12 +482,25 @@ $(document).on("change", "#stuId, #academic_year, #class_medium", function () {
         current_year: current_year,
       }, dataType: 'JSON',
       success: function (data) {
+        $('.new_enroll_fields').remove();
+        $('#new_enrollment').after(function () {           
+          return (
+          `<div class='new_enroll_fields'>
+          <div class="mt-3 mb-3" id="select_class">
+          <label for="class_medium">Select Class:</label>
+          <select id="class_medium_newad" class="form-control" name="class_medium" required ></select>
+          <span class="error" id="class_medium_error">Please choose Class & medium.</span> </div>
+          <div class="mb-3">
+          <label for='class_section_newad'>Choose A Section</label> <select id="class_section_newad" class="form-control" name="class_section" required ></select><span class="error" id="class_medium_error">Please choose Class & medium.</span ></div></div>`
+        )
+      })
+        //
         let class_med_options = `<option value="">Class Std & Medium:</option>`;
-        if(data.classMediums.length > 0){
+        if(data.classMediums.length > 0) {
           $('#class_medium_newad').removeAttr('disabled');
           $('.no_class_alert').remove();
             for (let i=0; i < data.classMediums.length; i++){
-              let clo = `<option value="${data.classMediums[i].id}">${data.classMediums[i].class_std} STD - ${data.classMediums[i].medium} Medium (${data.classMediums[i].batch_name})</option>`
+              let clo = `<option data-batch='${data.classMediums[i].batch_id}' value="${data.classMediums[i].id}">${data.classMediums[i].class_std} STD - ${data.classMediums[i].medium} Medium (${data.classMediums[i].batch_name})</option>`
               class_med_options += clo;
             }
             $('#class_medium_newad').append(`${class_med_options}`)
@@ -541,33 +513,207 @@ $(document).on("change", "#stuId, #academic_year, #class_medium", function () {
         console.log(err);
       }
     })
+  } else {
+    
   }
 });
+
+
+// dynamic select option based on selected option in HTML form
+$(document).on("change", "#class_medium_newad", function () {
+  var class_medium_1 = this.value;
+  $.ajax({
+    url: "/api/get-class-fee",
+    type: "POST",
+    data: {
+      class_id: class_medium_1,
+    },
+    dataType: "json",
+    success: function (data) {
+      $("#fee-details").remove();
+      $("#class_section_newad").after(function () {
+        return (
+          `<div id='fee-details'><div class='mb-3 mt-3'><label>Fee Amount:</label><input type='number' class='form-control' name='actual_fee' id='actual_fee' value='${data.class_fee}'disabled /><input type='hidden' class='form-control' name='actual_fee_hide' id='actual_fee_hide' value='${data.class_fee}'/></div><div class='mb-3'><label>Amount Paying:</label><input type='number' class='form-control' name='fee_paying' id='fee_paying' placeholder='Amount Paying:' max=${data.class_fee}><span class='error' id='fee_paying_error'>Please enter the amount.</span></div>
+          <div class="mb-3"> <select id="payment_mode" class="form-control"  name="payment_mode" aria-placeholder="Payment Mode:" >
+            <option value="">Select Payment Mode</option>
+            <option value="cash">Cash</option>
+            <option value="card">Debit / Credit Card</option>
+            <option value="cheque">Cheque</option>
+            <option value="netbanking">Netbanking</option>
+            <option value="emi">EMI</option>
+          </select> <span class="error" id="payment_mode_error" >Please select the Payment Mode.</span></div>
+          <div class="mb-3"><button class="btn btn-secondary" type="submit" id="admission_fee_button"  value="submit"> Add Fee Record</button> </div></div>`
+        );
+      });
+    },
+    error: function (err) {
+      console.log(err);
+    },
+  });
+});
+
+// dynamic select opption based on selected option in HTML form
+$(document).on("change", "#class_medium_newad", function () {
+  var class_medium = $('#class_medium_newad').val();
+  var batch_selected = $('#class_medium_newad').find("option:selected").attr('data-batch');
+  $.ajax({
+    url: "/api/get-class-sections",
+    type: "POST",
+    data: {
+      class_id: class_medium,
+    },
+    dataType: "json",
+    success: function (result) {
+      $("#class_section_newad").html(
+        '<option value="">Select Class Section here.</option>'
+      );
+      $.each(result.class_secs, function (key, value) {
+        $("#class_section_newad").append(
+          `<option value="${value.id}">${value.class_section} Sec (${value.batch_name}) | ${value.seats_free} Seats Left </option>`
+        );
+      });
+      $('#select_class').before(
+        `<input type='hidden' class='form-control' name='batch_id' id='batch_id' value='${batch_selected}'>`
+      )
+    },
+    error: function (err) {
+      console.log(err);
+    },
+  });
+});
+
+
+// // Dynamic getting student data from fee-collection module
+// $(document).ready(function () {
+//   $("#stuId").on("keyup", function () {
+//     var student_id = this.value;
+//     // $("#mobile, #name, #email").val("");
+//     $.ajax({
+//       url: "/api/get-student-data",
+//       type: "POST",
+//       data: {
+//         stuId: student_id,
+//       },
+//       dataType: "Json",
+//       success: function (result) {
+//         if(result.studentData.length != 0) {
+//           $("#student_data").remove();
+//           $("#stuId").after(function () {
+//             return (
+//               "<div class='student_data' id='student_data'><div class='mt-3 mb-3'><label for='name'>Student Name: </label><input type='text' class='form-control' name='name' id='name' placeholder='Student Name' disabled value='" +
+//               result.studentData[0].name +
+//               "' /> </div> <div class='row g-3'> <div class='col'> <label for='name'>Student Email ID: </label> <input type='email' class='form-control' name='email' id='email' placeholder='Email ID:' disabled value='" +
+//               result.studentData[0].email +
+//               "' /> <span class='error' id='email_error' >Please enter the Student's Email.</span > </div> <div class='col'> <label for='name'>Student Mobile No: </label> <input type='tel' class='form-control' placeholder='Mobile Number:' name='mobile' id='mobile' disabled value='" +
+//               result.studentData[0].mobile_number +
+//               "' /> <span class='error' id='mobile_error' >Please enter the Student's 10 Digit Mobile Number.</span > </div> </div></div>"
+//             );
+//           });
+//         } else {
+//           $("#student_data").remove();
+//           $("#stuId").after(function () {
+//             return (`<div class='student_data mt-2 no_student_data' id='student_data'><p class="alert alert-danger">Not a Student.</p></div>`)
+//           })
+//         }
+//       },
+//       error: function (err) {
+//         console.log("No Student found");
+//       },
+//     });
+//   });
+// });
+
+// // getting student Type Admission / Academic Fee payment
+// $(document).ready(function () {
+//   $('#stuId').on('keyup', function () {
+//     var student_id = $("#stuId").val();
+//     $.ajax({
+//       url: '/api/get-student-type',
+//       type: 'POST', 
+//       data: {
+//         student_id: student_id,
+//       }, dataType: 'JSON',
+//       success: function (data) {
+//         if(data.studentType.length != 0) {
+//           $('.student_type').remove();
+//           $('#new_enrollment').after(function () {
+//             return (
+//               `<div class="border border-warning m-2 text-center display-6 student_type" id="student_old" data-id="student_old">Enrolled Student</div>`
+//             )
+//           })
+//          } else if(data.studentType.length == 0) {
+//           $('.student_type').remove();
+//           $('#new_enrollment').after(function () {           return (
+//               `<div class='student_type'><p class="border border-success m-2 text-center display-6" id="student_new" data-id="student_new"><i class="fas fa-smile-plus"></i> New Student</p>
+//               <div class="mt-3 mb-3" id="select_class">
+//               <label for="class_medium">Select Class:</label>
+//               <select id="class_medium_newad" class="form-control" name="class_medium" required ></select>
+//               <span class="error" id="class_medium_error"
+//                 >Please choose Class & medium.</span
+//               >
+//             </div>
+//             <div class="mb-3">
+//             <label for='class_section_newad'>Choose A Section</label>
+//               <select
+//                 id="class_section_newad"
+//                 class="form-control"
+//                 name="class_section"
+//                 required
+//               ></select>
+//               <span class="error" id="class_medium_error"
+//                 >Please choose Class & medium.</span
+//               >
+//             </div></div>
+//               `
+//             )
+//           })
+//         } else {
+//           $('.student_type').remove();
+//           $('#new_enrollment').after(function () {
+//           return (
+//             `<p class="border border-danger bg-danger m-2 text-center display-6 student_type" id="student_unknown" data-id="student_unknown">Unknown User</p>`
+//           )
+//           })
+//         }
+
+//         if (student_id == "") {
+//           $('.student_type, #student_data').remove();
+//         }
+
+//       }, error: function (err) {
+//         console.log(err);
+//       }
+//     })
+//   })
+// })
 
 // Dynamic getting student data for fee due module from admission table
 $(document).ready(function () {
   $('#stuId_due').on('change', function () {
     var student_id = $("#stuId_due").val();   
     $.ajax({
-      url: '/api/get-academic-year-for-id',
+      url: '/api/get-payment-records-for-student',
       type: 'POST',
       data: {
         student_id, student_id,
       }, dataType: 'JSON',
       success: function (data) {
         // do stuff
-        $('#student_id_due').after(function () {
-          let year_options = "";
-          if (data.academics.length > 0) {
-            for (let i=0; i < data.academics.length; i++ ) {
-              var option = `<option value='${data.academics[i].academic_year}'>${data.academics[i].academic_year}</option>`
-              year_options += option;
+          let class_options = "";
+          if (data.payments.length > 0) {
+            for (let i=0; i < data.payments.length; i++ ) {
+              var option = `<option value='${data.payments[i].id}'>${data.payments[i].class_std} STD - ${data.payments[i].medium} Medium</option>`
+              class_options += option;
             }
           } else {
-            year_options;
+            class_options;
           }
-          $('#academic_year_div').remove();
-          return (`<div class='mt-1 mb-3' id='academic_year_div'><label for='academic_year'>Academic Year: </label><select id='academic_year' class='form-control' name='academic_year'><option value=''>Select Year</option>${year_options}</select></div>`)
+
+          $('#class_payment_div').remove();
+          $('#student_id_due').after(function () {
+            return (
+              `<div class='mt-1 mb-3' id='class_payment_div'><label for='class_payment_div'>Paying Due for: </label><select id='due_class_id' class='form-control' name='due_class_id'><option value=''>Select A class Std</option>${class_options}</select></div>`
+            )
         })
       }, error: function (err) {
         console.log(err);
@@ -577,19 +723,19 @@ $(document).ready(function () {
 })
 
 // fee due collection
-$(document).on("change", "#academic_year", function () {
+$(document).on("change", "#due_class_id", function () {
   var student_id = $("#stuId_due").val();
-  var academicYear = $("#academic_year").val();
+  var class_id = $("#due_class_id").val();
   $.ajax({
     url: "/api/get-student-enrollment-data",
     type: "POST",
     data: {
       stuId: student_id,
-      academicYear: academicYear,
+      class_id: class_id,
     },
     dataType: "Json",
     success: function (result) {
-      $("#academic_year").after(function () {
+      $("#due_class_id").after(function () {
         var max_amount = result.actual_fee - result.earlier_paid;
         $("#student_enroll_data").remove();
         return (
@@ -2098,7 +2244,6 @@ $(document).on('click', '.view_exam_mark', function () {
         exam_id: exam_id,
       }, dataType: 'JSON',
       success: function (data) {
-
           let view_mark = ``;
           for (let i=0; i < data.markList.length; i++) {
             let view_i = `<tr><th scope="row">${i+1}</th><td><b>${data.markList[i].name}</b> (${data.markList[i].student_id})</td><td>${data.markList[i].received_mark}</td><td>${data.markList[i].subject_result}</td></tr>`
