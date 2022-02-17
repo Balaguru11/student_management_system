@@ -44,7 +44,7 @@ const {
   viewWeekSchedule,
   addWeekScheduleForm, editWeekSchedule, deleteWeekSchedule, 
   allChangePwd,
-  allDueCollection, viewDueCollectionData
+  allDueCollection
 } = require("../controllers/schoolController");
 
 // CREATE SCHOOL
@@ -152,7 +152,6 @@ schoolRouter.delete("/dashboard/students/delete/:id", isSchool, deleteStudentAcc
 // fee collection CRUD
 schoolRouter.get("/dashboard/fee-collection", isSchool, getFeeCollection);
 schoolRouter.post("/dashboard/fee-collection", isSchool, postFeeCollection);
-schoolRouter.get('/dashboard/fee-due-collection/view/:student_id/:admission_id', isSchool, viewDueCollectionData)
 
 // Due collection
 schoolRouter.all("/dashboard/fee-due-collection", isSchool, allDueCollection);

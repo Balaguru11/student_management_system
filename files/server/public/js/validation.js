@@ -419,42 +419,63 @@ $(document).on("change", "#stuId", function () {
         } else {
           // check EXAM RESULT HERE - NEED to do
           // JUST PROMOTING without checking the Exam Result for now.
-            var next_class = parseInt(data.admissionData[lastRecord].class_std) + 1
+            var current_std = data.admissionData[lastRecord].class_std;
+            var current_class = data.admissionData[lastRecord].class_section; // class_section
+            var next_class = parseInt(current_std) + 1
             var medium = data.admissionData[lastRecord].medium;
             var batch_id = data.admissionData[lastRecord].batch_id;
+            
             // getting next std row id and data
             $.ajax({
               url: '/api/get-next-std-row-id',
               type: 'POST',
               data: {
+                student_id: student_id,
+                current_std: current_std,
+                current_class: current_class,
                 next_class: next_class,
                 medium: medium,
                 batch_id: batch_id,
               }, dataType: 'JSON',
               success: function (data) {
-                if(data.nextClassRow.length == 1) {
+                if(data.annualResult == 'Pass') {
+                  if(data.nextClassRow.length == 1) {
+                    $('.new_enroll_fields').remove();
+                    $('#new_enrollment').after(function () {
+                      return (
+                        `<div class='new_enroll_fields'><div class='row text-white text-center p-2'><div class='col-6 bg bg-success p-1 m-2'><p>Your Academic Fee Payment Status is:</p><p class='display-6'>No Due</p></div><div class='col-6 bg bg-success p-1 m-2'><p>Your last Annual Exam Result is:</p><p class='display-6'>'PASS'</p></div></div>
+                        <div class="mt-3 mb-3" id="select_class">
+                        <label for="class_medium">Promoting To:</label>
+                        <select id="class_medium_newad" class="form-control" name="class_medium" required ><option>Select Class Here</option><option value='${data.nextClassRow[0].id}'>${data.nextClassRow[0].class_std} STD - ${data.nextClassRow[0].medium} Medium (${data.batchData[0].batch_name})</option></select>
+                        </div>
+                        <div class="mb-3">
+                        <label for='class_section_newad'>Choose A Section</label> <select id="class_section_newad" class="form-control" name="class_section" required ></select><span class="error" id="class_medium_error">Please choose Class & medium.</span ></div></div>`
+                      )
+                    })
+                  } else {
+                    $('.new_enroll_fields').remove();
+                    $('#new_enrollment').after(function () {
+                      return (
+                        `<div class='new_enroll_fields'>
+                        <b class='bg bg-success text-center'>You have successfully completed the classes in our School. You can collect Transfer Certificate.</b>
+                        </div>`
+                      )
+                    })
+                  }
+                } else {
                   $('.new_enroll_fields').remove();
                   $('#new_enrollment').after(function () {
-                  return (
-                    `<div class='new_enroll_fields'>
-                    <div class="mt-3 mb-3" id="select_class">
-                    <label for="class_medium">Promoting To:</label>
-                    <select id="class_medium_newad" class="form-control" name="class_medium_newad" required ><option>Select Class Here</option><option value='${data.nextClassRow[0].id}'>${data.nextClassRow[0].class_std} STD - ${data.nextClassRow[0].medium} Medium (${data.batchData[0].batch_name})</option></select>
-                    </div>
-                    <div class="mb-3">
-                    <label for='class_section_newad'>Choose A Section</label> <select id="class_section_newad" class="form-control" name="class_section" required ></select><span class="error" id="class_medium_error">Please choose Class & medium.</span ></div></div>`
-                  )
-                })
-              } else {
-                $('.new_enroll_fields').remove();
-                $('#new_enrollment').after(function () {
-                  return (
-                    `<div class='new_enroll_fields'>
-                    <b class='bg bg-success text-center'>You have successfully completed the classes in our School. You can collect Transfer Certificate.</b>
-                    </div>`
-                  )
-                })
-              }
+                    return (
+                      `<div class='new_enroll_fields'><div class='row text-white text-center p-2'><div class='col bg bg-success rounded m-2 p-1'><p>Your Academic Fee Payment Status is:</p><p class='display-6'>No Due</p></div><div class='col bg bg-danger rounded m-2 p-1'><p>Your last Annual Exam Result is:</p><p class='display-6'>'FAIL'</p></div></div>
+                      <div class="mt-3 mb-3" id="select_class">
+                      <label for="class_medium">Choose Class Std:</label>
+                      <select id="class_medium_newad" class="form-control" name="class_medium" required ><option>Select Class Here</option><option data-batch='${data.nextBatchSameStd[0].batch_id}' value='${data.nextBatchSameStd[0].id}'>${data.nextBatchSameStd[0].class_std} STD - ${data.nextBatchSameStd[0].medium} Medium</option></select>
+                      </div>
+                      <div class="mb-3">
+                      <label for='class_section_newad'>Choose A Section</label> <select id="class_section_newad" class="form-control" name="class_section" required ></select><span class="error" id="class_medium_error">Please choose Class & medium.</span ></div></div>`
+                    )
+                  })
+                }
               }, error: function (err) {
                 console.log(err);
               }
@@ -462,12 +483,12 @@ $(document).on("change", "#stuId", function () {
         // })
         }
         // show data in the element.
-        $("#actual_fee").after(function () {
-          $('.form-group').remove();
-          return (
-            `<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='${data.amount_earlier_paid}' disabled /></div>`
-          );
-        });
+        // $("#actual_fee").after(function () {
+        //   $('.form-group').remove();
+        //   return (
+        //     `<div class='mb-3 form-group'><label class='mt-3' for='fee_earlier'>Fee already Paid:</label><input type='number' class='form-control' name='fee_earlier' id='fee_earlier' placeholder='Fees already paid' value='${data.amount_earlier_paid}' disabled /></div>`
+        //   );
+        // });
       },
       error: function (err) {
         console.log(err);
@@ -2084,7 +2105,7 @@ $(document).on('change', '#exam_conducted_for', function () {
             time_24hr: true,
             minTime: "05:00",
             maxTime: "22:30",
-            dateFormat: "d-m-Y H:i",
+            // dateFormat: "d-m-Y H:i",
           })
       })
       }, error: function (err) {

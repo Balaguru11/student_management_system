@@ -78,8 +78,8 @@ apiRouter.post('/get-class-medium-for-current-year', (req, res) => {
 })
 
 apiRouter.post("/get-paid-amount", (req, res) => {
-  var getPaidAmount = `SELECT ssad.id, ssad.batch_id, ssad.actual_fee, sfs.id AS std_id, sfs.class_std, sfs.medium, sfs.batch_id, ssad.paying_amount, ssad.payment_status FROM school_student_admission AS ssad INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium WHERE ssad.student_id="${req.body.student_id}" AND ssad.deleted_at IS NULL ORDER BY ssad.id`;
-  // AND academic_year="${req.body.academic_year}" AND class_medium="${req.body.class_id}"
+  var getPaidAmount = `SELECT ssad.id, ssad.batch_id, ssad.actual_fee, sfs.id AS std_id, sfs.class_std, sfs.medium, ssad.class_section, ssad.paying_amount, ssad.payment_status FROM school_student_admission AS ssad INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium WHERE ssad.student_id="${req.body.student_id}" AND ssad.deleted_at IS NULL ORDER BY ssad.id`;
+  
   dbcon.query(getPaidAmount, (err, admissionData) => {
     if (err) {
       res.json({ msg: "error", err });
@@ -88,7 +88,6 @@ apiRouter.post("/get-paid-amount", (req, res) => {
       // for (let i = 0; i < result.length; i++) {
       //   amountPaid = amountPaid + result[i].paying_amount;
       // }
-      console.log(admissionData);
       res.json({
         msg: "success", admissionData: admissionData,
         // amount_earlier_paid: amountPaid,
@@ -101,12 +100,54 @@ apiRouter.post("/get-paid-amount", (req, res) => {
 apiRouter.post('/get-next-std-row-id', (req, res) => {
   let session = req.session;
   let school = session.schoolId || session.school_id;
-  var nextClass = `SELECT * FROM school_feestructure WHERE school_id = '${school}' AND class_std = '${req.body.next_class}' AND medium = '${req.body.medium}' AND batch_id = '${req.body.batch_id}' AND deleted_at IS NULL; SELECT * FROM school_batch_mgmt WHERE id='${req.body.batch_id}'`;
-  dbcon.query(nextClass, (err, nextClassRow) => {
-    if(err) {
-      res.json({msg: 'error', err})
+  // check exam result
+  var examResult = `SELECT sem.student_id, xmas.exam_name, xam.exam_conducted_class_sec, xam.subject_id, sem.received_mark, sem.subject_result, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON sem.exam_id = xam.id INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id WHERE sem.student_id = '${req.body.student_id}' AND sem.school_id = '${school}' AND xmas.exam_type = 'annual_exam' AND xam.exam_conducted_class_sec = '${req.body.current_class}' AND sem.deleted_at IS NULL`;
+  dbcon.query(examResult, (err, annualResult) => {
+    if(err) throw err;
+    else if (annualResult.length > 0){
+      // checking final result 
+      let pass_count = 0
+      for (let i=0; i < annualResult.length; i++) {
+        if (annualResult[i].subject_result == 'Pass'){
+          pass_count+=1
+        } else {
+          pass_count
+        }
+      }
+
+      if(pass_count == annualResult.length){
+        // query for next class
+        var nextClass = `SELECT * FROM school_feestructure WHERE school_id = '${school}' AND class_std = '${req.body.next_class}' AND medium = '${req.body.medium}' AND batch_id = '${req.body.batch_id}' AND deleted_at IS NULL; SELECT * FROM school_batch_mgmt WHERE id='${req.body.batch_id}'`;
+        dbcon.query(nextClass, (err, nextClassRow) => {
+          if(err) {
+            res.json({msg: 'error', err})
+          } else {
+            res.json({msg: 'success', annualResult: 'Pass', nextClassRow: nextClassRow[0], batchData: nextClassRow[1] })
+          }
+        })
+      } else {
+        // Fee for current_class has to be paid again here. // batch +1
+        var getCurrentBatch = `SELECT * FROM school_batch_mgmt WHERE id='${req.body.batch_id}'`;
+        dbcon.query(getCurrentBatch, (err, currentBatch) => {
+          if(err) {
+            res.json({msg: 'error', err})
+          } else {
+            var nextBatchClassStdData = `SELECT sfs.class_std, sfs.medium, sfs.batch_id, sfs.id FROM school_feestructure AS SFS INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.batch_id = (SELECT id FROM school_batch_mgmt WHERE year_from = '${currentBatch[0].year_from + 1}' AND deleted_at IS NULL) AND sfs.class_std = '${req.body.current_std}' AND sfs.deleted_at IS NULL`;
+            dbcon.query(nextBatchClassStdData, (err, nextBatchSameStd) => {
+              if(err) {
+                res.json({msg: 'error', err})
+              } else {
+                console.log('Fail')
+                res.json({msg: 'success', annualResult: 'Fail', nextBatchSameStd: nextBatchSameStd })
+              }
+            })
+          }
+        })
+      }
     } else {
-      res.json({msg: 'success', nextClassRow: nextClassRow[0], batchData: nextClassRow[1] })
+      // Get exam Status and display here.
+      
+      console.log(`We cannot accept fee for next class. As, the Annual Exam is not conducted yet for the pursuing Std.`);
     }
   })
 })

@@ -888,7 +888,7 @@ exports.getMapSubStaff = (req, res) => {
   let session = req.session;
   try {
     // fetching class_id, section from classroom
-    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, batch.batch_name, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_staff WHERE school_id='${session.schoolId}'`;
+    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, batch.batch_name, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_staff WHERE school_id='${session.schoolId}' AND role_id = '8' AND deleted_at IS NULL`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) console.log(err);
       // return res.render("server-error", { title: "Server Error" });
@@ -1111,8 +1111,7 @@ exports.postFeeCollection = (req, res) => {
   try {
     var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'AND deleted_at IS NULL; SELECT * FROM school_student WHERE student_id='${req.body.stuId}' AND deleted_at IS NULL`;
     dbcon.query(selectStud, (err, student) => {
-      if (err) throw err;
-      // return res.render("server-error", { title: "Server Error" });
+      if (err) return res.render("server-error", { title: "Server Error" });
       // admission table is for new enrollment only. So, checking if the data is already available
       var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}' AND class_medium = '${req.body.class_medium}' AND deleted_at IS NULL) AS count`;
       dbcon.query(checkAdmission, (err, data) => {
@@ -1125,8 +1124,7 @@ exports.postFeeCollection = (req, res) => {
 
           var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, batch_id, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${session.schoolId}', '${student[1][0].student_id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.batch_id}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.schoolId}')`;
           dbcon.query(admissionQuery, (err, respo) => {
-            if (err) throw err;
-              // return res.render("server-error", { title: "Server Error" });
+            if (err) return res.render("server-error", { title: "Server Error" });
             //updating student status in main_login
             var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0][0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
             dbcon.query(studUpdateLogin, (err, result) => {
@@ -1149,19 +1147,6 @@ exports.postFeeCollection = (req, res) => {
     return res.render("server-error", { title: "Server Error" });
   }
 };
-
-// view Due collection records
-exports.viewDueCollectionData = (req, res) => {
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
-  let session = req.session;
-  try {
-  } catch(err){
-    console.log(err);
-  }
-}
 
 // STUDENT CRUD - get student list and add form
 exports.getAddStudent = (req, res) => {

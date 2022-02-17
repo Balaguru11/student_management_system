@@ -1493,15 +1493,18 @@ exports.addNewExam = (req, res) => {
     var query = "";
     if(subjectCount > 0){
       for (let i = 1; i <= subjectCount; i++){
+        console.log(`${req.body[`exam_${i}_date`]}`);
         var value = `('${req.body.exam_master}', '${req.body[`sec_${i}_id`]}', '${req.body[`subject_${i}_id`]}', '${req.body[`exam_${i}_date`]}', '${req.body[`exam_${i}_duration`]}', '${req.body[`sub_${i}_total`]}', '${req.body[`cutoff_${i}_mark`]}', 'scheduled', '${session.staff_id}'),`
         query += value;
       }
     } else {
       query = ","
     }
+
     var query = query.slice(0,-1);
     if(query.length > 0) {
       var addExam = `INSERT INTO school_exams (ex_master_id, exam_conducted_class_sec, subject_id, exam_date, exam_duration, sub_outoff_marks, cutoff_mark, exam_status, created_by) VALUES ${query}`;
+      console.log(addExam);
       dbcon.query(addExam, (err, newExam) => {
         if(err) throw err;
         req.flash('success', 'Exams created and scheduled.');
@@ -1670,11 +1673,11 @@ exports.postFeeCollection = (req, res) => {
   let session = req.session;
   res.locals.staff_role = session.roleId;
   try {
-    var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'; SELECT * FROM school_student WHERE student_id='${req.body.stuId}'`;
+    var selectStud = `SELECT * FROM school_main_login WHERE id='${req.body.stuId}' AND role_id_fk='1'AND deleted_at IS NULL; SELECT * FROM school_student WHERE student_id='${req.body.stuId}' AND deleted_at IS NULL`;
     dbcon.query(selectStud, (err, student) => {
       if (err) return res.render("server-error", { title: "Server Error" });
       // admission table is for new enrollment only. So, checking if the data is already available
-      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}') AS count`;
+      var checkAdmission = `SELECT EXISTS(SELECT * FROM school_student_admission WHERE student_id='${req.body.stuId}' AND class_medium = '${req.body.class_medium}' AND deleted_at IS NULL) AS count`;
       dbcon.query(checkAdmission, (err, data) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         else if (data[0].count == 0) {
@@ -1683,15 +1686,14 @@ exports.postFeeCollection = (req, res) => {
             req.body.actual_fee_hide - req.body.fee_paying;
           let payment_status = payment_pending == 0 ? "No Due" : "Due";
 
-          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, academic_year, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${student[0][0].school_id}', '${student[0][0].id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.academic_year}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.school_id}')`;
+          var admissionQuery = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, batch_id, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${session.school_id}', '${student[1][0].student_id}', '${student[1][0].mobile_number}', '${student[1][0].email}', '${req.body.batch_id}', '${req.body.class_medium}', '${req.body.class_section}', '${req.body.actual_fee_hide}', '${req.body.fee_paying}', '${req.body.payment_mode}', '${payment_status}', '${session.staff_id}')`;
           dbcon.query(admissionQuery, (err, respo) => {
             if (err)
               return res.render("server-error", { title: "Server Error" });
             //updating student status in main_login
-            var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
+            var studUpdateLogin = `UPDATE school_main_login SET status='Active' WHERE id='${student[0][0].id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${req.body.class_section}'`;
             dbcon.query(studUpdateLogin, (err, result) => {
-              if (err)
-                return res.render("server-error", { title: "Server Error" });
+              if (err) return res.render("server-error", { title: "Server Error" });
               req.flash("success", "Payment record added.");
               return res.redirect("/staff/dashboard/fee-collection");
             });
