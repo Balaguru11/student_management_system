@@ -239,7 +239,7 @@ staffRouter.post('/dashboard/exams', isStaff, isHM, addNewExam);
 staffRouter.post('/dashboard/exams/edit/:exam_id', isStaff, isHM, editExamByHM);
 staffRouter.get('/dashboard/exams/delete/:exam_id', isStaff, isHM, deleteExamByHM);
 staffRouter.get('/dashboard/release-annual-marks', isStaff, isHM, releaseAnnualResult);
-staffRouter.get('/dashboard/release-annual-marks/:exam_id/:subject_id', isStaff, isHM, postAnnualResult);
+staffRouter.get('/dashboard/release-annual-marks/:exam_id/:subject_id/:subject_count', isStaff, isHM, postAnnualResult);
 
 // message to staff by HM
 // staffRouter.get('/dashboard/message-staff', isStaff, getStaffMsgForm);

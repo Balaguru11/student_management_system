@@ -22,16 +22,24 @@
         <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %> (<%= locals.data[i].batch_name %>)</td>
         <td><%= locals.data[i].subject_name %></td>
         <td><%= locals.data[i].exam_date %></td>
-        <td><button data-id="<%= locals.data[i].id %>" logged-in = "<%= locals.staff_role %>" type="button" class="view_exam_mark btn btn-secondary" data-bs-toggle="modal" > <i class="far fa-eye"></i> Marks</button></td> 
+        <td><button data-id="<%= locals.data[i].id %>" logged-in = "<%= locals.staff_role %>" type="button" class="view_exam_mark btn btn-info" data-bs-toggle="modal" > <i class="far fa-eye"></i> Marks</button></td> 
         <td>
+          <% if (locals.data[i].is_released == 'no') { %>
           <button
             data-id="<%= locals.data[i].id %>"
+            data-sec = "<%= locals.data[i].exam_conducted_class_sec %>"
             type="button"
             class="releaseExamMark btn btn-success View"
             data-bs-toggle="modal"
           >
           <i class="fas fa-paper-plane"></i> Release Now
           </button>
+          <% } if (locals.data[i].is_released == 'yes') { %>
+            <a 
+            class="btn btn-secondary"
+            href="#" onclick="return false;"
+            ><i class="fas fa-paper-plane"></i> Released</a>
+          <% } %>
         </td>
       </tr>
       <% } } else { %>

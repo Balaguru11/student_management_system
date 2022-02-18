@@ -2339,16 +2339,18 @@ $(document).ready(function () {
 $(document).ready(function () {
   $('.releaseExamMark').on('click', function () {
     var exam_id = $(this).attr('data-id');
+    var class_sec = $(this).attr('data-sec');
     $.ajax({
       url: '/api/get-exam-data',
       type: 'POST',
       data: {
         exam_id: exam_id,
+        class_sec: class_sec,
       }, dataType: 'JSON',
       success: function (data) {
         $('.release-marks-modal-body').html(function () {
           return (
-            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='exam_status_hidden' id='exam_status_hidden' value='${data.exam[0].exam_status}'/><p class='text-center mt-3 mb-3'><b>Would you like to RELEASE ANNUAL EXAM MARKS of ${data.exam[0].subject_name} for ${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium ?</b></p></div><div class='justify-content-center row mb-3'><div class='row col-5 m-1'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='row col-5 m-1'><a href='../dashboard/release-annual-marks/${data.exam[0].id}/${data.exam[0].subject_id}' role='button' class='btn btn-primary btn-block'><i class="fas fa-paper-plane"></i> Release Now</a></div></div></div>`
+            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='exam_status_hidden' id='exam_status_hidden' value='${data.exam[0].exam_status}'/><p class='text-center mt-3 mb-3'><b>Would you like to RELEASE ANNUAL EXAM MARKS of ${data.exam[0].subject_name} for ${data.exam[0].class_std} STD - ${data.exam[0].medium} Medium ?</b></p></div><div class='justify-content-center row mb-3'><div class='row col-5 m-1'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='row col-5 m-1'><a href='../dashboard/release-annual-marks/${data.exam[0].id}/${data.exam[0].subject_id}/${data.subjects[0].subject_count}' role='button' class='btn btn-primary btn-block'><i class="fas fa-paper-plane"></i> Release Now</a></div></div></div>`
           )
         })
         $('#releaseMarksModal').modal('show');

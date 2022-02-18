@@ -646,12 +646,12 @@ apiRouter.post('/get-exam-master-data', (req, res) => {
 })
 
 apiRouter.post('/get-exam-data', (req, res) => {
-  var getExamData = `SELECT exam.id, xmas.exam_name, sfs.class_std, sfs.medium, clr.class_section, xmas.exam_type, subj.id AS subject_id, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_format_date, exam.exam_date AS exam_utc, exam.exam_duration, exam.sub_outoff_marks, exam.cutoff_mark, exam.exam_status FROM school_exams AS exam INNER JOIN school_exams_master AS xmas ON xmas.id = exam.ex_master_id INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'`;
+  var getExamData = `SELECT exam.id, xmas.exam_name, sfs.class_std, sfs.medium, clr.class_section, xmas.exam_type, subj.id AS subject_id, subj.subject_name, DATE_FORMAT(exam.exam_date, '%d-%c-%Y %H:%i') AS exam_format_date, exam.exam_date AS exam_utc, exam.exam_duration, exam.sub_outoff_marks, exam.cutoff_mark, exam.exam_status FROM school_exams AS exam INNER JOIN school_exams_master AS xmas ON xmas.id = exam.ex_master_id INNER JOIN school_classroom AS clr ON clr.id = exam.exam_conducted_class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id INNER JOIN school_subjects AS subj ON subj.id = exam.subject_id WHERE exam.id = '${req.body.exam_id}'; SELECT COUNT(xam.subject_id) AS subject_count FROM school_exams AS xam INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id WHERE xam.exam_conducted_class_sec = '${req.body.class_sec}' AND xmas.exam_type = 'annual_exam' AND xam.deleted_at IS NULL`;
   dbcon.query(getExamData, (err, exam) => {
     if(err) {
       res.json({msg: 'error', err});
     } else {
-      res.json({msg: 'success', exam: exam});
+      res.json({msg: 'success', exam: exam[0], subjects: exam[1],});
     }
   })
 })

@@ -484,7 +484,8 @@ exports.getStuAttendance = (req, res) => {
     var week_sched_id = req.params.week_sched_id;
     if (staff_id == session.staff_id) {
       // get data from school_student_attendance table
-      var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT DATE_FORMAT(ssa.date, '%d-%c-%Y') AS date, clr.class_section, sfs.class_std, sfs.medium, ssa.period_no, ssa.attend_status, CONCAT(ssa.attend_status, ': ',  GROUP_CONCAT(ssa.student_affected ORDER BY ssa.attend_status SEPARATOR ', ')) AS student_affect FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.entered_by = '${session.staff_id}' AND ssa.deleted_at IS NULL AND ssa.student_affected != '0' GROUP BY ssa.date, ssa.entered_by, ssa.period_no, ssa.attend_status; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}' AND ssa.academic_year = YEAR(CURDATE())`;
+      var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT DATE_FORMAT(ssa.date, '%d-%c-%Y') AS date, clr.class_section, sfs.class_std, sfs.medium, ssa.period_no, ssa.attend_status, CONCAT(ssa.attend_status, ': ',  GROUP_CONCAT(ssa.student_affected ORDER BY ssa.attend_status SEPARATOR ', ')) AS student_affect FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.entered_by = '${session.staff_id}' AND ssa.deleted_at IS NULL AND ssa.student_affected != '0' GROUP BY ssa.date, ssa.entered_by, ssa.period_no, ssa.attend_status; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}'`;
+      // check here
       dbcon.query(StuAttendance, (err, attendances) => {
         if (err) throw err;
         res.locals.attendances = attendances;
@@ -1575,18 +1576,16 @@ exports.releaseAnnualResult = (req, res) => {
   let session = req.session;
   res.locals.staff_role = session.roleId;
   try {
-    var annuals = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
+    var annuals = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, xam.exam_conducted_class_sec, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
     INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id 
     INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
     INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
     INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id 
     INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id
-    WHERE xmas.school_id = '${session.school_id}' AND xmas.exam_type='annual_exam' AND xam.deleted_at IS NULL GROUP BY sem.exam_id ORDER BY sfs.class_std ASC, sfs.medium ASC, batch.year_from DESC; SELECT exam_id FROM school_exams_marks WHERE is_released = 'no' AND school_id = '${session.school_id}' GROUP BY exam_id`;
+    WHERE xmas.school_id = '${session.school_id}' AND xmas.exam_type='annual_exam' AND xam.deleted_at IS NULL GROUP BY sem.exam_id ORDER BY sfs.class_std ASC, sfs.medium ASC, batch.year_from DESC`;
     dbcon.query(annuals, (err, data) => {
       if(err) throw err;
-      console.log(data[1]);
-      res.locals.data = data[0];
-      res.locals.released = data[1]
+      res.locals.data = data;
       return res.render('staffLevel/hm-release-result', {title: 'Annual Exam Mark'})
     })
   } catch (err) {
@@ -1604,16 +1603,30 @@ exports.postAnnualResult = (req, res) => {
   res.locals.staff_role = session.roleId;
   let exam_id = req.params.exam_id;
   let subject_id = req.params.subject_id;
+  let subject_count = req.params.subject_count;
   try {
     // update is_released NO to YES
-    var releaseMark = `UPDATE school_exams_marks SET is_released = 'yes' WHERE exam_id = '${exam_id}' AND school_id = '${session.school_id}'; SELECT xmas.exam_type, xam.id, xam.exam_conducted_class_sec, xam.subject_id FROM school_exams AS xam INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS sem ON sem.exam_id = xam.id WHERE xmas.exam_type = 'annual_exam' AND xam.id = '${exam_id}';`;
+    var releaseMark = `UPDATE school_exams_marks SET is_released = 'yes' WHERE exam_id = '${exam_id}' AND school_id = '${session.school_id}' AND deleted_at IS NULL`;
 
+    // SELECT xmas.exam_type, xam.id, xam.exam_conducted_class_sec, xam.subject_id FROM school_exams AS xam INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS sem ON sem.exam_id = xam.id WHERE xmas.exam_type = 'annual_exam' AND xam.id = '${exam_id}';
     dbcon.query(releaseMark, (err, released) => {
       if(err) throw err;
-      console.log(released);
-      req.flash('success', 'Exam Mark released successfully');
-      return res.redirect('/staff/dashboard/release-annual-marks');
-    })
+      // Promoting / depromoting the student to next class
+      // var is_released = 'yes';
+      // exam_id and subject_id 
+      // var promoting = ``;
+
+      // dbcon.query(promoting, (err, promo) => {
+      //   if(err) throw err
+      //   console.log(`Promoting: ${promo}`);
+        req.flash('success', 'Exam Mark released successfully');
+        return res.redirect('/staff/dashboard/release-annual-marks');
+      })
+
+
+
+     
+    // })
   } catch (err) {
     console.log(err);
   }
@@ -1664,10 +1677,8 @@ exports.getFeeCollection = (req, res) => {
 
 // postFeeCollection - by NTF
 exports.postFeeCollection = (req, res) => {
-  //flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
-  // flashing success_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
