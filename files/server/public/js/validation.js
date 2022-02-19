@@ -791,7 +791,7 @@ $(document).ready(function () {
             "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" +
             data.student[0].email +
             "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" +
-            data.student[0].date_of_birth +
+            data.student[0].dob +
             "</p></div><div class='col-6'><b>Father's Name: </b></div><div class='col-6'><p>" +
             data.student[0].father_name +
             "</p></div><div class='col-6'><b>Parent Mobile Number</b></div><div class='col-6'><p>" +
@@ -836,7 +836,7 @@ $(document).ready(function () {
             "</p></p></div><div class='col-6'><b>Email ID: </b></div><div class='col-6'><p>" +
             data.staff[0].email +
             "</p></div><div class='col-6'><b>Date of Birth: </b></div><div class='col-6'><p>" +
-            data.staff[0].date_of_birth +
+            data.staff[0].dob +
             "</p></div><div class='col-6'><b>Qualification: </b></div><div class='col-6'><p>" +
             data.staff[0].qualification +
             "</p></div><div class='col-6'><b>City: </b></div><div class='col-6'><p>" +
@@ -1408,7 +1408,7 @@ $(document).ready(function () {
       success: function (data) {
         $(".modal-body").html(function () {
           return (
-            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='sec_id_hidden' id='sec_id_hidden' value='${data.secData[0].id}' /><p><b>Do you want to delete '${data.secData[0].class_std} Std - ${data.secData[0].medium} Medium ${data.secData[0].class_section} section'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/sections/delete/${data.secData[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
+            `<div class='container'><div class='row'><input type='hidden' class='form-control' name='batch_id_hidden' id='batch_id_hidden' value='${data.secData[0].batch_id}' /><p><b>Do you want to delete '${data.secData[0].class_std} Std - ${data.secData[0].medium} Medium ${data.secData[0].class_section} section'?</b></p></div><div class='row'><div class='col-4'></div><div class='col-4'><a role='button' class='btn btn-secondary btn-block' data-bs-dismiss='modal'>Cancel</a></div><div class='col-4'><a href='../dashboard/sections/delete/${data.secData[0].id}?_method=DELETE' role='button' class='btn btn-primary btn-block'>Delete</a></div></div></div>`
           );
         });
         // show data in the element.
@@ -1447,7 +1447,7 @@ $(document).ready(function () {
 
         $.each(staffs, (key, value) => {
           $('#staff_edit, #sec_staff_edit').append(
-            `<option value='${data.mapData[1][key].id}'>${data.mapData[1][key].username}</option>`
+            `<option value='${data.mapData[1][key].id}'>${data.mapData[1][key].name}</option>`
           )
         })
 
@@ -1566,10 +1566,18 @@ $(document).ready(function() { // deafult
   })
 })
 
-// flat pickr for class std
+// flat pickr for class std m-y
 $(document).ready(function () {
   $('#academic_from, #academic_to').flatpickr({
     dateFormat: "m-Y",
+    allowInput: true,
+  })
+})
+
+// date only picker
+$(document).ready(function () {
+  $('.date_only_picker').flatpickr({
+    dateFormat: "d-m-Y",
     allowInput: true,
   })
 })

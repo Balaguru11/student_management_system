@@ -105,12 +105,8 @@ exports.getStaffDashboard = (req, res) => {
 
 // displays Staff Profile Form
 exports.getStaffProfileForm = (req, res) => {
-  // flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing sucecss_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
+  res.locals.err_msg = req.flash("err_msg");
+  res.locals.success_msg = req.flash("success");
   try {
     let session = req.session;
     res.locals.staff_role = session.roleId;
@@ -125,26 +121,12 @@ exports.getStaffProfileForm = (req, res) => {
       return res.status(401).redirect("/");
     } else if (session.logged_in && session.staffStatus == "Active") {
       // getting data from session
-
-      var checkStaffTable = `SELECT EXISTS (SELECT * FROM school_staff WHERE role_id='${session.roleId}' AND email='${session.email}' AND school_id='${session.school_id}') AS count`;
+      var checkStaffTable = `SELECT *, DATE_FORMAT(date_of_birth, '%d-%m-%Y') AS date_of_birth FROM school_staff WHERE staff_id='${session.staff_id}' AND school_id='${session.school_id}' AND deleted_at IS NULL`;
 
       dbcon.query(checkStaffTable, (err, staff) => {
         if (err) {
           return res.render("server-error", { title: "Server Error" });
-        } else if (staff[0].count == 1) {
-          // //get all the data here and pass it to the redirect
-          let name = staff[0].name;
-          res.locals.name = name;
-          let date_of_birth = staff[0].date_of_birth;
-          res.locals.dob = date_of_birth;
-          let mobile_number = staff[0].mobile_number;
-          res.locals.mobile_number = mobile_number;
-          let email = staff[0].email;
-          res.locals.email = email;
-          let city = staff[0].city;
-          res.locals.city = city;
-          let state = staff[0].state;
-          res.locals.state = state;
+        } else if (staff.length == 1) {
           return res.redirect("/staff/profile");
         } else {
           res.locals.staff_email = session.email;
@@ -170,44 +152,19 @@ exports.postStaffProfile = async (req, res) => {
   // flashing sucecss_msg
   let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
+  let session = req.session;
 
   try {
-    let session = req.session;
+    var profileQuery = `INSERT INTO school_staff (role_id, staff_id, school_id, name, date_of_birth, mobile_number, email, qualification, city, state) VALUES ('${session.roleId}', '${session.staff_id}','${session.school_id}', '${req.body.staffName}', '${req.body.staff_dob}', '${req.body.staff_mobile}', '${session.email}', '${req.body.staff_qualification}', '${req.body.staff_city}', '${req.body.staff_state}' ) `;
 
-    if (session.logged_in) {
-      var checkStatus = `SELECT * FROM school_main_login WHERE username='${session.username}'`;
-      dbcon.query(checkStatus, (err, result) => {
-        if (err) {
-          req.flash(
-            "err_msg",
-            "There is a Problem in creating your Profile Page. Please try again later."
-          );
-          return res.status(500).redirect("/staff/dashboard");
-        } else if (result) {
-          const role_id = result[0].role_id_fk;
-          const staff_id = result[0].id;
-          const school_id = result[0].school_id;
-          const staff_email = result[0].email;
-
-          var profileQuery = `INSERT INTO school_staff(role_id, staff_id, school_id, name, date_of_birth, mobile_number, email, qualification, city, state) VALUES ('${role_id}', '${staff_id}','${school_id}', '${req.body.staffName}', '${req.body.staff_dob}', '${req.body.staff_mobile}', '${staff_email}', '${req.body.staff_qualification}', '${req.body.staff_city}', '${req.body.staff_state}' ) `;
-
-          dbcon.query(profileQuery, function (err) {
-            if (err) {
-              return res.render("server-error", { title: "Server Error" });
-            } else {
-              req.flash("success", "Profile saved successfully");
-              return res.redirect("/staff/profile");
-            }
-          });
-        } else {
-          req.flash("err_msg", "No Account found.");
-          return res.redirect("/");
-        }
+      dbcon.query(profileQuery, function (err) {
+          if (err) {
+            return res.render("server-error", { title: "Server Error" });
+          } else {
+            req.flash("success", "Profile saved successfully");
+            return res.redirect("/staff/profile");
+          }
       });
-    } else {
-      req.flash("err_msg", "Please Login to continue.");
-      return res.redirect("/");
-    }
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
   }
@@ -215,11 +172,9 @@ exports.postStaffProfile = async (req, res) => {
 
 // show profile after creating it.
 exports.showStaffProfile = async (req, res) => {
-  // flashing err_msg
   let err_msg = req.flash("err_msg");
   res.locals.err_msg = err_msg;
-  // flashing sucecss_msg
-  let success_msg = req.flash("success");
+    let success_msg = req.flash("success");
   res.locals.success_msg = success_msg;
   let session = req.session;
   res.locals.staff_role = session.roleId;
@@ -228,6 +183,7 @@ exports.showStaffProfile = async (req, res) => {
     var getStaffProfile = `SELECT * FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
     dbcon.query(getStaffProfile, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
+      console.log(data);
       res.locals.name = data[0].name;
       res.locals.date_of_birth = data[0].date_of_birth;
       res.locals.mobile_number = data[0].mobile_number;
@@ -257,11 +213,11 @@ exports.getStaffProfileEdit = (req, res) => {
   res.locals.staff_role = session.roleId;
   try {
     if (session.logged_in) {
-      var fetchStaffProfile = `SELECT *, DATE_FORMAT(date_of_birth, '%Y-%c-%d') AS dob FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
+      var fetchStaffProfile = `SELECT * FROM school_staff WHERE staff_id='${session.staff_id}' AND email='${session.email}' AND school_id='${session.school_id}'`;
       dbcon.query(fetchStaffProfile, (err, data) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.name = data[0].name;
-        res.locals.date_of_birth = data[0].dob;
+        res.locals.date_of_birth = data[0].date_of_birth;
         res.locals.mobile_number = data[0].mobile_number;
         res.locals.email = data[0].email;
         res.locals.qualification = data[0].qualification;
@@ -484,7 +440,7 @@ exports.getStuAttendance = (req, res) => {
     var week_sched_id = req.params.week_sched_id;
     if (staff_id == session.staff_id) {
       // get data from school_student_attendance table
-      var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT DATE_FORMAT(ssa.date, '%d-%c-%Y') AS date, clr.class_section, sfs.class_std, sfs.medium, ssa.period_no, ssa.attend_status, CONCAT(ssa.attend_status, ': ',  GROUP_CONCAT(ssa.student_affected ORDER BY ssa.attend_status SEPARATOR ', ')) AS student_affect FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.entered_by = '${session.staff_id}' AND ssa.deleted_at IS NULL AND ssa.student_affected != '0' GROUP BY ssa.date, ssa.entered_by, ssa.period_no, ssa.attend_status; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}'`;
+      var StuAttendance = `SELECT sws.day, sws.period_no, sws.class_sec_id, sfs.class_std, sfs.medium, clr.class_section FROM school_week_schedule AS sws INNER JOIN school_classroom AS clr ON clr.id = sws.class_sec_id INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE sws.id='${week_sched_id}'; SELECT DATE_FORMAT(ssa.date, '%d-%m-%Y') AS date, clr.class_section, sfs.class_std, sfs.medium, ssa.period_no, ssa.attend_status, CONCAT(ssa.attend_status, ': ',  GROUP_CONCAT(ssa.student_affected ORDER BY ssa.attend_status SEPARATOR ', ')) AS student_affect FROM school_student_attendance AS ssa INNER JOIN school_classroom AS clr ON clr.id = ssa.class_sec INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id WHERE ssa.school_id='${session.school_id}' AND ssa.entered_by = '${session.staff_id}' AND ssa.deleted_at IS NULL AND ssa.student_affected != '0' GROUP BY ssa.date, ssa.entered_by, ssa.period_no, ssa.attend_status; SELECT ssa.student_id, stu.name FROM school_student_admission AS ssa INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.class_section='${class_sec_id}'`;
       // check here
       dbcon.query(StuAttendance, (err, attendances) => {
         if (err) throw err;
@@ -647,7 +603,7 @@ exports.viewExamsByHM = (req, res) => {
   let doubt_status = req.body.doubt_status;
   res.locals.staff_role = session.roleId;
   try {
-    var examList = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam 
+    var examList = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%m-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark FROM school_exams AS xam 
     INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id 
     INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
     INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
@@ -1108,7 +1064,7 @@ exports.getAllStaffList = (req, res) => {
   let staff_role = session.roleId;
   try {
     if (staff_role == 4 || 2) {
-      var staffProfileList = `SELECT * FROM school_staff WHERE school_id='${session.school_id}' AND NOT staff_id='${session.staff_id}'`;
+      var staffProfileList = `SELECT * FROM school_staff WHERE school_id='${session.school_id}' AND NOT staff_id='${session.staff_id}' AND deleted_at IS NULL`;
       dbcon.query(staffProfileList, (err, staffList) => {
         if (err) throw err;
         for (let i = 0; i < staffList.length; i++) {
@@ -1187,18 +1143,45 @@ exports.postAddSubject = (req, res) => {
   }
 };
 
+// SUBJECT CRUD - Delete Subject
+exports.deleteSubject = (req, res) => {
+  let session = req.session;
+  res.locals.err_msg = req.flash("err_msg");
+  res.locals.success_msg = req.flash("success");
+  let subject_id = req.params.subject_id;
+  res.locals.staff_role = session.roleId;
+  try {
+    var mappedSubject = `SELECT * FROM school_class_subjects WHERE subject_id='${subject_id}' AND school_id='${session.school_id}' AND deleted_at IS NULL`;
+    dbcon.query(mappedSubject, (err, mapped) => {
+      if (err) throw err;
+      else if (mapped.length == 0) {
+        var deleteSubject = `UPDATE school_subjects SET deleted_at = CURRENT_TIMESTAMP WHERE id='${subject_id}'`;
+        dbcon.query(deleteSubject, (err) => {
+          if (err) throw err;
+          req.flash("success", "Subject deleted successfully.");
+          return res.redirect("/school/dashboard/subjects");
+        });
+      } else {
+        req.flash(
+          "err_msg",
+          `Subject is already mapped with ${mapped.length} Class Section(s).`
+        );
+        return res.redirect("/staff/dashboard/subjects");
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 // view Subjects from School dashboard HM
 exports.viewSubjects = (req, res) => {
-  //flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing success_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
+  res.locals.err_msg = req.flash("err_msg");
+  res.locals.success_msg = req.flash("success");
   let session = req.session;
   res.locals.staff_role = session.roleId;
   try {
-    var subjectsData = `SELECT * FROM school_subjects WHERE school_id='${session.school_id}'`;
+    var subjectsData = `SELECT * FROM school_subjects WHERE school_id='${session.school_id}' AND deleted_at IS NULL`;
 
     dbcon.query(subjectsData, (err, data) => {
       if (err) {
@@ -1217,24 +1200,20 @@ exports.viewSubjects = (req, res) => {
 
 // subject Staff Section mapping by HM
 exports.getMapSubStaff = (req, res) => {
-  //flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing success_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
+  res.locals.err_msg = req.flash("err_msg");
+  res.locals.success_msg = req.flash("success");
   let session = req.session;
   res.locals.staff_role = session.roleId;
   try {
     // fetching class_id, section from classroom
-    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.school_id}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.school_id}'; SELECT * FROM school_main_login WHERE school_id='${session.school_id}' AND role_id_fk='8' AND status='Active'`;
+    var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, batch.batch_name, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.school_id}' AND deleted_at IS NULL; SELECT * FROM school_staff WHERE school_id='${session.school_id}' AND role_id = '8' AND deleted_at IS NULL`;
     dbcon.query(class_med_sec, (err, tableData) => {
       if (err) return res.render("server-error", { title: "Server Error" });
-      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.name AS staff_primary, sml2.name AS staff_secondary FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
+      var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.name AS staff_primary, sml2.name AS staff_secondary, batch.batch_name FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
       INNER JOIN school_staff AS sml ON scs.staff_id_assigned = sml.staff_id 
       INNER JOIN school_staff AS sml2 ON scs.secondary_staff_assigned = sml2.staff_id
-      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id WHERE sfs.school_id='${session.school_id}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
+      INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id='${session.school_id}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(bridgeTableQuery, (err, result) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.tableData = tableData;
@@ -1297,12 +1276,12 @@ exports.viewClassSections = (req, res) => {
   let session = req.session;
   res.locals.staff_role = session.roleId;
   try {
-    var classSecData = `SELECT clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${session.school_id}'`;
+    var classSecData = `SELECT clr.id AS sec_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, sfs.medium, sfs.batch_id, batch.batch_name FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.school_id}' AND clr.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
 
     dbcon.query(classSecData, (err, data) => {
       if (err) return res.render("server-error", { title: "Server Error" });
 
-      var classDrop = `SELECT * FROM school_feestructure WHERE school_id='${session.school_id}' ORDER BY ABS(class_std);`;
+      var classDrop = `SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name, batch.year_from, batch.year_to FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id='${session.school_id}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(classDrop, (err, classOptions) => {
         if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.classOptions = classOptions;
@@ -1314,6 +1293,77 @@ exports.viewClassSections = (req, res) => {
     });
   } catch (err) {
     return res.render("server-error", { title: "Server Error" });
+  }
+};
+
+// CLASSROOM CRUD - school edits class sections
+exports.editClassSection = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  res.locals.staff_role = session.roleId;
+  try {
+    //cehck for duplicate section in class section
+    var checkSection = `SELECT EXISTS (SELECT * FROM school_classroom WHERE class_id='${req.body.std_id}' AND class_section = '${req.body.section_edit}' AND students_strength = '${req.body.strength_edit}' AND deleted_at iS NULL AND school_id='${session.school_id}') AS count`;
+    dbcon.query(checkSection, (err, noDuplicate) => {
+      if (err) throw err;
+      else if (noDuplicate[0].count != 0) {
+        req.flash(
+          "err_msg",
+          "The Std and class section combination already exist."
+        );
+        return res.redirect("/staff/dashboard/sections");
+      } else {
+        var updateSec = `UPDATE school_classroom SET class_section = '${req.body.section_edit}', students_strength = '${req.body.strength_edit}' WHERE id='${req.body.classsec_id}'`;
+        dbcon.query(updateSec, (err, updatedSec) => {
+          if (err) throw err;
+          req.flash("success", "Class Section edited successfully.");
+          return res.redirect("/staff/dashboard/sections");
+        });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+// CLASSROOM CRUD - school deletes class section
+exports.deleteClassSection = (req, res) => {
+  //flashing err_msg
+  let err_msg = req.flash("err_msg");
+  res.locals.err_msg = err_msg;
+  // flashing success_msg
+  let success_msg = req.flash("success");
+  res.locals.success_msg = success_msg;
+  let session = req.session;
+  let section_id = req.params.id;
+  res.locals.staff_role = session.roleId;
+  try {
+    // conditions to be met - check admission table, students should not be in that section
+    var isNoStudent = `SELECT EXISTS (SELECT * FROM school_student_admission WHERE class_section = '${section_id}' AND batch_id = '${req.body.batch_id_hidden}') AS count`;
+    dbcon.query(isNoStudent, (err, sectionEmpty) => {
+      if (err) throw err;
+      else if (sectionEmpty[0].count == 0) {
+        var deleteSec = `UPDATE school_classroom SET deleted_at = CURRENT_TIMESTAMP WHERE id='${section_id}'`;
+        dbcon.query(deleteSec, (err, result) => {
+          if (err) throw err;
+          req.flash("success", "Class Section deleted successfully.");
+          return res.redirect("/staff/dashboard/sections");
+        });
+      } else {
+        req.flash(
+          "err_msg",
+          "There are student admitted to this section already. Make sure there is no students enrolled to this section."
+        );
+        return res.redirect("/staff/dashboard/sections");
+      }
+    });
+  } catch (err) {
+    console.log(err);
   }
 };
 
@@ -1459,7 +1509,7 @@ exports.getAddExamsForm = (req, res) => {
     let session = req.session;
     res.locals.staff_role = session.roleId;
     try {
-      var examList = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
+      var examList = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%m-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, xam.exam_status FROM school_exams AS xam 
       INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id
       INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
       INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 
@@ -1576,7 +1626,7 @@ exports.releaseAnnualResult = (req, res) => {
   let session = req.session;
   res.locals.staff_role = session.roleId;
   try {
-    var annuals = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, xam.exam_conducted_class_sec, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%c-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
+    var annuals = `SELECT xam.id, xmas.exam_name, xmas.exam_type, sfs.class_std, sfs.medium, xam.exam_conducted_class_sec, batch.batch_name, xam.exam_status, subj.subject_name, DATE_FORMAT(xam.exam_date, '%d-%m-%Y %H:%i') AS exam_date, xam.exam_duration, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem INNER JOIN school_exams AS xam ON xam.id = sem.exam_id 
     INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id 
     INNER JOIN school_classroom AS clr ON clr.id = xam.exam_conducted_class_sec 
     INNER JOIN school_feestructure AS sfs ON sfs.id = clr.class_id 

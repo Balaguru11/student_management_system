@@ -30,10 +30,10 @@ const {
   getSchedulePlanForm,
   postSchedulePlanForm,
   viewSubjects,
-  postAddSubject,
+  postAddSubject, deleteSubject, 
   getMapSubStaff,
   postMapSubStaff,
-  viewClassSections,
+  viewClassSections, editClassSection, deleteClassSection, 
   postAddClassroom, getExamMaster, postExamMaster, deleteExamMaster, getAddExamsForm, addNewExam, editExamByHM, deleteExamByHM, 
   getAllStaffList,
   putFeeStructure,
@@ -209,6 +209,7 @@ staffRouter.get("/dashboard/see-staff-profile", isStaff, isHM, getAllStaffList);
 //  creating subjects HM
 staffRouter.get("/dashboard/subjects", isStaff, isHM, viewSubjects);
 staffRouter.post("/dashboard/add-subject", isStaff, isHM, postAddSubject);
+staffRouter.get('/dashboard/subjects/delete/:subject_id', isStaff, isHM, deleteSubject);
 
 // subject - staff - section mapping by HM
 staffRouter.get(
@@ -227,6 +228,12 @@ staffRouter.post(
 // Class Section CRUD by HM
 staffRouter.get("/dashboard/sections", isStaff, isHM, viewClassSections);
 staffRouter.post("/dashboard/sections", isStaff, isHM, postAddClassroom);
+staffRouter.put("/dashboard/sections/edit/:id", isStaff, isHM,  editClassSection);
+staffRouter.get(
+  "/dashboard/sections/delete/:id",
+  isStaff, isHM, 
+  deleteClassSection
+);
 
 // HM creating Exam Master
 staffRouter.get('/dashboard/exam-master', isStaff, isHM, getExamMaster);

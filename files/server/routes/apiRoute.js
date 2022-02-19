@@ -236,7 +236,7 @@ apiRouter.post("/get-student-enrollment-data", (req, res) => {
 
 // get One student Profile data
 apiRouter.post("/get-one-student-profile", (req, res) => {
-  var getStudent = `SELECT * FROM school_student WHERE student_id='${req.body.student_id}'`;
+  var getStudent = `SELECT *, DATE_FORMAT(date_of_birth, "%d-%m-%Y") AS dob FROM school_student WHERE student_id='${req.body.student_id}'`;
   dbcon.query(getStudent, (err, data) => {
     if (err) {
       res.json({ msg: "error" });
@@ -253,7 +253,7 @@ apiRouter.post("/get-one-student-profile", (req, res) => {
 
 // get One Staff Profile data
 apiRouter.post("/get-one-staff-profile", (req, res) => {
-  var getStaff = `SELECT * FROM school_staff WHERE staff_id='${req.body.staff_id}'`;
+  var getStaff = `SELECT *, DATE_FORMAT(date_of_birth, '%d-%m-%Y') AS dob FROM school_staff WHERE staff_id='${req.body.staff_id}'`;
   dbcon.query(getStaff, (err, data) => {
     if (err) {
       res.json({ msg: "error" });
@@ -433,7 +433,7 @@ apiRouter.post("/edit-class-section", (req, res) => {
 
 // open Delete modal for class section
 apiRouter.post("/delete-class-section", (req, res) => {
-  var deleteModalData = `SELECT clr.id, sfs.class_std, sfs.medium, clr.class_section FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id WHERE clr.id='${req.body.section_id}'`;
+  var deleteModalData = `SELECT clr.id, sfs.class_std, sfs.medium, clr.class_section, batch.id AS batch_id FROM school_classroom AS clr INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE clr.id='${req.body.section_id}'`;
   dbcon.query(deleteModalData, (err, secData) => {
     if (err) res.json({ msg: "error", err });
     else if (secData.length > 0) {
@@ -448,11 +448,11 @@ apiRouter.post("/delete-class-section", (req, res) => {
 apiRouter.post("/edit-subclassstaff-mapping", (req, res) => {
   let session = req.session;
   let school = session.schoolId || session.school_id
-  var mapFetch = `SELECT map.id, subj.id AS subject_id, subj.subject_name, sml.id AS prim_id, sml.username AS primary_staff, sml2.username AS secondary_staff, sml2.id AS sec_id, clr.id AS classsec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_class_subjects AS map 
+  var mapFetch = `SELECT map.id, subj.id AS subject_id, subj.subject_name, staf.staff_id AS prim_id, staf.name AS primary_staff, staf2.name AS secondary_staff, staf2.staff_id AS sec_id, clr.id AS classsec_id, clr.class_section, sfs.class_std, sfs.medium FROM school_class_subjects AS map 
   INNER JOIN school_classroom AS clr ON clr.id=map.classroom_id
   INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id 
-  INNER JOIN school_subjects AS subj ON subj.id=map.subject_id INNER JOIN school_main_login AS sml ON sml.id=map.staff_id_assigned 
-  INNER JOIN school_main_login AS sml2 ON sml2.id=map.secondary_staff_assigned WHERE map.id='${req.body.mapping_id}' AND map.school_id='${school}'; SELECT * FROM school_main_login WHERE school_id = '${school}' AND role_id_fk='8' AND status='Active' AND deleted_at IS NULL`;
+  INNER JOIN school_subjects AS subj ON subj.id=map.subject_id INNER JOIN school_staff AS staf ON staf.staff_id=map.staff_id_assigned 
+  INNER JOIN school_staff AS staf2 ON staf2.staff_id=map.secondary_staff_assigned WHERE map.id='${req.body.mapping_id}' AND map.school_id='${school}'; SELECT sml.id, sml.username, staf.name FROM school_main_login AS sml INNER JOIN school_staff AS staf ON staf.staff_id = sml.id WHERE sml.school_id = '${school}' AND sml.role_id_fk='8' AND sml.status='Active' AND sml.deleted_at IS NULL`;
   dbcon.query(mapFetch, (err, mapData) => {
     if (err) res.json({ msg: "error", err });
     else {

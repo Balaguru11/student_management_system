@@ -503,8 +503,7 @@ exports.viewClassSections = (req, res) => {
 
       var classDrop = `SELECT sfs.id, sfs.class_std, sfs.medium, batch.batch_name, batch.year_from, batch.year_to FROM school_feestructure AS sfs INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id='${session.schoolId}' AND sfs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(classDrop, (err, classOptions) => {
-        if (err) console.log(err);
-        // return res.render("server-error", { title: "Server Error" });
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.classOptions = classOptions;
         res.locals.data = data;
         return res.render("schoolLevel/school-classSections", {
@@ -513,8 +512,7 @@ exports.viewClassSections = (req, res) => {
       });
     });
   } catch (err) {
-    if (err) console.log(err);
-    // return res.render("server-error", { title: "Server Error" });  
+    if (err) return res.render("server-error", { title: "Server Error" });  
   }
 };
 
@@ -565,7 +563,7 @@ exports.deleteClassSection = (req, res) => {
   let section_id = req.params.id;
   try {
     // conditions to be met - check admission table, students should not be in that section
-    var isNoStudent = `SELECT EXISTS (SELECT * FROM school_student_admission WHERE class_section = '${req.body.sec_id_hidden}' AND academic_year = YEAR(CURDATE())) AS count`;
+    var isNoStudent = `SELECT EXISTS (SELECT * FROM school_student_admission WHERE class_section = '${section_id}' AND batch_id = '${req.body.batch_id_hidden}') AS count`;
     dbcon.query(isNoStudent, (err, sectionEmpty) => {
       if (err) throw err;
       else if (sectionEmpty[0].count == 0) {
@@ -879,28 +877,21 @@ exports.viewSubjects = (req, res) => {
 
 // SUBJECT MAP CRUD - subject Staff Section mapping
 exports.getMapSubStaff = (req, res) => {
-  //flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing success_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
+  res.locals.err_msg = req.flash("err_msg");
+  res.locals.success_msg = req.flash("success");
   let session = req.session;
   try {
     // fetching class_id, section from classroom
     var class_med_sec = `SELECT clr.id AS clr_id, clr.class_id, clr.class_section, clr.students_strength, sfs.class_std, sfs.id, batch.batch_name, sfs.medium FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id AND clr.deleted_at IS NULL INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id = '${session.schoolId}' ORDER BY ABS(sfs.class_std); SELECT * FROM school_subjects WHERE school_id='${session.schoolId}' AND deleted_at IS NULL; SELECT * FROM school_staff WHERE school_id='${session.schoolId}' AND role_id = '8' AND deleted_at IS NULL`;
     dbcon.query(class_med_sec, (err, tableData) => {
-      if (err) console.log(err);
-      // return res.render("server-error", { title: "Server Error" });
+      if (err) return res.render("server-error", { title: "Server Error" });
       var bridgeTableQuery = `SELECT scs.id AS map_id, scs.school_id, scs.subject_id, scs.classroom_id, ssub.subject_name, scr.class_section, scr.class_id, sfs.class_std, sfs.medium, sml.name AS staff_primary, sml2.name AS staff_secondary, batch.batch_name FROM school_class_subjects AS scs INNER JOIN school_subjects AS ssub ON ssub.id = scs.subject_id 
       INNER JOIN school_classroom AS scr ON scr.id = scs.classroom_id
       INNER JOIN school_staff AS sml ON scs.staff_id_assigned = sml.staff_id 
       INNER JOIN school_staff AS sml2 ON scs.secondary_staff_assigned = sml2.staff_id
       INNER JOIN school_feestructure AS sfs ON sfs.id = scr.class_id INNER JOIN school_batch_mgmt AS batch ON batch.id = sfs.batch_id WHERE sfs.school_id='${session.schoolId}' AND scs.deleted_at IS NULL ORDER BY ABS(sfs.class_std)`;
       dbcon.query(bridgeTableQuery, (err, result) => {
-        if (err) console.log(err);
-        console.log(`Bridg Data result : ${result}`);
-        // return res.render("server-error", { title: "Server Error" });
+        if (err) return res.render("server-error", { title: "Server Error" });
         res.locals.tableData = tableData;
         res.locals.result = result;
         return res.render("schoolLevel/school-map-subject-staff", {
