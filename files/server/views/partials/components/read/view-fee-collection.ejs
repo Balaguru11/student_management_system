@@ -8,10 +8,11 @@
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th scope="200px">Student Email</th>
-        <th scope="250px">Mobile No</th>
+        <th scope="200px">Name</th>
+        <th scope="250px">Batch</th>
+        <th scope="200px">Class & Sec</th>
+        <th scope="100px">Std Year</th>
         <th scope="100px">Fee</th>
-        <th scope="100px">Year</th>
         <th scope="100px">Paid</th>
         <th scope="100px">Due</th>
         <th width="100px">Actions</th>
@@ -22,10 +23,11 @@
       i++) { %>
       <tr>
         <th scope="row"><%= (i+1) %></th>
-        <td><%= locals.data[i].email %></td>
-        <td><%= locals.data[i].mobile_number %></td>
+        <td><%= locals.data[i].name %> (<%= locals.data[i].student_id %>)</td>
+        <td><%= locals.data[i].batch_name %> (<%= locals.data[i].year_from %>/<%= locals.data[i].year_to %>)</td>
+        <td><%= locals.data[i].class_std %> STD - <%= locals.data[i].medium %> - <%= locals.data[i].section %></td>
+        <td><%= locals.data[i].std_year %></td>
         <td><%= locals.data[i].actual_fee %></td>
-        <td><%= locals.data[i].academic_year %></td>
         <td><%= locals.data[i].paying_amount %></td>
         <td><%= locals.data[i].payment_status %></td>
         <td>
@@ -40,7 +42,7 @@
       </tr>
       <% } } else { %>
       <tr>
-        <td colspan="7" class="text-center">No records found.</td>
+        <td colspan="9" class="text-center">No records found.</td>
       </tr>
       <% } %>
     </tbody>

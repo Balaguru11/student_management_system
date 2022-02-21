@@ -413,7 +413,7 @@ $(document).on("change", "#stuId", function () {
           $('.new_enroll_fields').remove();
           $('#new_enrollment').after(function () {
             return (
-              `<div class='bg bg-danger text-center m-2 p-2 new_enroll_fields'><p class='text-white'><b>You have Rs. ${data.admissionData[lastRecord].actual_fee - data.admissionData[lastRecord].paying_amount} Due for ${data.admissionData[lastRecord].class_std} STD - ${data.admissionData[lastRecord].medium} Medium Class. You are asked to close the due to get promoted to next class.</b></p><br><p class='display-6 text-white'>Do you want to pay now ?</p><a href='/school/dashboard/fee-due-collection' class='btn btn-warning' role='button'>Pay Fee Due Now</a></div>`
+              `<div class='bg bg-danger text-center m-2 p-2 new_enroll_fields'><p class='text-white'><b>You have Rs. ${data.admissionData[lastRecord].actual_fee - data.admissionData[lastRecord].paying_amount} Due for ${data.admissionData[lastRecord].class_std} STD - ${data.admissionData[lastRecord].medium} Medium Class. You are asked to close the due to get promoted to next class.</b></p><br><p class='display-6 text-white'>Do you want to pay now ?</p><a href='../dashboard/fee-due-collection' class='btn btn-warning' role='button'>Pay Fee Due Now</a></div>`
             )
           })
         } else {
@@ -443,7 +443,7 @@ $(document).on("change", "#stuId", function () {
                     $('.new_enroll_fields').remove();
                     $('#new_enrollment').after(function () {
                       return (
-                        `<div class='new_enroll_fields'><div class='row text-white text-center p-2'><div class='col-6 bg bg-success p-1 m-2'><p>Your Academic Fee Payment Status is:</p><p class='display-6'>No Due</p></div><div class='col-6 bg bg-success p-1 m-2'><p>Your last Annual Exam Result is:</p><p class='display-6'>'PASS'</p></div></div>
+                        `<div class='new_enroll_fields'><div class='row text-white text-center p-2'><div class='col bg bg-success rounded m-2 p-1'><p>Your Academic Fee Payment Status is:</p><p class='display-6'>No Due</p></div><div class='col bg bg-success rounded m-2 p-1'><p>Your last Annual Exam Result is:</p><p class='display-6'>'PASS'</p></div></div>
                         <div class="mt-3 mb-3" id="select_class">
                         <label for="class_medium">Promoting To:</label>
                         <select id="class_medium_newad" class="form-control" name="class_medium" required ><option>Select Class Here</option><option value='${data.nextClassRow[0].id}'>${data.nextClassRow[0].class_std} STD - ${data.nextClassRow[0].medium} Medium (${data.batchData[0].batch_name})</option></select>
@@ -457,22 +457,25 @@ $(document).on("change", "#stuId", function () {
                     $('#new_enrollment').after(function () {
                       return (
                         `<div class='new_enroll_fields'>
-                        <b class='bg bg-success text-center'>You have successfully completed the classes in our School. You can collect Transfer Certificate.</b>
+                        <b class='bg bg-success text-center'>You might have successfully completed the classes in our School. You can collect Transfer Certificate.</b>
                         </div>`
                       )
                     })
                   }
-                } else {
+                } else if(data.annualResult == 'Fail') {
                   $('.new_enroll_fields').remove();
                   $('#new_enrollment').after(function () {
                     return (
                       `<div class='new_enroll_fields'><div class='row text-white text-center p-2'><div class='col bg bg-success rounded m-2 p-1'><p>Your Academic Fee Payment Status is:</p><p class='display-6'>No Due</p></div><div class='col bg bg-danger rounded m-2 p-1'><p>Your last Annual Exam Result is:</p><p class='display-6'>'FAIL'</p></div></div>
-                      <div class="mt-3 mb-3" id="select_class">
-                      <label for="class_medium">Choose Class Std:</label>
-                      <select id="class_medium_newad" class="form-control" name="class_medium" required ><option>Select Class Here</option><option data-batch='${data.nextBatchSameStd[0].batch_id}' value='${data.nextBatchSameStd[0].id}'>${data.nextBatchSameStd[0].class_std} STD - ${data.nextBatchSameStd[0].medium} Medium</option></select>
-                      </div>
-                      <div class="mb-3">
-                      <label for='class_section_newad'>Choose A Section</label> <select id="class_section_newad" class="form-control" name="class_section" required ></select><span class="error" id="class_medium_error">Please choose Class & medium.</span ></div></div>`
+                      <div class="mt-3 mb-3" id="select_class"><label for="class_medium">Choose Class Std:</label><select id="class_medium_newad" class="form-control" name="class_medium" required ><option>Select Class Here</option><option data-batch='${data.nextBatchSameStd[0].batch_id}' value='${data.nextBatchSameStd[0].id}'>${data.nextBatchSameStd[0].class_std} STD - ${data.nextBatchSameStd[0].medium} Medium</option></select>
+                      </div><div class="mb-3"><label for='class_section_newad'>Choose A Section</label> <select id="class_section_newad" class="form-control" name="class_section" required ></select><span class="error" id="class_medium_error">Please choose Class & medium.</span ></div></div>`
+                    )
+                  })
+                } else {
+                  $('.new_enroll_fields').remove();
+                  $('#new_enrollment').after(function () {
+                    return (
+                      `<div class='new_enroll_fields'><div class='row text-white text-center p-2'><div class='col bg bg-success rounded m-2 p-1'><p>Your Academic Fee Payment Status is:</p><p class='display-6'>No Due</p></div><div class='col bg bg-danger rounded m-2 p-1'><p>Annual Exam for your current class std is:</p><p class='display-6'>'${data.status}'</p></div></div>`
                     )
                   })
                 }

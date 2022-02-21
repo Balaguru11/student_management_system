@@ -1,0 +1,102 @@
+<div class="pt-5">
+  <h4 class="text-center">View Class Sections</h4>
+  <br />
+  <table class="table table-light text-center" id="datatable">
+    <thead>
+      <tr>
+        <th scope="col">S.No</th>
+        <th width="200px">Batch Name</th>
+        <th width="200px">Class & Medium</th>
+        <th width="100px">Section</th>
+        <th width="100px">Total Seats</th>
+        <th width="200px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if(locals.data.length > 0) { for(var i = 0; i < locals.data.length;
+      i++) {%>
+      <tr>
+        <th scope="row"><%= (i+1) %></th>
+        <td><%= locals.data[i].batch_name %></td>
+        <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %></td>
+        <td><%= locals.data[i].class_section %></td>
+        <td><%= locals.data[i].students_strength %></td>
+        <td>
+          <button
+            data-id="<%= locals.data[i].sec_id %>"
+            type="button"
+            class="editClassSec btn btn-warning View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-edit aria-hidden="true"></i>
+          </button>
+          <button
+            data-id="<%= locals.data[i].sec_id %>"
+            type="button"
+            class="deleteClassSec btn btn-danger View"
+            data-bs-toggle="modal"
+          >
+            <i class="far fa-trash-alt" aria-hidden="true"></i>
+          </button>
+        </td>
+      </tr>
+      <% } } else { %>
+      <tr>
+        <td colspan="5" class="text-center">
+          <mark>No Class Sections found.</mark>
+        </td>
+      </tr>
+      <% } %>
+    </tbody>
+  </table>
+</div>
+
+<!-- edit modal -->
+<div
+  class="modal fade"
+  id="editClassSecModal"
+  tabindex="-1"
+  aria-labelledby="editModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit Class - Section</h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- delete modal -->
+<div
+  class="modal fade"
+  id="deleteClassSecModal"
+  tabindex="-1"
+  aria-labelledby="deleteModalLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">
+          Deleting Class - Section
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="modal-body"></div>
+    </div>
+  </div>
+</div>

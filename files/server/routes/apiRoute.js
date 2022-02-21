@@ -137,7 +137,6 @@ apiRouter.post('/get-next-std-row-id', (req, res) => {
               if(err) {
                 res.json({msg: 'error', err})
               } else {
-                console.log('Fail')
                 res.json({msg: 'success', annualResult: 'Fail', nextBatchSameStd: nextBatchSameStd })
               }
             })
@@ -146,7 +145,16 @@ apiRouter.post('/get-next-std-row-id', (req, res) => {
       }
     } else {
       // Get exam Status and display here.
-      
+      var examStatus = `SELECT xam.exam_status FROM school_exams AS xam INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id WHERE xam.exam_conducted_class_sec = '${req.body.current_class}' AND xmas.exam_type = 'annual_exam' ORDER BY xam.exam_date`;
+      dbcon.query(examStatus, (err, status) => {
+        if(err) {
+          res.json({msg: 'error', err})
+        } else if (status.length > 0) {
+          res.json({msg: 'success', annualResult: 'pending', status: 'Scheduled'})
+        } else {
+          res.json({msg: 'success', annualResult: 'pending', status: 'Not Scheduled yet'})
+        }
+      })
       console.log(`We cannot accept fee for next class. As, the Annual Exam is not conducted yet for the pursuing Std.`);
     }
   })
@@ -563,11 +571,13 @@ apiRouter.post('/get-due-collection-records', (req, res) => {
   var feeDueData = `SELECT stu.name, sfs.class_std, sfs.medium, clr.class_section, ssa.academic_year, ssa.actual_fee, ssa.paying_amount, ssa.payment_status, ssa.payment_mode AS admi_payment_mode, ssa.created_at AS admission_date, due.currently_paying, due.payment_mode, due.due_status, due.created_at AS duepaid_date FROM school_student_admission AS ssa 
   INNER JOIN school_classroom AS clr ON clr.id=ssa.class_section 
   INNER JOIN school_feestructure AS sfs ON sfs.id=clr.class_id 
-  LEFT JOIN school_student_feedue AS due ON due.admission_id=ssa.id 
-  INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.id='${req.body.admission_id}' AND ssa.student_id='${req.body.student_id}'`;
+  LEFT JOIN school_student_feedue AS due ON due.admission_id=ssa.id INNER JOIN school_student AS stu ON stu.student_id = ssa.student_id WHERE ssa.id='${req.body.admission_id}' AND ssa.student_id='${req.body.student_id}'`;
   dbcon.query(feeDueData, (err, feeDueRows) => {
-    if(err) res.json({msg: 'error', err});
-    res.json({msg: 'success', feeDueRows: feeDueRows});
+    if(err) {
+      res.json({msg: 'error', err});
+    } else {
+      res.json({msg: 'success', feeDueRows: feeDueRows});
+    }
   })
 })
 

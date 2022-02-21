@@ -28,7 +28,7 @@ const {
   postAddUser,
   postAddFeeStructure,
   getSchedulePlanForm,
-  postSchedulePlanForm,
+  postSchedulePlanForm, deleteSchedulePlan, getStudentPromotion, 
   viewSubjects,
   postAddSubject, deleteSubject, 
   getMapSubStaff,
@@ -144,6 +144,10 @@ staffRouter.get(
   getSchedulePlanForm
 );
 staffRouter.post("/dashboard/schedule-plan", isStaff, postSchedulePlanForm);
+staffRouter.delete('/dashboard/schedule-plan/delete/:sched_tempid', isStaff, isAdmin, deleteSchedulePlan);
+
+// student promotion after annual exam
+staffRouter.get('/dashboard/student-promotion', isStaff, isAdmin, getStudentPromotion);
 
 // employee report
 // staffRouter.get("/dashboard/emp-report", isStaff, getEmpReport);
