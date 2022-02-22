@@ -1108,13 +1108,22 @@ exports.getStudentPromotion = (req, res) => {
   res.locals.staff_role = session.roleId;
 
   try {
-    var getResult = `SELECT stu.student_id, stu.name, ssad.batch_id, batch.batch_name, batch.year_from, batch.year_to, ssad.class_medium, sfs.class_std, sfs.medium, ssad.class_section AS section_id, clr.class_section,  ssad.actual_fee, ssad.paying_amount, ssad.payment_status FROM school_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id INNER JOIN school_batch_mgmt AS batch ON batch.id = ssad.batch_id INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium INNER JOIN school_classroom AS clr ON clr.id = ssad.class_section INNER JOIN school_class_subjects AS scs ON scs.classroom_id = clr.id INNER JOIN school_exams AS xam ON xam.exam_conducted_class_sec = ssad.class_section INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS marks ON marks.exam_id = xam.id WHERE ssad.school_id = '${session.school_id}' AND sfs.std_year = YEAR(CURDATE()) AND xmas.exam_type = 'annual_exam' AND ssad.deleted_at IS NULL`;
-    dbcon.query(getResult, (err, dueAndResult) => {
+    var getBatchList = `SELECT * FROM school_batch_mgmt WHERE school_id = '${session.school_id}' AND deleted_at IS NULL`;
+
+    dbcon.query(getBatchList, (err, batchData) => {
       if(err) throw err;
-      console.log(dueAndResult);
-      // res.locals.dueAndResult = dueAndResult;
-      // return res.render('staffLevel/student-promotion-page', {title: 'Promote Students'});
+      res.locals.batch = batchData;
+      return res.render('staffLevel/student-promotion-page', {title: 'Promote Students'})
     })
+
+
+    // var getResult = `SELECT stu.student_id, stu.name, ssad.batch_id, batch.batch_name, batch.year_from, batch.year_to, ssad.class_medium, sfs.class_std, sfs.medium, ssad.class_section AS section_id, clr.class_section, ssad.actual_fee, ssad.paying_amount, ssad.payment_status, marks.subject_result, marks.is_released FROM school_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id INNER JOIN school_batch_mgmt AS batch ON batch.id = ssad.batch_id INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium INNER JOIN school_classroom AS clr ON clr.id = ssad.class_section INNER JOIN school_class_subjects AS scs ON scs.classroom_id = clr.id INNER JOIN school_exams AS xam ON xam.exam_conducted_class_sec = ssad.class_section INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS marks ON marks.exam_id = xam.id WHERE ssad.school_id = '${session.school_id}' AND sfs.std_year = YEAR(CURDATE()) AND xmas.exam_type = 'annual_exam' AND ssad.deleted_at IS NULL`;
+    // dbcon.query(getResult, (err, dueAndResult) => {
+    //   if(err) throw err;
+    //   console.log(dueAndResult);
+    //   res.locals.dueAndResult = dueAndResult;
+    //   return res.render('staffLevel/student-promotion-page', {title: 'Promote Students'});
+    // })
   } catch (err) {
     console.log(err);
   }

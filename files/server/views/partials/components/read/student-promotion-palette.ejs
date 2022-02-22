@@ -1,49 +1,55 @@
 <div class="pt-5">
-  <h4 class="text-center">View Class Sections</h4>
+  <h4 class="text-center">Student Promotion</h4>
   <br />
   <table class="table table-light text-center" id="datatable">
     <thead>
       <tr>
         <th scope="col">S.No</th>
-        <th width="200px">Batch Name</th>
-        <th width="200px">Class & Medium</th>
-        <th width="100px">Section</th>
-        <th width="100px">Total Seats</th>
-        <th width="200px">Actions</th>
+        <th width="150px">Student</th>
+        <th width="200px">Batch</th>
+        <th width="250px">Class & Section</th>
+        <th width="100px">Fee Due</th>
+        <th width="100px">Result</th>
+        <th width="100px">Actions</th>
       </tr>
     </thead>
     <tbody>
-      <% if(locals.data.length > 0) { for(var i = 0; i < locals.data.length;
-      i++) {%>
+      <% if(locals.dueAndResult.length > 0) { for(var i = 0; i < locals.dueAndResult.length; i++) {%>
       <tr>
         <th scope="row"><%= (i+1) %></th>
-        <td><%= locals.data[i].batch_name %></td>
-        <td><%= locals.data[i].class_std %> - <%= locals.data[i].medium %></td>
-        <td><%= locals.data[i].class_section %></td>
-        <td><%= locals.data[i].students_strength %></td>
+        <td><%= locals.dueAndResult[i].name %> (<%= locals.dueAndResult[i].student_id %>)</td>
+        <td><%= locals.dueAndResult[i].batch_name %> (<%= locals.dueAndResult[i].year_from %>-<%= locals.dueAndResult[i].year_to %>)</td>
+        <td><%= locals.dueAndResult[i].class_std %> STD - <%= locals.dueAndResult[i].medium %> Medium: <%= locals.dueAndResult[i].class_section %> Sec</td>
+        <td><%= locals.dueAndResult[i].payment_status %></td>
+        <td><% if(locals.dueAndResult[i].is_released == 'yes') { %>
+          <%= locals.dueAndResult[i].subject_result %> 
+        <% } else { %>
+          None
+        <% } %></td>
         <td>
           <button
-            data-id="<%= locals.data[i].sec_id %>"
+            data-id="<%= locals.dueAndResult[i].section_id %>"
             type="button"
-            class="editClassSec btn btn-warning View"
+            class="promoteStudent btn btn-success View"
             data-bs-toggle="modal"
           >
-            <i class="far fa-edit aria-hidden="true"></i>
+          <i class="fa-solid fa-arrow-trend-up"></i>
           </button>
           <button
-            data-id="<%= locals.data[i].sec_id %>"
+            data-id="<%= locals.dueAndResult[i].section_id %>"
             type="button"
-            class="deleteClassSec btn btn-danger View"
+            class="demoteStudent btn btn-danger View"
             data-bs-toggle="modal"
           >
             <i class="far fa-trash-alt" aria-hidden="true"></i>
+            <i class="far fa-arrow-rotate-right" aria-hidden="true"></i>
           </button>
         </td>
       </tr>
       <% } } else { %>
       <tr>
-        <td colspan="5" class="text-center">
-          <mark>No Class Sections found.</mark>
+        <td colspan="7" class="text-center">
+          <mark>No data found.</mark>
         </td>
       </tr>
       <% } %>

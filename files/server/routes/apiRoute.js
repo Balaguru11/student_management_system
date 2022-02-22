@@ -712,8 +712,49 @@ apiRouter.post('/get-my-exam-marks', (req, res) => {
 })
 
 
+// get class medium for selected batch_id
+apiRouter.post('/get-class-medium-for-batch', (req, res) => {
+  var getClassList = `SELECT * FROM school_feestructure WHERE batch_id = '${req.body.batch_id}' AND deleted_at IS NULL`;
+  dbcon.query(getClassList, (err, classMediums) => {
+    if(err) {
+      res.json({msg: 'error', err})
+    } else {
+      res.json({msg: 'success', classMediums: classMediums})
+    }
+  })
+})
 
 
+// get Student Result and Fee status for selected class std in Promotion Page
+apiRouter.post('/student-feeStatus-annual-exam-result', (req, res) => {
+  let session = req.session;
+  let school = session.schoolId || session.school_id
+  // var feeAndResult = `SELECT marks.received_mark, marks.is_released FROM school_exams_marks AS marks INNER JOIN school_exams AS xam ON xam.id = marks.exam_id INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id WHERE xmas.exam_type = 'annual_exam' AND `
 
+  //getting student fee data
+  // var feeStatus = `SELECT * FROM school_student_admission WHERE school_id = '${school}' AND batch_id = '${req.body.batch_id}' AND class_medium = '${req.body.class_id}' AND deleted_at IS NULL`
+  // dbcon.query(feeStatus, (err, feeData) => {
+  //   if(err) {
+  //     res.json({msg: 'error', err})
+  //   } else {
+  //     //getting exam marks data
+  //     var marksData = `SELECT DISTINCT xam.id AS exam_id, marks.id AS mark_id, stu.student_id, stu.name, sfs.batch_id, batch.batch_name, batch.year_from, batch.year_to, sfs.id AS std_id, sfs.class_std, sfs.medium, clr.class_section AS section_id, clr.class_section, xmas.exam_type, marks.received_mark, marks.subject_result, marks.is_released FROM school_student_marks AS marks 
+  //     INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium INNER JOIN school_student AS stu ON ssad.student_id = stu.student_id INNER JOIN school_batch_mgmt AS batch ON batch.id = ssad.batch_id INNER JOIN school_classroom AS clr ON clr.id = ssad.class_section INNER JOIN school_exams AS xam ON xam.exam_conducted_class_sec = ssad.class_section 
+  //     INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS marks ON marks.exam_id = xam.id WHERE xam.exam_status = 'completed' AND marks.is_released = 'yes' AND ssad.school_id = '${school}' AND batch.id = '${req.body.batch_id}' AND sfs.id = '${req.body.class_id}' AND xmas.exam_type='annual_exam' AND ssad.deleted_at IS NULL GROUP BY mark_id, admission_id ORDER BY stu.student_id, exam_id, mark_id`
+  //   }
+  // })
+
+  var feeAndResult = `SELECT DISTINCT xam.id AS exam_id, marks.id AS mark_id, ssad.id AS admission_id, stu.student_id, stu.name, ssad.batch_id, batch.batch_name, batch.year_from, batch.year_to, ssad.class_medium, sfs.class_std, sfs.medium, ssad.class_section AS section_id, clr.class_section, ssad.actual_fee, ssad.paying_amount, ssad.payment_status, xmas.exam_type, marks.received_mark, marks.subject_result, marks.is_released FROM school_student_admission AS ssad INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium INNER JOIN school_student AS stu ON ssad.student_id = stu.student_id INNER JOIN school_batch_mgmt AS batch ON batch.id = ssad.batch_id INNER JOIN school_classroom AS clr ON clr.id = ssad.class_section INNER JOIN school_exams AS xam ON xam.exam_conducted_class_sec = ssad.class_section 
+  INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS marks ON marks.exam_id = xam.id WHERE xam.exam_status = 'completed' AND marks.is_released = 'yes' AND ssad.school_id = '${school}' AND batch.id = '${req.body.batch_id}' AND sfs.id = '${req.body.class_id}' AND xmas.exam_type='annual_exam' AND ssad.deleted_at IS NULL GROUP BY mark_id, admission_id ORDER BY stu.student_id, exam_id, mark_id`;
+  dbcon.query(feeAndResult, (err, feeResultData) => {
+    if(err) {
+      res.json({msg: 'error', err})
+    } else {
+      console.log(feeResultData);
+      res.json({msg: 'success', feeResultData: feeResultData})
+    }
+  })
+
+})
 
 module.exports = apiRouter;

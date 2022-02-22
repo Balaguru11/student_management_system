@@ -2407,6 +2407,73 @@ $(document).on('click', '.view_exam_sched', function () {
   })
 })
 
+// Student Promotion Filter Ajax
+$(document).ready(function () {
+  $('#batch_id_filter').on('change', function () {
+    var batch_id = $(this).val();
+    $.ajax({
+      url: '/api/get-class-medium-for-batch',
+      type: 'POST',
+      data: {
+        batch_id: batch_id,
+      }, dataType: 'JSON',
+      success: function (data) {
+        let classMedium_options = "";
+        if(data.classMediums.length > 0) { 
+          for (let i=0; i < data.classMediums.length; i++){
+            classMedium_options += `<option value="${data.classMediums[i].id}">${data.classMediums[i].class_std} STD - ${data.classMediums[i].medium} Medium</option>`
+          }
+        } else {
+          classMedium_options;
+        }
+          $('#class_medium_filter, #filter_button').remove();
+          $('#batch_filter').after(function () {
+            return (
+              ` <div class="col-lg-5 col-xl-5 col-md-5 col-sm-10" id="class_medium_filter">                    
+              <div class="mt-3 mb-3">
+                <select id="class_medium" class="form-control" name="class_medium" required>
+                  <option value="">Select A Class STD</option>
+                  ${classMedium_options}
+                </select><span class="error" id="class_medium_error"
+                  >Please select A Class Medium.</span></div>
+            </div>
+            <div class="row col-lg-2 col-xl-2 col-md-2 col-sm-10 mt-3 mb-3" id="filter_button">
+                <button class="btn btn-secondary" id="filter_students"  type="submit" value="submit">
+                  Select
+                </button>
+            </div>`
+            )
+          })
+      }, error: function (err) {
+        console.log(err);
+      }
+    })
+  })
+})
+
+
+// On Select of batch and Class_medium, get students Fee & Result data for Promotion task
+$(document).on('change', '#batch_id_filter, #class_medium', function () {
+  var class_id = $('#class_medium').val();
+  var batch_id = $('#batch_id_filter').val();
+  $.ajax({
+    url: '/api/student-feeStatus-annual-exam-result',
+    type: 'POST',
+    data: {
+      class_id: class_id,
+      batch_id: batch_id,
+    }, dataType: "JSON", 
+    success: function (data) {
+
+    }, error: function (err) {
+      console.log(err);
+    }
+  })
+})
+
+
+
+
 // STUDENT SEEING HIS MARK SHEET
 // $(document).on('click', '.view_my_mark', function () {
 //   var student_id = $(this).attr('logged-in');
@@ -2466,3 +2533,5 @@ $(document).on('click', '.view_exam_sched', function () {
 //     }
 //   })
 // })
+
+//
