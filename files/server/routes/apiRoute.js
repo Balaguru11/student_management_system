@@ -5,6 +5,7 @@ const dbcon = require("../config/database");
 const bcrypt = require("bcrypt");
 const flash = require("connect-flash");
 const con = require("../config/database");
+const e = require("connect-flash");
 
 apiRouter.post('/get-batch-data-by-id', (req, res) => {
   var getBatch = `SELECT * FROM school_batch_mgmt WHERE id = '${req.body.batch_id}'`;
@@ -729,32 +730,65 @@ apiRouter.post('/get-class-medium-for-batch', (req, res) => {
 apiRouter.post('/student-feeStatus-annual-exam-result', (req, res) => {
   let session = req.session;
   let school = session.schoolId || session.school_id
-  // var feeAndResult = `SELECT marks.received_mark, marks.is_released FROM school_exams_marks AS marks INNER JOIN school_exams AS xam ON xam.id = marks.exam_id INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id WHERE xmas.exam_type = 'annual_exam' AND `
+  var studentList = `SELECT ssad.student_id, stu.name, clr.class_section, clr.id AS sec_id FROM School_student_admission AS ssad INNER JOIN school_student AS stu ON stu.student_id = ssad.student_id INNER JOIN school_classroom AS clr ON clr.id = ssad.class_section WHERE ssad.batch_id = '${req.body.batch_id}' AND ssad.class_medium = '${req.body.class_id}' AND ssad.school_id = '${school}' AND ssad.deleted_at IS NULL`;
+  dbcon.query(studentList, (err, stdStudents) => {
+    if(err) {
+      res.json({msg: 'error', err})
+    } else if(stdStudents.length > 0) {
+      res.json({msg: 'success', stdStudents: stdStudents})
+    } else {
+      res.json({msg: 'There are no students enrolled with this class std.', stdStudents: stdStudents})
+    }
+  })
+})
 
-  //getting student fee data
-  // var feeStatus = `SELECT * FROM school_student_admission WHERE school_id = '${school}' AND batch_id = '${req.body.batch_id}' AND class_medium = '${req.body.class_id}' AND deleted_at IS NULL`
-  // dbcon.query(feeStatus, (err, feeData) => {
-  //   if(err) {
-  //     res.json({msg: 'error', err})
-  //   } else {
-  //     //getting exam marks data
-  //     var marksData = `SELECT DISTINCT xam.id AS exam_id, marks.id AS mark_id, stu.student_id, stu.name, sfs.batch_id, batch.batch_name, batch.year_from, batch.year_to, sfs.id AS std_id, sfs.class_std, sfs.medium, clr.class_section AS section_id, clr.class_section, xmas.exam_type, marks.received_mark, marks.subject_result, marks.is_released FROM school_student_marks AS marks 
-  //     INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium INNER JOIN school_student AS stu ON ssad.student_id = stu.student_id INNER JOIN school_batch_mgmt AS batch ON batch.id = ssad.batch_id INNER JOIN school_classroom AS clr ON clr.id = ssad.class_section INNER JOIN school_exams AS xam ON xam.exam_conducted_class_sec = ssad.class_section 
-  //     INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS marks ON marks.exam_id = xam.id WHERE xam.exam_status = 'completed' AND marks.is_released = 'yes' AND ssad.school_id = '${school}' AND batch.id = '${req.body.batch_id}' AND sfs.id = '${req.body.class_id}' AND xmas.exam_type='annual_exam' AND ssad.deleted_at IS NULL GROUP BY mark_id, admission_id ORDER BY stu.student_id, exam_id, mark_id`
-  //   }
-  // })
-
-  var feeAndResult = `SELECT DISTINCT xam.id AS exam_id, marks.id AS mark_id, ssad.id AS admission_id, stu.student_id, stu.name, ssad.batch_id, batch.batch_name, batch.year_from, batch.year_to, ssad.class_medium, sfs.class_std, sfs.medium, ssad.class_section AS section_id, clr.class_section, ssad.actual_fee, ssad.paying_amount, ssad.payment_status, xmas.exam_type, marks.received_mark, marks.subject_result, marks.is_released FROM school_student_admission AS ssad INNER JOIN school_feestructure AS sfs ON sfs.id = ssad.class_medium INNER JOIN school_student AS stu ON ssad.student_id = stu.student_id INNER JOIN school_batch_mgmt AS batch ON batch.id = ssad.batch_id INNER JOIN school_classroom AS clr ON clr.id = ssad.class_section INNER JOIN school_exams AS xam ON xam.exam_conducted_class_sec = ssad.class_section 
-  INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_exams_marks AS marks ON marks.exam_id = xam.id WHERE xam.exam_status = 'completed' AND marks.is_released = 'yes' AND ssad.school_id = '${school}' AND batch.id = '${req.body.batch_id}' AND sfs.id = '${req.body.class_id}' AND xmas.exam_type='annual_exam' AND ssad.deleted_at IS NULL GROUP BY mark_id, admission_id ORDER BY stu.student_id, exam_id, mark_id`;
-  dbcon.query(feeAndResult, (err, feeResultData) => {
+apiRouter.post('/eagle-eye-view-of-student-promote', (req, res) => {
+  let session = req.session;
+  let school = session.schoolId || session.school_id
+  var eagleStudent = `SELECT * FROM school_student_admission WHERE batch_id = '${req.body.batch_id}' AND student_id = '${req.body.student_id}' AND class_section = '${req.body.sec_id}' AND school_id = '${school}' AND deleted_at IS NULL; SELECT xam.subject_id, subj.subject_name, mark.received_mark, mark.subject_result FROM school_exams_marks AS mark INNER JOIN school_exams AS xam ON xam.id = mark.exam_id INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id WHERE xmas.exam_type = 'annual_exam' AND xam.exam_conducted_class_sec = '${req.body.sec_id}' AND mark.is_released = 'yes' AND mark.student_id = '${req.body.student_id}' AND mark.school_id = '${school}' AND mark.deleted_at IS NULL; SELECT COUNT(subject_id) AS subject_count FROM school_class_subjects WHERE classroom_id = '${req.body.sec_id}' AND school_id = '${school}' AND deleted_at IS NULL; SELECT * FROM school_student_attendance WHERE student_affected = '${req.body.student_id}' AND class_sec = '${req.body.sec_id}' AND deleted_at IS NULL; SELECT COUNT(attend_status) AS totalCount FROM school_student_attendance WHERE student_affected = '${req.body.student_id}' AND class_sec = '${req.body.sec_id}' AND deleted_at IS NULL;`;
+  console.log(eagleStudent);
+  dbcon.query(eagleStudent, (err, studentEagleDdata) => {
     if(err) {
       res.json({msg: 'error', err})
     } else {
-      console.log(feeResultData);
-      res.json({msg: 'success', feeResultData: feeResultData})
+      console.log(studentEagleDdata);
+      res.json({msg: 'success', feeStatus: studentEagleDdata[0], examResult: studentEagleDdata[1], subjectCount: studentEagleDdata[2], attendanceReport: studentEagleDdata[3], attendanceCount: studentEagleDdata[4] })
     }
   })
+})
 
+apiRouter.post('/promote-student-to-next-std', (req, res) => {
+  let session = req.session;
+  let school = session.schoolId || session.school_id
+  let entered_by = school || session.staff_id
+  var getcurrentBatchData = `SELECT sfs.class_std, sfs.medium, clr.class_section FROM school_feestructure AS sfs INNER JOIN school_classroom as clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${school}' AND sfs.batch_id = '${req.body.batch_id}' AND clr.id = '${req.body.sec_id}' AND sfs.id = '${req.body.std_id}' AND clr.deleted_at IS NULL; SELECT * FROM school_student WHERE student_id = '${req.body.student_id}' AND deleted_at IS NULL;`;
+  dbcon.query(getcurrentBatchData, (err, current) => {
+    if(err) {
+      res.json({msg: 'error', err})
+    } else {
+      //getting next class details
+      var next_std = parseInt(current[0][0].class_std) + 1
+      var nextClassData = `SELECT sfs.id AS next_std_id, sfs.class_std, sfs.medium, sfs.actual_fee, clr.id AS next_sec_id, clr.class_section FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.class_std = '${next_std}' AND sfs.medium = '${current[0][0].medium}' AND clr.class_section = '${current[0][0].class_section}' AND sfs.school_id = '${school}' AND sfs.batch_id = '${req.body.batch_id}' AND clr.deleted_at IS NULL`;
+      dbcon.query(nextClassData, (err, next_class) => {
+        if(err) {
+          res.json({msg: 'error', err})
+        } else if (next_class.length == 1){
+          // add admission data
+          var promoteStudent = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, batch_id, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${school}', '${req.body.student_id}', '${current[1][0].mobile_number}', '${current[1][0].email}', '${req.body.batch_id}', '${next_class[0].next_std_id}', '${next_class[0].class_section}', '${next_class[0].actual_fee}', '0', 'Promote', 'Due', '${entered_by}')`;
+          dbcon.query(promoteStudent, (err, promotion) => {
+            if(err) {
+              res.json({msg: 'error', err})
+            } else {
+              console.log(promotion);
+              res.json({msg: 'success', promotion: promotion, next_class: next_class})
+            }
+          })
+        } else {
+          res.json({msg: 'no_next', current: current})
+        }
+      })
+    }
+  })
 })
 
 module.exports = apiRouter;

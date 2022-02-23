@@ -2399,7 +2399,6 @@ $(document).on('click', '.view_exam_sched', function () {
         )
       })
 
-      
       $('#viewExamSchedModal').modal('show');
     }, error: function (err) {
       console.log(err);
@@ -2426,22 +2425,17 @@ $(document).ready(function () {
         } else {
           classMedium_options;
         }
-          $('#class_medium_filter, #filter_button').remove();
+          $('#class_medium_filter, #filter_button, #students_list').remove();
           $('#batch_filter').after(function () {
             return (
-              ` <div class="col-lg-5 col-xl-5 col-md-5 col-sm-10" id="class_medium_filter">                    
-              <div class="mt-3 mb-3">
-                <select id="class_medium" class="form-control" name="class_medium" required>
-                  <option value="">Select A Class STD</option>
-                  ${classMedium_options}
-                </select><span class="error" id="class_medium_error"
-                  >Please select A Class Medium.</span></div>
-            </div>
-            <div class="row col-lg-2 col-xl-2 col-md-2 col-sm-10 mt-3 mb-3" id="filter_button">
-                <button class="btn btn-secondary" id="filter_students"  type="submit" value="submit">
-                  Select
-                </button>
-            </div>`
+              `<div class="col-lg-5 col-xl-5 col-md-5 col-sm-10" id="class_medium_filter">                    
+                <div class="mt-3 mb-3">
+                  <select id="class_medium" class="form-control" name="class_medium" required>
+                    <option value="">Select A Class STD</option>
+                    ${classMedium_options}
+                  </select><span class="error" id="class_medium_error"
+                    >Please select A Class Medium.</span></div>
+                </div>`
             )
           })
       }, error: function (err) {
@@ -2451,11 +2445,11 @@ $(document).ready(function () {
   })
 })
 
-
 // On Select of batch and Class_medium, get students Fee & Result data for Promotion task
-$(document).on('change', '#batch_id_filter, #class_medium', function () {
+$(document).on('change', '#class_medium', function () {
   var class_id = $('#class_medium').val();
   var batch_id = $('#batch_id_filter').val();
+  
   $.ajax({
     url: '/api/student-feeStatus-annual-exam-result',
     type: 'POST',
@@ -2464,6 +2458,151 @@ $(document).on('change', '#batch_id_filter, #class_medium', function () {
       batch_id: batch_id,
     }, dataType: "JSON", 
     success: function (data) {
+      // url appending
+      var searchParams = new URLSearchParams(window.location.search);
+      searchParams.set('batch', batch_id);
+      searchParams.set('std', class_id);
+      var newRelativePathQuery = window.location.pathname + '?' + searchParams.toString();
+      history.pushState(null, '', newRelativePathQuery);
+
+      if (data.stdStudents.length > 0){
+        var students_row = "";
+        for (let x = 0; x < data.stdStudents.length; x++ ){
+          let tr = `<tr><td>${x+1}</td><td>${data.stdStudents[x].student_id}</td><td>${data.stdStudents[x].name}</td><td>${data.stdStudents[x].class_section}</td><td><button data-stuid="${data.stdStudents[x].student_id}" data-name = "${data.stdStudents[x].name}" data-batch_id="${batch_id}" data-std_id="${class_id}" data-sec_id = "${data.stdStudents[x].sec_id}" type="button" class="viewPromote btn btn-warning View" data-toggle="modal" data-target=".bd-example-modal-xl" ><i class="far fa-eye"></i></button></td></tr>`
+          students_row += tr;
+        }
+
+        $('#students_list').remove();
+        $('#filter_main').after(function () {
+          return (
+            `<div class='m-2' id = 'students_list'><table class='table table-light text-center' id="datatable"><thead><tr><th scope='col'>S.No</th><th scope='200px'>Student Id</th><th scope='200px'>Student Name</th><th scope='200px'>Section</th><th scope='200px'>Actions</th></tr></thead><tbody>${students_row}</tbody></table></div>`
+          )
+        })
+        $('#datatable').DataTable();
+      } else {
+        $('#students_list').remove();
+        $('#filter_main').after(function () {
+          return (
+            `<div class='m-2 border border-secondary border-rounded' id = 'students_list'><p class='text-center bg bg-warning p-2 m-2'>${data.msg}</p></div>`
+          )
+        })
+      }
+    }, error: function (err) {
+      console.log(err);
+    }
+  })
+})
+
+// On Clicking the Decide Button, .viewPromote show modal
+$(document).on('click', '.viewPromote', function () { 
+  var student_id = $(this).data('stuid');
+  var batch_id = $(this).data('batch_id');
+  var std_id = $(this).data('std_id');
+  var sec_id = $(this).data('sec_id');
+  var student_name = $(this).data('name');
+  $.ajax({
+    url: '/api/eagle-eye-view-of-student-promote',
+    type: 'POST',
+    data: {
+      student_id: student_id,
+      batch_id: batch_id,
+      std_id: std_id,
+      sec_id: sec_id,
+    }, dataType: 'JSON',
+    success: function (data) {
+      
+      $('#viewPromoteModalLabel').html(`${student_name} 's Records`)
+      $('#eagle-main, #action_buttons').remove();
+      $('.viewPromote-modal-body').append(function () {
+        return (`<div class='row m-2 p-2 justify-content-center' id='eagle-main'>
+        <div class="col-lg-4 col-xl-4 col-md-6 col-sm-10" id="eagle_fee"></div>
+        <div class="col-lg-4 col-xl-4 col-md-6 col-sm-10" id="eagle_result"></div>
+        <div class="col-lg-4 col-xl-4 col-md-6 col-sm-10" id="eagle_attendance"></div>
+        </div><div class="row justify-content-center mb-3" id="action_buttons"><div class="row col-5 m-1"><button data-stuid="${student_id}" data-batch_id="${batch_id}" data-std_id="${std_id}" data-sec_id = "${sec_id}" type="button" class="promoteStudent btn btn-success View" data-toggle="modal" data-target=".bd-example-modal-xl" ><i class="fa fa-level-up"></i> Promote Student</button></div><div class="row col-5 m-1"><button data-stuid="${student_id}" data-batch_id="${batch_id}" data-std_id="${std_id}" data-sec_id = "${sec_id}" type="button" class="demoteStudent btn btn-danger View" data-toggle="modal" data-target=".bd-example-modal-xl" ><i class="fa fa-level-down"></i> Demote Student</button></div></div>`)
+      })
+
+      //exam_result:
+      if(data.subjectCount[0].subject_count == data.examResult.length) {
+        let fail_count = 0;
+        for(let i=0; i < data.examResult.length; i++){
+          fail_count = (data.examResult[i].subject_result == 'Fail') ? fail_count += 1 : fail_count
+        }
+        let final_result = (fail_count != 0) ? 'Fail' : 'Pass'
+
+        $('#result_inner').remove();
+        $('#eagle_result').append(function() {
+          return (`<div class='text-center text-white bg bg-success rounded p-1 m-2' id="result_inner"><p>Annual Exam Result is:</p><p class='display-6'>${final_result}</p></div></div>`)
+        })
+
+        if(final_result == 'Fail'){
+          $('#result_inner').removeClass('bg-success').addClass('bg-danger');
+        }
+      } else {
+        $('#result_inner').remove();
+        $('#eagle_result').append(function() {
+          return (`<div class='text-center text-white bg bg-warning rounded p-1 m-2' id="result_inner"><p>Your last Annual Exam Result is:</p><p class='display-6'>TO BE UPDATED</p></div></div>`)
+        })
+      }
+
+      // Fee_due
+      $('#fee_inner').remove();
+      $('#eagle_fee').append(
+        `<div class='text-center border border-info rounded m-2 p-1' id="fee_inner"><p>Fee Payment Status is:</p><p class='display-6'>${data.feeStatus[0].payment_status}</p></div></div>`
+      )
+      if(data.feeStatus[0].payment_status == 'Due') {
+        $('#fee_inner').removeClass('border-success').addClass('border-danger')
+      }
+
+      //attendance_report
+      let present = 0;
+      for (let p=0; p < data.attendanceReport.length; p++){
+        if(data.attendanceReport[p].attend_status == ('Present' || 'On_Duty')) {
+          present += 1
+        } else {
+          present
+        }
+      }
+      let attend_percent = present / data.attendanceCount[0].totalCount * 100
+
+      $('#attendance_inner').remove();
+      $('#eagle_attendance').append(
+        `<div class='text-center border border-info rounded m-2 p-1' id="attendance_inner"><p>Attendance Percentage is:</p><p class='display-6'>${attend_percent}</p></div></div>`
+      )
+
+      $('#viewPromoteModal').modal('show');
+    }, error: function (err) {
+      console.log(err);
+    }
+  })
+})
+
+// Promote Button clicked .promoteStudent
+$(document).on('click', '.promoteStudent', function () {
+  var student_id = $(this).data('stuid');
+  var batch_id = $(this).data('batch_id');
+  var std_id = $(this).data('std_id');
+  var sec_id = $(this).data('sec_id');
+  $.ajax({
+    url: '/api/promote-student-to-next-std',
+    type: 'POST',
+    data: {
+      student_id: student_id,
+      batch_id: batch_id,
+      std_id: std_id,
+      sec_id: sec_id,
+    }, dataType: 'JSON',
+    success: function (data) {
+      if(data.promotion){
+        $('.promote_alert').remove();
+        $('#eagle-main').before(
+          `<div class="promote_alert alert alert-success alert-dismissible fade show mt-5" role="alert">The Student has been PROMOTED to Next Std.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`)
+      } else {
+        $('.promote_alert').remove();
+        $('#eagle-main').before(
+          `<div class="promote_alert alert alert-warning alert-dismissible fade show mt-5" role="alert">We couldn't find Next class Std to peomote this Student.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>` )
+      }
 
     }, error: function (err) {
       console.log(err);

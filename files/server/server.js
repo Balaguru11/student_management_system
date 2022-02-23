@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const flash = require("connect-flash");
 const methodOverride = require("method-override");
 const morgan = require("morgan");
+const { URLSearchParams } = require("url");
 const fs = require('fs');
 const pdf = require('html-pdf');
 const options = { format: 'A4' };
