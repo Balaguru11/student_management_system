@@ -761,6 +761,7 @@ apiRouter.post('/promote-student-to-next-std', (req, res) => {
   let session = req.session;
   let school = session.schoolId || session.school_id
   let entered_by = school || session.staff_id
+  // 1 std, English Medium, C sec - Promo 1+1 std, C sec, English
   var getcurrentBatchData = `SELECT sfs.class_std, sfs.medium, clr.class_section FROM school_feestructure AS sfs INNER JOIN school_classroom as clr ON clr.class_id = sfs.id WHERE sfs.school_id = '${school}' AND sfs.batch_id = '${req.body.batch_id}' AND clr.id = '${req.body.sec_id}' AND sfs.id = '${req.body.std_id}' AND clr.deleted_at IS NULL; SELECT * FROM school_student WHERE student_id = '${req.body.student_id}' AND deleted_at IS NULL;`;
   dbcon.query(getcurrentBatchData, (err, current) => {
     if(err) {
@@ -779,12 +780,63 @@ apiRouter.post('/promote-student-to-next-std', (req, res) => {
             if(err) {
               res.json({msg: 'error', err})
             } else {
-              console.log(promotion);
-              res.json({msg: 'success', promotion: promotion, next_class: next_class})
+              var updateClassStrength = `UPDATE school_main_login SET status='Active' WHERE id='${req.body.student_id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${next_class[0].class_section}'`;
+              dbcon.query(updateClassStrength, (err, updatedStrength) => {
+                if(err) {
+                  res.json({msg: 'error', err})
+                } else {
+                  res.json({msg: 'success', promotion: promotion, next_class: next_class})
+                }
+              })
             }
           })
         } else {
           res.json({msg: 'no_next', current: current})
+        }
+      })
+    }
+  })
+})
+
+
+apiRouter.post('/demote-student-to-next-std', (req, res) => {
+  let session = req.session;
+  let school = session.schoolId || session.school_id;
+  let entered_by = school || session.staff_id;
+  // from batch_id get the std_year, add 1 to it and 
+  var getCurrentStdYear = `SELECT sfs.class_std, sfs.medium, sfs.std_year, clr.class_section FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE sfs.id='${req.body.std_id}' AND clr.id='${req.body.sec_id}' AND sfs.school_id = '${school}'; SELECT * FROM school_student WHERE student_id = '${req.body.student_id}' AND deleted_at IS NULL;`;
+  dbcon.query(getCurrentStdYear, (err, currentStdYear) => {
+    if(err) {
+      res.json({msg: 'error', err})
+    } else {
+      var nextBatchClassStdData = `SELECT sfs.id, sfs.batch_id, sfs.class_std, sfs.medium, sfs.actual_fee, clr.id AS demote_sec_id, clr.class_section FROM school_feestructure AS sfs INNER JOIN school_classroom AS clr ON clr.class_id = sfs.id WHERE class_std = '${currentStdYear[0][0].class_std}' AND medium = '${currentStdYear[0][0].medium}' AND std_year = '${currentStdYear[0][0].std_year + 1}' AND clr.class_section = '${currentStdYear[0][0].class_section}' AND clr.deleted_at IS NULL`;
+      dbcon.query(nextBatchClassStdData, (err, nextBatchSameStd) => {
+        if(err) {
+          res.json({msg: 'error', err})
+        } else if (nextBatchSameStd.length == 1) {
+          // insert into next batch same class std and add seats filled +1
+          var demoteStudent = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, batch_id, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${school}', '${req.body.student_id}', '${currentStdYear[1][0].mobile_number}', '${currentStdYear[1][0].email}', '${nextBatchSameStd[0].batch_id}', '${nextBatchSameStd[0].id}', '${nextBatchSameStd[0].demote_sec_id}', '${nextBatchSameStd[0].actual_fee}', '0', 'Demote', 'Due', '${entered_by}')`;
+          dbcon.query(demoteStudent, (err, demotion) => {
+            if(err) {
+              res.json({msg: 'error', err})
+            } else if (demotion.insertId) {
+              // increase seats filler by 1
+              var updateClassStrength = `UPDATE school_main_login SET status='Active' WHERE id='${req.body.student_id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE class_id='${nextBatchSameStd[0].id}' AND class_section = '${nextBatchSameStd[0].class_section}' AND deleted_at IS NULL`;
+              dbcon.query(updateClassStrength, (err, demoted) => {
+                if(err) {
+                  res.json({msg: 'error', err})
+                } else if (demoted.affectedRow){
+                  res.json({msg: 'success', demoted: demoted, nextBatchSameStd: nextBatchSameStd })
+                } else {
+                  res.json({msg: 'failure', demoted: demoted, nextBatchSameStd: nextBatchSameStd })
+                }
+              })
+            } else {
+
+            }
+          })
+        } else {
+          res.json({msg: 'no_batch', nextBatchSameStd: nextBatchSameStd})
         }
       })
     }

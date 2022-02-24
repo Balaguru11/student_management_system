@@ -2522,25 +2522,22 @@ $(document).on('click', '.viewPromote', function () {
       })
 
       //exam_result:
-      if(data.subjectCount[0].subject_count == data.examResult.length) {
+      let final_result = 'TO BE UPDATED';
+      if(data.subjectCount[0].subject_count == data.examResult.length && data.examResult.length != 0) {
         let fail_count = 0;
         for(let i=0; i < data.examResult.length; i++){
           fail_count = (data.examResult[i].subject_result == 'Fail') ? fail_count += 1 : fail_count
         }
-        let final_result = (fail_count != 0) ? 'Fail' : 'Pass'
+        final_result = (fail_count != 0) ? 'Fail' : 'Pass'
 
         $('#result_inner').remove();
         $('#eagle_result').append(function() {
           return (`<div class='text-center text-white bg bg-success rounded p-1 m-2' id="result_inner"><p>Annual Exam Result is:</p><p class='display-6'>${final_result}</p></div></div>`)
         })
-
-        if(final_result == 'Fail'){
-          $('#result_inner').removeClass('bg-success').addClass('bg-danger');
-        }
       } else {
         $('#result_inner').remove();
         $('#eagle_result').append(function() {
-          return (`<div class='text-center text-white bg bg-warning rounded p-1 m-2' id="result_inner"><p>Your last Annual Exam Result is:</p><p class='display-6'>TO BE UPDATED</p></div></div>`)
+          return (`<div class='text-center text-white bg bg-warning rounded p-1 m-2' id="result_inner"><p>Your last Annual Exam Result is:</p><p class='display-6'>${final_result}</p></div></div>`)
         })
       }
 
@@ -2549,25 +2546,40 @@ $(document).on('click', '.viewPromote', function () {
       $('#eagle_fee').append(
         `<div class='text-center border border-info rounded m-2 p-1' id="fee_inner"><p>Fee Payment Status is:</p><p class='display-6'>${data.feeStatus[0].payment_status}</p></div></div>`
       )
-      if(data.feeStatus[0].payment_status == 'Due') {
-        $('#fee_inner').removeClass('border-success').addClass('border-danger')
-      }
+      
 
       //attendance_report
       let present = 0;
-      for (let p=0; p < data.attendanceReport.length; p++){
-        if(data.attendanceReport[p].attend_status == ('Present' || 'On_Duty')) {
-          present += 1
-        } else {
-          present
+      let attend_percent = 'No Data';
+      if (data.attendanceCount[0].totalCount != 0) {
+        for (let p=0; p < data.attendanceReport.length; p++){
+          if(data.attendanceReport[p].attend_status == ('Present' || 'On_Duty')) {
+            present += 1
+          } else {
+            present
+          }
         }
+       attend_percent = present / data.attendanceCount[0].totalCount * 100
+      } else {
+        attend_percent;
       }
-      let attend_percent = present / data.attendanceCount[0].totalCount * 100
-
+      
       $('#attendance_inner').remove();
       $('#eagle_attendance').append(
         `<div class='text-center border border-info rounded m-2 p-1' id="attendance_inner"><p>Attendance Percentage is:</p><p class='display-6'>${attend_percent}</p></div></div>`
       )
+
+      if (attend_percent == 'No Data') {
+        $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
+      } else if(data.feeStatus[0].payment_status == 'Due') {
+        $('#fee_inner').removeClass('border-success').addClass('border-danger');
+        $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
+      } else if(final_result == 'Fail' || 'TO BE UPDATED'){
+        $('#result_inner').removeClass('bg-success').addClass('bg-danger');
+        // $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
+      } else {
+        $('.promoteStudent, .demoteStudent').removeAttr('disabled');
+      }
 
       $('#viewPromoteModal').modal('show');
     }, error: function (err) {
@@ -2592,15 +2604,15 @@ $(document).on('click', '.promoteStudent', function () {
       sec_id: sec_id,
     }, dataType: 'JSON',
     success: function (data) {
-      if(data.promotion){
+      if(data.next_class.length == 1){
         $('.promote_alert').remove();
         $('#eagle-main').before(
-          `<div class="promote_alert alert alert-success alert-dismissible fade show mt-5" role="alert">The Student has been PROMOTED to Next Std.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          `<div class="promote_alert alert alert-success alert-dismissible fade show m-2" role="alert">The Student has been PROMOTED to Next Std.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>`)
       } else {
         $('.promote_alert').remove();
         $('#eagle-main').before(
-          `<div class="promote_alert alert alert-warning alert-dismissible fade show mt-5" role="alert">We couldn't find Next class Std to peomote this Student.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          `<div class="promote_alert alert alert-warning alert-dismissible fade show m-2" role="alert">We couldn't find Next class Std to peomote this Student.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>` )
       }
 
@@ -2610,6 +2622,38 @@ $(document).on('click', '.promoteStudent', function () {
   })
 })
 
+// demote button clicked .demoteStudent
+$(document).on('click', '.demoteStudent', function () {
+  var student_id = $(this).data('stuid');
+  var batch_id = $(this).data('batch_id');
+  var std_id = $(this).data('std_id');
+  var sec_id = $(this).data('sec_id');
+  $.ajax({
+    url: '/api/demote-student-to-next-std',
+    type: 'POST',
+    data: {
+      student_id: student_id,
+      batch_id: batch_id,
+      std_id: std_id,
+      sec_id: sec_id,
+    }, dataType: 'JSON',
+    success: function (data) {
+      if(data.nextBatchSameStd.length == 1 && data.demoted.affectedRow) {
+        $('.demote_alert').remove();
+        $('#eagle-main').before(
+          `<div class="demote_alert alert alert-warning alert-dismissible fade show m-2" role="alert">The Student has been DEMOTED. He/She will be studying the same STD with the Next Batch Students.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>`)
+      } else {
+        $('.demote_alert').remove();
+        $('#eagle-main').before(
+          `<div class="demote_alert alert alert-danger alert-dismissible fade show m-2" role="alert">The Next Batch is not created yet. Demotion Process is not successful.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>` )
+      }
+    }, error: function (err) {
+      console.log(err);
+    }
+  })
+})
 
 
 

@@ -1106,7 +1106,8 @@ exports.getStudentPromotion = (req, res) => {
   res.locals.success_msg = req.flash("success");
   let session = req.session;
   res.locals.staff_role = session.roleId;
-  // let batch_selected = req.body.query.batch;
+  let batch_selected = req.query && req.query.batch;
+  console.log(batch_selected);
   // let std_selected = req.body.query.std;
 
   try {
@@ -1114,7 +1115,8 @@ exports.getStudentPromotion = (req, res) => {
 
     dbcon.query(getBatchList, (err, batchData) => {
       if(err) throw err;
-      // res.locals.batchSelected = batch_selected;
+      console.log(batchData);
+      res.locals.batchSelected = batch_selected;
       // res.locals.stdSelected = std_selected;
       res.locals.batch = batchData;
       return res.render('staffLevel/student-promotion-page', {title: 'Promote Students'})
