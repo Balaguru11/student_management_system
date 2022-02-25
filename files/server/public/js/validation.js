@@ -1069,11 +1069,7 @@ $(document).ready(function () {
           }
           $.each(subject_name, (key, value) => {
             $(".subject_option").append(
-              "<option value='" +
-                data.subjects[key].subject_id +
-                "'>" +
-                data.subjects[key].subject_name +
-                "</option>"
+              `<option value='${data.subjects[key].subject_id}'>${data.subjects[key].subject_name}</option>`
             );
           });
         });
@@ -2425,25 +2421,26 @@ $(document).ready(function () {
         } else {
           classMedium_options;
         }
-          $('#class_medium_filter, #filter_button, #students_list').remove();
-          $('#batch_filter').after(function () {
-            return (
-              `<div class="col-lg-5 col-xl-5 col-md-5 col-sm-10" id="class_medium_filter">                    
-                <div class="mt-3 mb-3">
-                  <select id="class_medium" class="form-control" name="class_medium" required>
-                    <option value="">Select A Class STD</option>
-                    ${classMedium_options}
-                  </select><span class="error" id="class_medium_error"
-                    >Please select A Class Medium.</span></div>
-                </div>`
-            )
-          })
+          $('#students_list').remove();
+          $('#class_medium').find('option[value != ""]').remove();
+          $('#class_medium').append(`${classMedium_options}` )
       }, error: function (err) {
         console.log(err);
       }
     })
   })
 })
+
+// $(document).on('reload', function () {
+//   var batch_q = $('#batch_query').val();
+//   var std_q = $('#std_query').val();
+
+//   if ((batch_q != "") && (std_q != "")) {
+//     $('#batch_id_filter').find(`option[value="${batch_q}"]`).attr('selected', 'selected');
+//     $('#class_medium').find(`option[value="${std_q}"]`).attr('selected', 'selected');
+//   }
+  
+// })
 
 // On Select of batch and Class_medium, get students Fee & Result data for Promotion task
 $(document).on('change', '#class_medium', function () {
@@ -2475,7 +2472,7 @@ $(document).on('change', '#class_medium', function () {
         $('#students_list').remove();
         $('#filter_main').after(function () {
           return (
-            `<div class='m-2' id = 'students_list'><table class='table table-light text-center' id="datatable"><thead><tr><th scope='col'>S.No</th><th scope='200px'>Student Id</th><th scope='200px'>Student Name</th><th scope='200px'>Section</th><th scope='200px'>Actions</th></tr></thead><tbody>${students_row}</tbody></table></div>`
+            `<div class="hidden_q"><input type="hidden" name="batch_query" id="batch_query" value="${batch_id}"> <input type="hidden" name="std_query" id="std_query" value="${class_id}"></div><div class='m-2' id = 'students_list'><table class='table table-light text-center' id="datatable"><thead><tr><th scope='col'>S.No</th><th scope='200px'>Student Id</th><th scope='200px'>Student Name</th><th scope='200px'>Section</th><th scope='200px'>Actions</th></tr></thead><tbody>${students_row}</tbody></table></div>`
           )
         })
         $('#datatable').DataTable();
@@ -2532,7 +2529,11 @@ $(document).on('click', '.viewPromote', function () {
 
         $('#result_inner').remove();
         $('#eagle_result').append(function() {
-          return (`<div class='text-center text-white bg bg-success rounded p-1 m-2' id="result_inner"><p>Annual Exam Result is:</p><p class='display-6'>${final_result}</p></div></div>`)
+          if(final_result == 'Pass') {
+            return (`<div class='text-center text-white bg bg-success rounded p-1 m-2' id="result_inner"><p>Annual Exam Result is:</p><p class='display-6'>${final_result}</p></div></div>`)
+          } else {
+            return (`<div class='text-center text-white bg bg-danger rounded p-1 m-2' id="result_inner"><p>Annual Exam Result is:</p><p class='display-6'>${final_result}</p></div></div>`)
+          }
         })
       } else {
         $('#result_inner').remove();
@@ -2574,13 +2575,11 @@ $(document).on('click', '.viewPromote', function () {
       } else if(data.feeStatus[0].payment_status == 'Due') {
         $('#fee_inner').removeClass('border-success').addClass('border-danger');
         $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
-      } else if(final_result == 'Fail' || 'TO BE UPDATED'){
-        $('#result_inner').removeClass('bg-success').addClass('bg-danger');
-        // $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
+      } else if((final_result == 'Fail') || (final_result == 'TO BE UPDATED')){
+        $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
       } else {
         $('.promoteStudent, .demoteStudent').removeAttr('disabled');
       }
-
       $('#viewPromoteModal').modal('show');
     }, error: function (err) {
       console.log(err);
@@ -2609,13 +2608,14 @@ $(document).on('click', '.promoteStudent', function () {
         $('#eagle-main').before(
           `<div class="promote_alert alert alert-success alert-dismissible fade show m-2" role="alert">The Student has been PROMOTED to Next Std.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>`)
+        $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
+        $('#action_buttons').append(`<p class="alert alert-secondary text-center">Student Promoted</p>`);
       } else {
         $('.promote_alert').remove();
         $('#eagle-main').before(
           `<div class="promote_alert alert alert-warning alert-dismissible fade show m-2" role="alert">We couldn't find Next class Std to peomote this Student.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>` )
       }
-
     }, error: function (err) {
       console.log(err);
     }
@@ -2643,6 +2643,8 @@ $(document).on('click', '.demoteStudent', function () {
         $('#eagle-main').before(
           `<div class="demote_alert alert alert-warning alert-dismissible fade show m-2" role="alert">The Student has been DEMOTED. He/She will be studying the same STD with the Next Batch Students.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>`)
+        $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
+        $('#action_buttons').append(`<p class="alert alert-secondary text-center">Student Demoted</p>`);
       } else {
         $('.demote_alert').remove();
         $('#eagle-main').before(

@@ -8,8 +8,11 @@
                 <hr />
               </div>
               <!-- hidden field here <%= locals.batchSelected %> -->
+              <input type="hidden" name="batch_query" id="batch_query" value="<%= locals.batchSelected %>">
+              <input type="hidden" name="std_query" id="std_query" value="<%= locals.stdSelected %>">
               <div class="row justify-content-center align-center bg-secondary rounded mx-5" id="filter_main">
                 <div class="col-lg-5 col-xl-5 col-md-5 col-sm-10" id="batch_filter">
+                 
                   <div class="mt-3 mb-3">
                     <% if (locals.batch.length != 0) { %>
                       <select id="batch_id_filter" class="form-control" name="batch_id_filter" required >
@@ -28,8 +31,15 @@
                       >Please select A Batch.</span
                     >
                   </div>
-                </div>                
-              </div>
+                </div>
+                <div class="col-lg-5 col-xl-5 col-md-5 col-sm-10" id="class_medium_filter">                    
+                  <div class="mt-3 mb-3">
+                    <select id="class_medium" class="form-control" name="class_medium" required>
+                      <option value="">Select A Class STD</option>                     
+                    </select><span class="error" id="class_medium_error"
+                      >Please select A Class Medium.</span></div>
+                  </div>
+              </div> 
             </form>
 
 
@@ -45,3 +55,5 @@
                 </div>
               </div>
             </div>
+
+            

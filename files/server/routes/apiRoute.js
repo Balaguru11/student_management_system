@@ -775,7 +775,7 @@ apiRouter.post('/promote-student-to-next-std', (req, res) => {
           res.json({msg: 'error', err})
         } else if (next_class.length == 1){
           // add admission data
-          var promoteStudent = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, batch_id, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${school}', '${req.body.student_id}', '${current[1][0].mobile_number}', '${current[1][0].email}', '${req.body.batch_id}', '${next_class[0].next_std_id}', '${next_class[0].class_section}', '${next_class[0].actual_fee}', '0', 'Promote', 'Due', '${entered_by}')`;
+          var promoteStudent = `INSERT INTO school_student_admission(school_id, student_id, mobile_number, email, batch_id, class_medium, class_section, actual_fee, paying_amount, payment_mode, payment_status, entry_by) VALUES('${school}', '${req.body.student_id}', '${current[1][0].mobile_number}', '${current[1][0].email}', '${req.body.batch_id}', '${next_class[0].next_std_id}', '${next_class[0].next_sec_id}', '${next_class[0].actual_fee}', '0', 'Promote', 'Due', '${entered_by}')`;
           dbcon.query(promoteStudent, (err, promotion) => {
             if(err) {
               res.json({msg: 'error', err})

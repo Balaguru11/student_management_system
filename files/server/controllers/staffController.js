@@ -1108,7 +1108,7 @@ exports.getStudentPromotion = (req, res) => {
   res.locals.staff_role = session.roleId;
   let batch_selected = req.query && req.query.batch;
   console.log(batch_selected);
-  // let std_selected = req.body.query.std;
+  let std_selected = req.query && req.query.std;
 
   try {
     var getBatchList = `SELECT * FROM school_batch_mgmt WHERE school_id = '${session.school_id}' AND deleted_at IS NULL`;
@@ -1117,7 +1117,7 @@ exports.getStudentPromotion = (req, res) => {
       if(err) throw err;
       console.log(batchData);
       res.locals.batchSelected = batch_selected;
-      // res.locals.stdSelected = std_selected;
+      res.locals.stdSelected = std_selected;
       res.locals.batch = batchData;
       return res.render('staffLevel/student-promotion-page', {title: 'Promote Students'})
     })
