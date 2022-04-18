@@ -343,22 +343,22 @@ exports.postEditStuProfile = (req, res) => {
 // admission due collection - payment by stduent
 exports.allAdmissionDue = (req, res) => {
   let session = req.session;
-  // flashing err_msg
-  let err_msg = req.flash("err_msg");
-  res.locals.err_msg = err_msg;
-  // flashing sucecss_msg
-  let success_msg = req.flash("success");
-  res.locals.success_msg = success_msg;
+  res.locals.err_msg = req.flash("err_msg");
+  res.locals.success_msg = req.flash("success");
   try {
     if (req.method == "GET") {
       const student_id = session.student_id;
-      var stuAdmisData = `SELECT stu.student_id, stu.name, stu.email, stu.mobile_number, sfs.class_std, sfs.medium, clr.class_section, ssa.school_id, ssa.id AS admission_id, ssa.academic_year, ssa.actual_fee, ssa.paying_amount, ssa.payment_status FROM school_student_admission AS ssa 
+      var stuAdmisData = `SELECT stu.student_id, stu.name, stu.email, stu.mobile_number, sfs.class_std, sfs.medium, clr.class_section, ssa.school_id, ssa.id AS admission_id, ssa.actual_fee, ssa.batch_id, batch.batch_name, batch.year_from, batch.year_to, ssa.paying_amount, ssa.payment_status FROM school_student_admission AS ssa 
       INNER JOIN school_feestructure as sfs ON sfs.id=ssa.class_medium 
       INNER JOIN school_classroom as clr ON clr.id=ssa.class_section 
-      INNER JOIN school_student as stu ON stu.student_id=ssa.student_id WHERE ssa.student_id='${student_id}' AND ssa.academic_year = YEAR(CURDATE())`;
+      INNER JOIN school_batch_mgmt AS batch ON batch.id = ssa.batch_id
+      INNER JOIN school_student as stu ON stu.student_id=ssa.student_id WHERE ssa.student_id='${student_id}' AND ssa.deleted_at IS NULL`;
 
       dbcon.query(stuAdmisData, (err, row) => {
-        if (err) return res.render("server-error", { title: "Server Error" });
+        if (err) {
+          console.log(err);
+          return res.render("server-error", { title: "Server Error" });
+        }
         else if (row.length == 1) {
           res.locals.row = row;
           res.locals.data = row;
@@ -366,7 +366,7 @@ exports.allAdmissionDue = (req, res) => {
             title: "Admission Form",
           });
         } else {
-          req.flash("err_msg", "You are not enrolled with any classroom yet.");
+          req.flash("err_msg", "You are not enrolled in any class yet.");
           return res.redirect("/student/dashboard");
         }
       });
@@ -482,7 +482,7 @@ exports. getStaffProfile = (req, res) => {
   res.locals.err_msg = err_msg;
   try {
     // do - Sl.No | Subject | Staff Name | Staff Type | View profile & Chat Button 
-    var staffDetails = `SELECT stad.class_section, subj.subject_name, clsu.staff_id_assigned, clsu.secondary_staff_assigned, staf1.name AS p_name, staf1.mobile_number AS p_mob, staf1.email As p_email, staf2.name AS s_name, staf2.mobile_number AS s_mob, staf2.email AS s_email  FROM school_student_admission AS stad INNER JOIN school_class_subjects AS clsu ON clsu.classroom_id = stad.class_section INNER JOIN school_subjects AS subj ON subj.id = clsu.subject_id INNER JOIN school_staff AS staf1 ON staf1.staff_id = clsu.staff_id_assigned INNER JOIN school_staff AS staf2 ON staf2.staff_id = clsu.secondary_staff_assigned WHERE stad.student_id = '${session.student_id}' AND stad.academic_year = YEAR(CURDATE())`;
+    var staffDetails = `SELECT stad.class_section, subj.subject_name, clsu.staff_id_assigned, clsu.secondary_staff_assigned, staf1.name AS p_name, staf1.mobile_number AS p_mob, staf1.email As p_email, staf2.name AS s_name, staf2.mobile_number AS s_mob, staf2.email AS s_email  FROM school_student_admission AS stad INNER JOIN school_class_subjects AS clsu ON clsu.classroom_id = stad.class_section INNER JOIN school_subjects AS subj ON subj.id = clsu.subject_id INNER JOIN school_staff AS staf1 ON staf1.staff_id = clsu.staff_id_assigned INNER JOIN school_staff AS staf2 ON staf2.staff_id = clsu.secondary_staff_assigned WHERE stad.student_id = '${session.student_id}' AND stad.deleted_at IS NULL`;
     dbcon.query(staffDetails, (err, staffRecords) => {
       if(err) throw err;
       res.locals.staffRecords = staffRecords;
@@ -636,7 +636,7 @@ exports.viewMarkSheet = (req, res) => {
   let action = req.params.action;
   try {
     var getMyMark = `SELECT subj.id AS subj_id, subj.subject_name, sem.received_mark, xam.exam_date, xam.exam_conducted_class_sec, xam.ex_master_id, xam.exam_duration, xam.exam_status, xam.sub_outoff_marks, xam.cutoff_mark, sem.is_released FROM school_exams_marks AS sem 
-    INNER JOIN school_exams AS xam ON xam.id = sem.exam_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id WHERE sem.student_id = '${student_id}' AND xam.ex_master_id = '${exam_master_id}' AND sem.is_released = 'yes' AND xam.exam_conducted_class_sec = '${class_sec}' AND sem.deleted_at IS NULL; SELECT subj.id, subj.subject_name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id = scs.subject_id WHERE scs.classroom_id = '${class_sec}' AND scs.deleted_at IS NULL; SELECT stu.name, stu.father_name, DATE_FORMAT(stu.date_of_birth, '%d-%c-%Y') AS date_of_birth, ssad.academic_year FROM School_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id WHERE stu.student_id = '${student_id}' AND ssad.academic_year = YEAR(CURDATE());`;
+    INNER JOIN school_exams AS xam ON xam.id = sem.exam_id INNER JOIN school_subjects AS subj ON subj.id = xam.subject_id INNER JOIN school_exams_master AS xmas ON xmas.id = xam.ex_master_id WHERE sem.student_id = '${student_id}' AND xam.ex_master_id = '${exam_master_id}' AND sem.is_released = 'yes' AND xam.exam_conducted_class_sec = '${class_sec}' AND sem.deleted_at IS NULL; SELECT subj.id, subj.subject_name FROM school_class_subjects AS scs INNER JOIN school_subjects AS subj ON subj.id = scs.subject_id WHERE scs.classroom_id = '${class_sec}' AND scs.deleted_at IS NULL; SELECT stu.name, stu.father_name, DATE_FORMAT(stu.date_of_birth, '%d-%c-%Y') AS date_of_birth, ssad.batch_id, batch.batch_name FROM School_student AS stu INNER JOIN school_student_admission AS ssad ON ssad.student_id = stu.student_id INNER JOIN school_batch_mgmt AS batch ON batch.id = ssad.batch_id WHERE stu.student_id = '${student_id}' AND ssad.batch_id ;`;
     dbcon.query(getMyMark, (err, markList) => {
       if(err) throw err;
       else if (markList[0].length != 0) {
@@ -645,11 +645,11 @@ exports.viewMarkSheet = (req, res) => {
         let fail_count = 0;
         let max_total = 0;
         let secured_total = 0;
+        let final_result = "";
         for (let s=0; s < markList[1].length; s++) {
           let mark_index = markList[0].findIndex(obj => obj.subj_id == `${markList[1][s].id}`);
           let received_mark = 'To be updated'
           let subject_result = 'To be updated'
-          let final_result = "";
           if(mark_index != '-1') {
             received_mark = `${markList[0][mark_index].received_mark}`;
             subject_result = `${markList[0][mark_index].received_mark}` > `${markList[0][mark_index].cutoff_mark}` ? 'Pass' : 'Fail'

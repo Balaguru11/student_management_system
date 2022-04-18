@@ -2575,7 +2575,7 @@ $(document).on('click', '.viewPromote', function () {
       } else if(data.feeStatus[0].payment_status == 'Due') {
         $('#fee_inner').removeClass('border-success').addClass('border-danger');
         $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
-      } else if((final_result == 'Fail') || (final_result == 'TO BE UPDATED')){
+      } else if(final_result == 'TO BE UPDATED'){
         $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
       } else {
         $('.promoteStudent, .demoteStudent').removeAttr('disabled');
@@ -2609,7 +2609,6 @@ $(document).on('click', '.promoteStudent', function () {
           `<div class="promote_alert alert alert-success alert-dismissible fade show m-2" role="alert">The Student has been PROMOTED to Next Std.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>`)
         $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
-        $('#action_buttons').append(`<p class="alert alert-secondary text-center">Student Promoted</p>`);
       } else {
         $('.promote_alert').remove();
         $('#eagle-main').before(
@@ -2644,7 +2643,6 @@ $(document).on('click', '.demoteStudent', function () {
           `<div class="demote_alert alert alert-warning alert-dismissible fade show m-2" role="alert">The Student has been DEMOTED. He/She will be studying the same STD with the Next Batch Students.<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>`)
         $('.promoteStudent, .demoteStudent').attr('disabled', 'disabled');
-        $('#action_buttons').append(`<p class="alert alert-secondary text-center">Student Demoted</p>`);
       } else {
         $('.demote_alert').remove();
         $('#eagle-main').before(

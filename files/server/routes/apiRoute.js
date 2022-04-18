@@ -779,8 +779,8 @@ apiRouter.post('/promote-student-to-next-std', (req, res) => {
           dbcon.query(promoteStudent, (err, promotion) => {
             if(err) {
               res.json({msg: 'error', err})
-            } else {
-              var updateClassStrength = `UPDATE school_main_login SET status='Active' WHERE id='${req.body.student_id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${next_class[0].class_section}'`;
+            } else if(promotion.affectedRows == 1) {
+              var updateClassStrength = `UPDATE school_main_login SET status='Active' WHERE id='${req.body.student_id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE id='${next_class[0].class_section}'; UPDATE school_student_admission SET deleted_at = CURRENT_TIMESTAMP WHERE student_id = '${req.body.student_id}' AND school_id = '${school}' AND batch_id = '${req.body.batch_id}' AND class_section = '${req.body.sec_id}' AND class_medium = '${req.body.std_id}';`;
               dbcon.query(updateClassStrength, (err, updatedStrength) => {
                 if(err) {
                   res.json({msg: 'error', err})
@@ -788,6 +788,8 @@ apiRouter.post('/promote-student-to-next-std', (req, res) => {
                   res.json({msg: 'success', promotion: promotion, next_class: next_class})
                 }
               })
+            } else {
+              res.json({msg: 'failure', promotion: promotion })
             }
           })
         } else {
@@ -819,9 +821,10 @@ apiRouter.post('/demote-student-to-next-std', (req, res) => {
           dbcon.query(demoteStudent, (err, demotion) => {
             if(err) {
               res.json({msg: 'error', err})
-            } else if (demotion.insertId) {
+            } else if (demotion.affectedRows == 1) {
+              console.log(demotion);
               // increase seats filler by 1
-              var updateClassStrength = `UPDATE school_main_login SET status='Active' WHERE id='${req.body.student_id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE class_id='${nextBatchSameStd[0].id}' AND class_section = '${nextBatchSameStd[0].class_section}' AND deleted_at IS NULL`;
+              var updateClassStrength = `UPDATE school_main_login SET status='Active' WHERE id='${req.body.student_id}'; UPDATE school_classroom SET students_filled=students_filled+1 WHERE class_id='${nextBatchSameStd[0].id}' AND class_section = '${nextBatchSameStd[0].class_section}' AND deleted_at IS NULL; UPDATE school_student_admission SET deleted_at = CURRENT_TIMESTAMP WHERE student_id = '${req.body.student_id}' AND school_id = '${school}' AND batch_id = '${req.body.batch_id}' AND class_section = '${req.body.sec_id}' AND class_medium = '${req.body.std_id}';`;
               dbcon.query(updateClassStrength, (err, demoted) => {
                 if(err) {
                   res.json({msg: 'error', err})
@@ -832,7 +835,7 @@ apiRouter.post('/demote-student-to-next-std', (req, res) => {
                 }
               })
             } else {
-
+              res.json({msg: 'failure', demotion: demotion})
             }
           })
         } else {
